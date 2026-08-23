@@ -28,7 +28,10 @@ mybatis-plus:
 
 
 minio:
-  endpoint: http://192.168.205.128:9001
+  endpoint: http://192.168.205.128:9000
   access-key: minio
   secret-key: minio123
   bucket-name: zza
+
+springdoc:
+  default-flat-param-object: true

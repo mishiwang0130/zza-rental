@@ -3,7 +3,6 @@ package com.wxy.zzarental.web.admin.controller.apartment;
 
 import com.wxy.zzarental.common.result.Result;
 import com.wxy.zzarental.web.admin.service.FileService;
-import io.minio.MinioClient;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
@@ -24,8 +23,8 @@ public class FileUploadController {
     @Operation(summary = "上传文件")
     @PostMapping("upload")
     public Result<String> upload(@RequestParam MultipartFile file) {
-        fileService.upload(file);
-        return Result.ok();
+        String url = fileService.upload(file);
+        return Result.ok(url);
     }
 
 }

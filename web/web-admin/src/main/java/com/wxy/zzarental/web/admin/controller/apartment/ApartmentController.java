@@ -1,9 +1,11 @@
 package com.wxy.zzarental.web.admin.controller.apartment;
 
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wxy.zzarental.common.result.Result;
 import com.wxy.zzarental.model.entity.ApartmentInfo;
 import com.wxy.zzarental.model.enums.ReleaseStatus;
+import com.wxy.zzarental.web.admin.service.ApartmentInfoService;
 import com.wxy.zzarental.web.admin.vo.apartment.ApartmentDetailVo;
 import com.wxy.zzarental.web.admin.vo.apartment.ApartmentItemVo;
 import com.wxy.zzarental.web.admin.vo.apartment.ApartmentQueryVo;
@@ -11,6 +13,7 @@ import com.wxy.zzarental.web.admin.vo.apartment.ApartmentSubmitVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,17 +23,22 @@ import java.util.List;
 @RestController
 @RequestMapping("/admin/apartment")
 public class ApartmentController {
+    @Resource
+    private ApartmentInfoService apartmentInfoService;
 
     @Operation(summary = "保存或更新公寓信息")
     @PostMapping("saveOrUpdate")
-    public Result saveOrUpdate(@RequestBody ApartmentSubmitVo apartmentSubmitVo) {
+    public Result saveOrUpdateApart(@RequestBody ApartmentSubmitVo apartmentSubmitVo) {
+        apartmentInfoService.saveOrUpdateApart(apartmentSubmitVo);
         return Result.ok();
     }
 
     @Operation(summary = "根据条件分页查询公寓列表")
     @GetMapping("pageItem")
     public Result<IPage<ApartmentItemVo>> pageItem(@RequestParam long current, @RequestParam long size, ApartmentQueryVo queryVo) {
-        return Result.ok();
+        Page<ApartmentItemVo> page = new Page<>(current, size);
+        IPage<ApartmentItemVo> iPage = apartmentInfoService.pageItem(page, queryVo);
+        return Result.ok(iPage);
     }
 
     @Operation(summary = "根据ID获取公寓详细信息")

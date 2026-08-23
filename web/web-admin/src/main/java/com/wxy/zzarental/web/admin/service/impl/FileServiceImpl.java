@@ -42,6 +42,7 @@ public class FileServiceImpl implements FileService {
                             .bucket(properties.getBucketName())
                             .stream(file.getInputStream(), file.getSize(), -1)
                             .object(filename)
+                            .contentType(file.getContentType())
                             .build());
 
             return String.join("/", properties.getEndpoint(), properties.getBucketName(), filename);

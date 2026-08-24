@@ -1,5 +1,6 @@
 package com.wxy.zzarental.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.wxy.zzarental.model.enums.AppointmentStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -31,6 +32,7 @@ public class ViewAppointment extends BaseEntity {
     @TableField(value = "apartment_id")
     private Long apartmentId;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @Schema(description = "预约时间")
     @TableField(value = "appointment_time")
     private Date appointmentTime;

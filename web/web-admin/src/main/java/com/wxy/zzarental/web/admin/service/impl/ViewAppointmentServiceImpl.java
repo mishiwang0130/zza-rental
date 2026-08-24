@@ -1,9 +1,14 @@
 package com.wxy.zzarental.web.admin.service.impl;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wxy.zzarental.model.entity.ViewAppointment;
 import com.wxy.zzarental.web.admin.mapper.ViewAppointmentMapper;
 import com.wxy.zzarental.web.admin.service.ViewAppointmentService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.wxy.zzarental.web.admin.vo.appointment.AppointmentQueryVo;
+import com.wxy.zzarental.web.admin.vo.appointment.AppointmentVo;
+import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
 /**
@@ -14,7 +19,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class ViewAppointmentServiceImpl extends ServiceImpl<ViewAppointmentMapper, ViewAppointment>
         implements ViewAppointmentService {
-
+    @Resource
+    private ViewAppointmentMapper viewAppointmentMapper;
+    @Override
+    public IPage<AppointmentVo> pageAppointment(Page<AppointmentVo> page, AppointmentQueryVo queryVo) {
+        IPage<AppointmentVo> iPage = viewAppointmentMapper.selectPageAppointment(page, queryVo);
+        return iPage;
+    }
 }
 
 

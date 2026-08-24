@@ -13,4 +13,11 @@ public class GlobalExceptionHandler {
         e.printStackTrace();
         return Result.fail();
     }
+
+    @ExceptionHandler(ZZAException.class)
+    @ResponseBody
+    public Result handleException(ZZAException e) {
+        e.printStackTrace();
+        return Result.fail(e.getCode(),e.getMessage());
+    }
 }

@@ -4,4 +4,23 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.wxy.zzarental.web.admin.mapper.RoomInfoMapper">
 
+    <select id="pageItem" resultType="com.wxy.zzarental.web.admin.vo.room.RoomItemVo">
+        select r.* from room_info r
+        <where>
+            r.is_deleted = 0
+            <if test="queryVo.provinceId != null">
+                and r.apartment_id in (select id from apartment_info where province_id = #{queryVo.provinceId} and is_deleted = 0)
+            </if>
+            <if test="queryVo.cityId != null">
+                and r.apartment_id in (select id from apartment_info where city_id = #{queryVo.cityId} and is_deleted = 0)
+            </if>
+            <if test="queryVo.districtId != null">
+                and r.apartment_id in (select id from apartment_info where district_id = #{queryVo.districtId} and is_deleted = 0)
+            </if>
+            <if test="queryVo.apartmentId != null">
+                and r.apartment_id = #{queryVo.apartmentId}
+            </if>
+        </where>
+    </select>
+
 </mapper>

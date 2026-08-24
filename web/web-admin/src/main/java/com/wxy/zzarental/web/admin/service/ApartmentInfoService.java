@@ -3,6 +3,7 @@ package com.wxy.zzarental.web.admin.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wxy.zzarental.model.entity.ApartmentInfo;
+import com.wxy.zzarental.web.admin.vo.apartment.ApartmentDetailVo;
 import com.wxy.zzarental.web.admin.vo.apartment.ApartmentItemVo;
 import com.wxy.zzarental.web.admin.vo.apartment.ApartmentQueryVo;
 import com.wxy.zzarental.web.admin.vo.apartment.ApartmentSubmitVo;
@@ -18,4 +19,8 @@ public interface ApartmentInfoService extends IService<ApartmentInfo> {
     void saveOrUpdateApart(ApartmentSubmitVo apartmentSubmitVo);
 
     IPage<ApartmentItemVo> pageItem(Page<ApartmentItemVo> page, ApartmentQueryVo queryVo);
+
+    ApartmentDetailVo getDetailById(Long id);
+
+    void removeApartmentById(Long id);
 }

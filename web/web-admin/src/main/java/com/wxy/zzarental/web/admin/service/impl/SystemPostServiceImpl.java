@@ -15,6 +15,7 @@ import com.wxy.zzarental.web.admin.vo.system.user.SystemPostItemVo;
 import jakarta.annotation.Resource;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +35,7 @@ public class SystemPostServiceImpl extends ServiceImpl<SystemPostMapper, SystemP
     @Resource
     private SystemUserMapper systemUserMapper;
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public IPage<SystemPostItemVo> page1(IPage<SystemPost> systemPostPage, String postName) {
         //根据岗位名称（可甜可不填）来翻页

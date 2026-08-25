@@ -10,6 +10,7 @@ import com.wxy.zzarental.web.admin.vo.appointment.AppointmentQueryVo;
 import com.wxy.zzarental.web.admin.vo.appointment.AppointmentVo;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author liubo
@@ -21,6 +22,8 @@ public class ViewAppointmentServiceImpl extends ServiceImpl<ViewAppointmentMappe
         implements ViewAppointmentService {
     @Resource
     private ViewAppointmentMapper viewAppointmentMapper;
+
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public IPage<AppointmentVo> pageAppointment(Page<AppointmentVo> page, AppointmentQueryVo queryVo) {
         IPage<AppointmentVo> iPage = viewAppointmentMapper.selectPageAppointment(page, queryVo);

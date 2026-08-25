@@ -13,6 +13,7 @@ import com.wxy.zzarental.web.admin.vo.agreement.AgreementVo;
 import jakarta.annotation.Resource;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -38,7 +39,7 @@ public class LeaseAgreementServiceImpl extends ServiceImpl<LeaseAgreementMapper,
     private PaymentTypeMapper paymentTypeMapper;
     @Resource
     private LeaseTermMapper leaseTermMapper;
-
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public IPage<AgreementVo> selectPage(Page<LeaseAgreement> page, AgreementQueryVo queryVo) {
         // 查询租约信息分页，得到一个IPage<LeaseAgreement>对象，对象中包含了租约信息列表，如查询十条记录
@@ -86,7 +87,7 @@ public class LeaseAgreementServiceImpl extends ServiceImpl<LeaseAgreementMapper,
         // 返回租约列表
         return agreementIPage;
     }
-
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public AgreementVo getLeaseInfoById(Long id) {
         AgreementVo agreementVo = new AgreementVo();

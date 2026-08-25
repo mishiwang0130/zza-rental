@@ -11,6 +11,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wxy.zzarental.web.admin.vo.agreement.AgreementQueryVo;
 import com.wxy.zzarental.web.admin.vo.agreement.AgreementVo;
 import jakarta.annotation.Resource;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -84,6 +85,28 @@ public class LeaseAgreementServiceImpl extends ServiceImpl<LeaseAgreementMapper,
         agreementIPage.setRecords(records);
         // 返回租约列表
         return agreementIPage;
+    }
+
+    @Override
+    public AgreementVo getLeaseInfoById(Long id) {
+        AgreementVo agreementVo = new AgreementVo();
+        LeaseAgreement leaseAgreement = leaseAgreementMapper.selectById(id);
+        // 这里没错
+        BeanUtils.copyProperties(leaseAgreement,agreementVo);
+        //公寓
+        ApartmentInfo apartmentInfo = apartmentInfoMapper.selectById(leaseAgreement.getApartmentId());
+        agreementVo.setApartmentInfo(apartmentInfo);
+        //房间
+        RoomInfo roomInfo = roomInfoMapper.selectById(leaseAgreement.getRoomId());
+        agreementVo.setRoomInfo(roomInfo);
+        //支付方式
+        PaymentType paymentType = paymentTypeMapper.selectById(leaseAgreement.getPaymentTypeId());
+        agreementVo.setPaymentType(paymentType);
+        //租期
+        LeaseTerm leaseTerm = leaseTermMapper.selectById(leaseAgreement.getLeaseTermId());
+        agreementVo.setLeaseTerm(leaseTerm);
+
+        return agreementVo;
     }
 }
 

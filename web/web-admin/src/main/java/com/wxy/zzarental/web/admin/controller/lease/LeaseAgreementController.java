@@ -1,8 +1,11 @@
 package com.wxy.zzarental.web.admin.controller.lease;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wxy.zzarental.common.result.Result;
+import com.wxy.zzarental.model.entity.BaseEntity;
 import com.wxy.zzarental.model.entity.LeaseAgreement;
 import com.wxy.zzarental.model.enums.LeaseStatus;
 import com.wxy.zzarental.web.admin.service.LeaseAgreementService;
@@ -13,6 +16,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @Tag(name = "租约管理")
@@ -40,18 +45,24 @@ public class LeaseAgreementController {
     @Operation(summary = "根据id查询租约信息")
     @GetMapping(name = "getById")
     public Result<AgreementVo> getById(@RequestParam Long id) {
-        return Result.ok();
+        AgreementVo result= leaseAgreementService.getLeaseInfoById(id);
+        return Result.ok(result);
     }
 
     @Operation(summary = "根据id删除租约信息")
     @DeleteMapping("removeById")
     public Result removeById(@RequestParam Long id) {
+        leaseAgreementService.removeById(id);
         return Result.ok();
     }
 
     @Operation(summary = "根据id更新租约状态")
     @PostMapping("updateStatusById")
     public Result updateStatusById(@RequestParam Long id, @RequestParam LeaseStatus status) {
+        LambdaUpdateWrapper<LeaseAgreement> leaseAgreementLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        leaseAgreementLambdaUpdateWrapper.eq(BaseEntity::getId,id);
+        leaseAgreementLambdaUpdateWrapper.set(LeaseAgreement::getStatus,status);
+        leaseAgreementService.update(leaseAgreementLambdaUpdateWrapper);
         return Result.ok();
     }
 

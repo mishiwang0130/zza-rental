@@ -1,14 +1,17 @@
 package com.wxy.zzarental.web.admin.controller.system;
 
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wxy.zzarental.common.result.Result;
 import com.wxy.zzarental.model.entity.SystemUser;
 import com.wxy.zzarental.model.enums.BaseStatus;
+import com.wxy.zzarental.web.admin.service.SystemUserService;
 import com.wxy.zzarental.web.admin.vo.system.user.SystemUserItemVo;
 import com.wxy.zzarental.web.admin.vo.system.user.SystemUserQueryVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -17,16 +20,23 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/admin/system/user")
 public class SystemUserController {
 
+    @Resource
+    private SystemUserService systemUserService;
+
     @Operation(summary = "根据条件分页查询后台用户列表")
     @GetMapping("page")
     public Result<IPage<SystemUserItemVo>> page(@RequestParam long current, @RequestParam long size, SystemUserQueryVo queryVo) {
-        return Result.ok();
+        Page<SystemUser> systemUserPage = new Page<>(current, size);
+        // service也要改呀
+        IPage<SystemUserItemVo> result = systemUserService.pageUser(systemUserPage,queryVo);
+        return Result.ok(result);
     }
 
     @Operation(summary = "根据ID查询后台用户信息")
     @GetMapping("getById")
     public Result<SystemUserItemVo> getById(@RequestParam Long id) {
-        return Result.ok();
+        SystemUserItemVo result = systemUserService.getSystemUserById(id);
+        return Result.ok(result);
     }
 
     @Operation(summary = "保存或更新后台用户信息")
@@ -52,4 +62,6 @@ public class SystemUserController {
     public Result updateStatusByUserId(@RequestParam Long id, @RequestParam BaseStatus status) {
         return Result.ok();
     }
+
+
 }

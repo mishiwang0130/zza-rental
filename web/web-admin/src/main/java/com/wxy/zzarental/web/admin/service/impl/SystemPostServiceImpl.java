@@ -1,10 +1,25 @@
 package com.wxy.zzarental.web.admin.service.impl;
 
+import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.wxy.zzarental.model.entity.BaseEntity;
 import com.wxy.zzarental.model.entity.SystemPost;
+import com.wxy.zzarental.model.entity.SystemUser;
+import com.wxy.zzarental.web.admin.mapper.SystemUserMapper;
 import com.wxy.zzarental.web.admin.service.SystemPostService;
 import com.wxy.zzarental.web.admin.mapper.SystemPostMapper;
+import com.wxy.zzarental.web.admin.vo.system.user.SystemPostItemVo;
+import jakarta.annotation.Resource;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
 * @author liubo
@@ -14,7 +29,42 @@ import org.springframework.stereotype.Service;
 @Service
 public class SystemPostServiceImpl extends ServiceImpl<SystemPostMapper, SystemPost>
     implements SystemPostService{
+    @Resource
+    private SystemPostMapper systemPostMapper;
+    @Resource
+    private SystemUserMapper systemUserMapper;
 
+    @Override
+    public IPage<SystemPostItemVo> page1(IPage<SystemPost> systemPostPage, String postName) {
+        //根据岗位名称（可甜可不填）来翻页
+        //查询条件
+        LambdaQueryWrapper<SystemPost> systemPostWrapper = new LambdaQueryWrapper<>();
+        systemPostWrapper.like(StrUtil.isNotBlank(postName),SystemPost::getName,postName);
+        //基础分页
+        IPage<SystemPost> systemPostIPage = systemPostMapper.selectPage(systemPostPage, systemPostWrapper);
+        //岗位列表
+        List<SystemPost> postRecords = systemPostIPage.getRecords();
+        //岗位id的集合
+        List<Long> postIdList = postRecords.stream().map(BaseEntity::getId).distinct().toList();
+        //岗位id查用户
+        LambdaQueryWrapper<SystemUser> systemUserWrapper = new LambdaQueryWrapper<>();
+        systemUserWrapper.in(SystemUser::getPostId,postIdList);
+        List<SystemUser> systemUsers = systemUserMapper.selectList(systemUserWrapper);
+        //key是岗位id，value是用户
+        Map<Long,List<SystemUser>> userMap = systemUsers.stream().collect(Collectors.groupingBy(SystemUser::getPostId));
+        // 将数据库中返回的数据组装成前端所需要的格式
+        Page<SystemPostItemVo> page = new Page<>(systemPostIPage.getCurrent(), systemPostIPage.getSize(), systemPostIPage.getTotal());
+        List<SystemPostItemVo> voList = postRecords.stream().map(post ->{
+            SystemPostItemVo vo = new SystemPostItemVo();
+            BeanUtils.copyProperties(post,vo);
+            List<SystemUser> systemUsersList = userMap.get(post.getId());
+            vo.setSystemUsers(systemUsersList);
+            return vo;
+        }).collect(Collectors.toList());
+        page.setRecords(voList);
+
+        return page;
+    }
 }
 
 

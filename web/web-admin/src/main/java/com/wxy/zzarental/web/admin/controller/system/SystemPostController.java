@@ -8,6 +8,7 @@ import com.wxy.zzarental.model.entity.SystemPost;
 import com.wxy.zzarental.model.enums.BaseStatus;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.wxy.zzarental.web.admin.service.SystemPostService;
+import com.wxy.zzarental.web.admin.vo.system.user.SystemPostItemVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
@@ -31,6 +32,7 @@ public class SystemPostController {
         IPage<SystemPost> page = systemPostService.page(systemPostPage);
         return Result.ok(page);
     }
+
 
     @Operation(summary = "保存或更新岗位信息")
     @PostMapping("saveOrUpdate")
@@ -76,5 +78,22 @@ public class SystemPostController {
 //        systemPost.setStatus(status);
 //        systemPostService.updateById(systemPost);
         return Result.ok();
+    }
+
+    /**
+     * 岗位信息分页，可以传入岗位名称进行模糊擦好像，每条记录不仅要有岗位信息，还要有该岗位下的人员信息
+     *
+     * @param current 当前
+     * @param size    尺寸
+     * @return {@code Result<IPage<SystemPost>> }
+     * @author wxy
+     * @date 2026/08/25
+     */
+    @Operation(summary = "分页获取岗位信息")
+    @GetMapping("page1")
+    private Result<IPage<SystemPostItemVo>> page1(@RequestParam long current, @RequestParam long size, @RequestParam String postName) {
+        IPage<SystemPost> systemPostPage = new Page<>(current, size);
+        IPage<SystemPostItemVo> page = systemPostService.page1(systemPostPage,postName);
+        return Result.ok(page);
     }
 }

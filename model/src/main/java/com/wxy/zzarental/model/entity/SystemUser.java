@@ -1,5 +1,6 @@
 package com.wxy.zzarental.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.wxy.zzarental.model.enums.BaseStatus;
 import com.wxy.zzarental.model.enums.SystemUserType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -20,7 +21,8 @@ public class SystemUser extends BaseEntity {
     private String username;
 
     @Schema(description = "密码")
-    @TableField(value = "password",select = false)
+    @TableField(value = "password")
+    @JsonIgnore
     private String password;
 
     @Schema(description = "姓名")
@@ -49,6 +51,7 @@ public class SystemUser extends BaseEntity {
 
     @Schema(description = "账号状态")
     @TableField(value = "status")
+    // 这里从数据库查出来就是用的BaseStatus去接收
     private BaseStatus status;
 
 

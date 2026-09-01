@@ -1,6 +1,7 @@
 package com.wxy.zzarental.common.result;
 
 import lombok.Getter;
+import org.apache.el.parser.Token;
 
 /**
  * 统一返回结果状态信息类
@@ -39,7 +40,8 @@ public enum ResultCodeEnum {
 
 
     TOKEN_EXPIRED(601, "token过期"),
-    TOKEN_INVALID(602, "token非法");
+    TOKEN_INVALID(602, "token非法"),
+    TOKEN_NOT_EXIST(603,"token不存在");
 
 
     private final Integer code;

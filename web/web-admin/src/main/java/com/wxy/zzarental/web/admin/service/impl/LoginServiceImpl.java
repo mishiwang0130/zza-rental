@@ -16,6 +16,7 @@ import com.wxy.zzarental.web.admin.service.LoginService;
 import com.wxy.zzarental.common.util.RedisKeyUtil;
 import com.wxy.zzarental.web.admin.vo.login.CaptchaVo;
 import com.wxy.zzarental.web.admin.vo.login.LoginVo;
+import com.wxy.zzarental.web.admin.vo.system.user.SystemUserInfoVo;
 import jakarta.annotation.Resource;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -89,5 +90,14 @@ public class LoginServiceImpl implements LoginService {
         }
 
         return JwtUtil.createToken(systemUser.getId(),systemUser.getUsername());
+    }
+
+    @Override
+    public SystemUserInfoVo getLoginUserInfoById(Long userId) {
+        SystemUser systemUser = systemUserMapper.selectById(userId);
+        SystemUserInfoVo systemUserInfoVo = new SystemUserInfoVo();
+        systemUserInfoVo.setName(systemUser.getName());
+        systemUserInfoVo.setAvatarUrl(systemUser.getAvatarUrl());
+        return systemUserInfoVo;
     }
 }

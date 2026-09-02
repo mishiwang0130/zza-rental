@@ -11,7 +11,12 @@ public interface RedisKeyConstant {
      */
     String PREFIX_KEY = "zza:";
     /**
-     * 验证码key
+     * admin验证码key
      */
     String CAPTCHA_KEY = PREFIX_KEY + "admin:captcha:";
+
+    /**
+     * 应用登录密钥
+     */
+    String APP_LOGIN_KEY=PREFIX_KEY + "app:captcha";
 }

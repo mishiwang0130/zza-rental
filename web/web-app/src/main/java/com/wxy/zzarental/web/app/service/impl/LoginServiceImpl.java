@@ -1,34 +1,43 @@
 package com.wxy.zzarental.web.app.service.impl;
 
-import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.wxy.zzarental.common.constant.RedisKeyConstant;
 import com.wxy.zzarental.common.exception.ZZAException;
 import com.wxy.zzarental.common.result.ResultCodeEnum;
 import com.wxy.zzarental.common.util.JwtUtil;
+import com.wxy.zzarental.common.util.RedisKeyUtil;
 import com.wxy.zzarental.model.entity.UserInfo;
 import com.wxy.zzarental.model.enums.BaseStatus;
 import com.wxy.zzarental.web.app.mapper.UserInfoMapper;
 import com.wxy.zzarental.web.app.service.LoginService;
+import com.wxy.zzarental.web.app.service.SmsService;
 import com.wxy.zzarental.web.app.vo.user.LoginVo;
 import com.wxy.zzarental.web.app.vo.user.UserInfoVo;
 import jakarta.annotation.Resource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class LoginServiceImpl implements LoginService {
     @Resource
-    private RedisTemplate redisTemplate;
+    private StringRedisTemplate stringRedisTemplate;
     @Resource
     private UserInfoMapper userInfoMapper;
+    @Resource
+    private SmsService smsService;
+
 
     @Override
     public String login(LoginVo loginVo) {
 
-        String key = RedisKeyConstant.APP_LOGIN_KEY + loginVo.getPhone();
-        String code = redisTemplate.opsForValue().get(key).toString();
+        String key = RedisKeyUtil.getPhoneCaptcha(loginVo.getPhone());
+        String code = stringRedisTemplate.opsForValue().get(key);
         if(StrUtil.isBlank(code)){
             throw new ZZAException(ResultCodeEnum.APP_LOGIN_CODE_EXPIRED);
         }
@@ -53,5 +62,22 @@ public class LoginServiceImpl implements LoginService {
             }
         }
         return JwtUtil.createToken(userInfo.getId(),userInfo.getPhone());
+    }
+
+
+    @Override
+    public UserInfoVo getLoginUserById(Long userId) {
+        UserInfo userInfo = userInfoMapper.selectById(userId);
+        return new UserInfoVo(userInfo.getNickname(),userInfo.getAvatarUrl());
+    }
+
+    @Override
+    public void sendSmsCode(String phone) {
+        //拿到随机code
+        String code = RandomUtil.randomNumbers(6);
+        //sms发送短信
+        smsService.sendCode(phone,code,"5");
+        String key = RedisKeyUtil.getPhoneCaptcha(phone);
+        stringRedisTemplate.opsForValue().set(key,code,60*5, TimeUnit.SECONDS);
     }
 }

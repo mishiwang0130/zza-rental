@@ -1,6 +1,7 @@
 package com.wxy.zzarental.web.app.controller.login;
 
 
+import com.wxy.zzarental.common.login.LoginUserHolder;
 import com.wxy.zzarental.common.result.Result;
 import com.wxy.zzarental.web.app.service.LoginService;
 import com.wxy.zzarental.web.app.vo.user.LoginVo;
@@ -19,7 +20,8 @@ public class LoginController {
 
     @GetMapping("login/getCode")
     @Operation(summary = "获取短信验证码")
-    public Result getCode(@RequestParam String phone) {
+    public Result sendSmsCode(@RequestParam String phone) {
+        loginService.sendSmsCode(phone);
         return Result.ok();
     }
 
@@ -33,7 +35,9 @@ public class LoginController {
     @GetMapping("info")
     @Operation(summary = "获取登录用户信息")
     public Result<UserInfoVo> info() {
-        return Result.ok();
+        Long userId = LoginUserHolder.getLoginUser().getUserId();
+
+        return Result.ok(loginService.getLoginUserById(userId));
     }
 }
 

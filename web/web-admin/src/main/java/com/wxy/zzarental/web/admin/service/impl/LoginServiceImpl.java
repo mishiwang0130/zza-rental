@@ -44,7 +44,8 @@ public class LoginServiceImpl implements LoginService {
         String code = specCaptcha.text().toLowerCase();
         String key = UUID.randomUUID().toString(true);
         String redisKey = RedisKeyUtil.getCaptcha(key);
-        stringRedisTemplate.opsForValue().set(redisKey,code,60*60, TimeUnit.SECONDS);
+        // 将code保存到redis中，并设置60*5秒的过期时间
+        stringRedisTemplate.opsForValue().set(redisKey,code,60*5, TimeUnit.SECONDS);
         return new CaptchaVo(specCaptcha.toBase64(),key);
     }
     @Transactional(rollbackFor = ZZAException.class)

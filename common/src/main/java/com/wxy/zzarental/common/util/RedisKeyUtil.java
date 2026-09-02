@@ -22,4 +22,16 @@ public class RedisKeyUtil {
     public static String getCaptcha(String key) {
         return RedisKeyConstant.CAPTCHA_KEY + key;
     }
+
+    /**
+     * 获取手机验证码
+     *
+     * @param phone 电话
+     * @return {@code String }
+     * @author wxy
+     * @date 2026/09/02
+     */
+    public static String getPhoneCaptcha(String phone){
+        return RedisKeyConstant.APP_LOGIN_KEY + phone;
+    }
 }

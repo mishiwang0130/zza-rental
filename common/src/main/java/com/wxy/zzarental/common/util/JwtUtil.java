@@ -38,7 +38,7 @@ public class JwtUtil {
      * @author wxy
      * @date 2026/09/01
      */
-    public static void parseToken(String token){
+    public static Claims parseToken(String token){
         if(StrUtil.isBlank(token)){
             throw new ZZAException(ResultCodeEnum.TOKEN_NOT_EXIST);
         }
@@ -47,7 +47,10 @@ public class JwtUtil {
         try {
             // 解析token
             JwtParser jwtParser = Jwts.parserBuilder().setSigningKey(secretKey).build();
-            jwtParser.parseClaimsJws(token);
+            Jws<Claims> claimsJws = jwtParser.parseClaimsJws(token);
+            Claims body = claimsJws.getBody();
+            return body;
+
         } catch (ExpiredJwtException e) {
             throw new ZZAException(ResultCodeEnum.TOKEN_EXPIRED);
         } catch (JwtException e){

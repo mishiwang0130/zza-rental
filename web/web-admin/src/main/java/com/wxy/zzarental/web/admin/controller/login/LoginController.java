@@ -1,6 +1,7 @@
 package com.wxy.zzarental.web.admin.controller.login;
 
 
+import com.wxy.zzarental.common.login.LoginUserHolder;
 import com.wxy.zzarental.common.result.Result;
 import com.wxy.zzarental.web.admin.service.LoginService;
 import com.wxy.zzarental.web.admin.vo.login.CaptchaVo;
@@ -35,6 +36,8 @@ public class LoginController {
     @Operation(summary = "获取登陆用户个人信息")
     @GetMapping("info")
     public Result<SystemUserInfoVo> info() {
-        return Result.ok();
+        Long userId = LoginUserHolder.getLoginUser().getUserId();
+
+        return Result.ok(loginService.getLoginUserInfoById(userId));
     }
 }

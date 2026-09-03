@@ -2,6 +2,9 @@ package com.wxy.zzarental.web.app.mapper;
 
 import com.wxy.zzarental.model.entity.RoomInfo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.math.BigDecimal;
 
 /**
 * @author liubo
@@ -11,4 +14,13 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 */
 public interface RoomInfoMapper extends BaseMapper<RoomInfo> {
 
+    /**
+     * 选择最低租金
+     *
+     * @param apartmentId 公寓id
+     * @return {@code BigDecimal }
+     * @author wxy
+     * @date 2026/09/03
+     */
+    BigDecimal selectMinRent(@Param("apartmentId") Long apartmentId);
 }

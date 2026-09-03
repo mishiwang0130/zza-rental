@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wxy.zzarental.model.entity.RoomInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.wxy.zzarental.web.app.vo.room.RoomDetailVo;
 import com.wxy.zzarental.web.app.vo.room.RoomItemVo;
 import com.wxy.zzarental.web.app.vo.room.RoomQueryVo;
 
@@ -22,4 +23,6 @@ public interface RoomInfoService extends IService<RoomInfo> {
      * @date 2026/09/03
      */
     IPage<RoomItemVo> pageItem(Page<RoomItemVo> page, RoomQueryVo queryVo);
+
+    RoomDetailVo getDetailById(Long id);
 }

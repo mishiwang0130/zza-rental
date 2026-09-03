@@ -11,13 +11,19 @@ import com.wxy.zzarental.model.enums.ReleaseStatus;
 import com.wxy.zzarental.web.app.mapper.*;
 import com.wxy.zzarental.web.app.service.RoomInfoService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.wxy.zzarental.web.app.vo.apartment.ApartmentItemVo;
+import com.wxy.zzarental.web.app.vo.attr.AttrValueVo;
+import com.wxy.zzarental.web.app.vo.fee.FeeValueVo;
 import com.wxy.zzarental.web.app.vo.graph.GraphVo;
+import com.wxy.zzarental.web.app.vo.room.RoomDetailVo;
 import com.wxy.zzarental.web.app.vo.room.RoomItemVo;
 import com.wxy.zzarental.web.app.vo.room.RoomQueryVo;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -195,6 +201,154 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
 
 
         return result;
+    }
+
+    @Resource
+    private RoomAttrValueMapper roomAttrValueMapper;
+    @Resource
+    private RoomFacilityMapper roomFacilityMapper;
+    @Resource
+    private FacilityInfoMapper facilityInfoMapper;
+    @Resource
+    private ApartmentLabelMapper apartmentLabelMapper;
+    @Resource
+    private AttrValueMapper attrValueMapper;
+    @Resource
+    private AttrKeyMapper attrKeyMapper;
+    @Resource
+    private PaymentTypeMapper paymentTypeMapper;
+    @Resource
+    private ApartmentFeeValueMapper apartmentFeeValueMapper;
+    @Resource
+    private FeeValueMapper feeValueMapper;
+    @Resource
+    private FeeKeyMapper feeKeyMapper;
+    @Resource
+    private RoomLeaseTermMapper roomLeaseTermMapper;
+    @Resource
+    private LeaseTermMapper leaseTermMapper;
+
+    @Override
+    public RoomDetailVo getDetailById(Long id) {
+        RoomInfo roomInfo = roomInfoMapper.selectById(id);
+        if (roomInfo==null){
+            return null;
+        }
+        RoomDetailVo roomDetailVo = new RoomDetailVo();
+        BeanUtil.copyProperties(roomInfo,roomDetailVo);
+
+        //公寓信息
+        ApartmentItemVo apartmentItemVo = getApartmentItemVo(roomInfo);
+        roomDetailVo.setApartmentItemVo(apartmentItemVo);
+
+        //图片列表 List<GraphVo> graphVoList
+        LambdaQueryWrapper<GraphInfo> graphInfoLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        graphInfoLambdaQueryWrapper.eq(GraphInfo::getItemId,id);
+        List<GraphInfo> graphInfos = graphInfoMapper.selectList(graphInfoLambdaQueryWrapper);
+        List<GraphVo> graphVoList = BeanUtil.copyToList(graphInfos, GraphVo.class);
+        roomDetailVo.setGraphVoList(graphVoList);
+
+        //属性信息列表
+        LambdaQueryWrapper<RoomAttrValue> attrValueVoLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        attrValueVoLambdaQueryWrapper.eq(RoomAttrValue::getRoomId,id);
+        List<RoomAttrValue> roomAttrValues = roomAttrValueMapper.selectList(attrValueVoLambdaQueryWrapper);
+        Set<Long> attrValueIds = roomAttrValues.stream().map(RoomAttrValue::getAttrValueId).collect(Collectors.toSet());
+        List<AttrValue> attrValues = attrValueMapper.selectBatchIds(attrValueIds);
+        List<AttrValueVo> attrValueVos = attrValues.stream().map(
+                attrValue -> {
+                    AttrValueVo attrValueVo = new AttrValueVo();
+                    BeanUtil.copyProperties(attrValue, attrValueVo);
+                    //通过attrKeyid去attr-key表查attrKeyName
+                    AttrKey attrKey = attrKeyMapper.selectById(attrValue.getAttrKeyId());
+                    attrValueVo.setAttrKeyName(attrKey.getName());
+                    return attrValueVo;
+                }
+        ).toList();
+
+        roomDetailVo.setAttrValueVoList(attrValueVos);
+
+        //  配套信息列表 FacilityInfo
+        LambdaQueryWrapper<RoomFacility> roomFacilityLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        roomFacilityLambdaQueryWrapper.eq(RoomFacility::getRoomId,id);
+        List<RoomFacility> roomFacilities = roomFacilityMapper.selectList(roomFacilityLambdaQueryWrapper);
+        List<Long> facilityIds = roomFacilities.stream().map(RoomFacility::getFacilityId).collect(Collectors.toList());
+        List<FacilityInfo> facilityInfos = facilityInfoMapper.selectBatchIds(facilityIds);
+        roomDetailVo.setFacilityInfoList(facilityInfos);
+        //标签信息列表
+        LambdaQueryWrapper<RoomLabel> roomLabelLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        roomLabelLambdaQueryWrapper.eq(RoomLabel::getRoomId,id);
+        List<RoomLabel> roomLabels = roomLabelMapper.selectList(roomLabelLambdaQueryWrapper);
+        List<Long> labelIds = roomLabels.stream().map(RoomLabel::getLabelId).toList();
+        List<LabelInfo> labelInfos = labelInfoMapper.selectBatchIds(labelIds);
+        roomDetailVo.setLabelInfoList(labelInfos);
+
+        //支付方式列表
+        LambdaQueryWrapper<RoomPaymentType> roomPaymentTypeLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        roomPaymentTypeLambdaQueryWrapper.eq(RoomPaymentType::getRoomId,id);
+        List<RoomPaymentType> roomPaymentTypes = roomPaymentTypeMapper.selectList(roomPaymentTypeLambdaQueryWrapper);
+        List<Long> paymentTypeIds = roomPaymentTypes.stream().map(RoomPaymentType::getPaymentTypeId).toList();
+        List<PaymentType> paymentTypes = paymentTypeMapper.selectBatchIds(paymentTypeIds);
+        roomDetailVo.setPaymentTypeList(paymentTypes);
+        //杂费列表
+        ApartmentInfo apartmentInfo = apartmentInfoMapper.selectById(roomInfo.getApartmentId());
+        LambdaQueryWrapper<ApartmentFeeValue> apartmentFeeValueLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        apartmentFeeValueLambdaQueryWrapper.eq(ApartmentFeeValue::getApartmentId,roomInfo.getApartmentId());
+        List<ApartmentFeeValue> apartmentFeeValues = apartmentFeeValueMapper.selectList(apartmentFeeValueLambdaQueryWrapper);
+        List<Long> feevalueIds = apartmentFeeValues.stream().map(ApartmentFeeValue::getFeeValueId).toList();
+        List<FeeValue> feeValues = feeValueMapper.selectBatchIds(feevalueIds);
+        List<FeeValueVo> feeValueVos = feeValues.stream().map(
+                feeValue -> {
+                    FeeValueVo feeValueVo = new FeeValueVo();
+                    BeanUtil.copyProperties(feeValue, feeValueVo);
+                    FeeKey feeKey = feeKeyMapper.selectById(feeValue.getFeeKeyId());
+                    feeValueVo.setFeeKeyName(feeKey.getName());
+                    return feeValueVo;
+                }
+        ).toList();
+        roomDetailVo.setFeeValueVoList(feeValueVos);
+
+        //租期列表
+        LambdaQueryWrapper<RoomLeaseTerm> roomLeaseTermLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        roomLeaseTermLambdaQueryWrapper.eq(RoomLeaseTerm::getRoomId,id);
+        List<RoomLeaseTerm> roomLeaseTerms = roomLeaseTermMapper.selectList(roomLeaseTermLambdaQueryWrapper);
+        List<Long> leaseTermIds = roomLeaseTerms.stream().map(RoomLeaseTerm::getLeaseTermId).toList();
+        List<LeaseTerm> leaseTerms = leaseTermMapper.selectBatchIds(leaseTermIds);
+        roomDetailVo.setLeaseTermList(leaseTerms);
+
+
+        return roomDetailVo;
+    }
+
+    private ApartmentItemVo getApartmentItemVo(RoomInfo roomInfo) {
+        ApartmentInfo apartmentInfo = apartmentInfoMapper.selectById(roomInfo.getApartmentId());
+        ApartmentItemVo apartmentItemVo = new ApartmentItemVo();
+        BeanUtil.copyProperties(apartmentInfo,apartmentItemVo);
+        //公寓的labelInfoList，graphVoList，minRent
+        LambdaQueryWrapper<GraphInfo> graphVoLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        graphVoLambdaQueryWrapper.eq(GraphInfo::getItemType,1);
+        graphVoLambdaQueryWrapper.eq(GraphInfo::getItemId,apartmentInfo.getId());
+        List<GraphInfo> graphInfos = graphInfoMapper.selectList(graphVoLambdaQueryWrapper);
+        List<GraphVo> graphVos = graphInfos.stream().map(
+                graphInfo -> {
+                    GraphVo graphVo = new GraphVo();
+                    graphVo.setName(graphInfo.getName());
+                    graphVo.setUrl(graphInfo.getUrl());
+                    return graphVo;
+                }).toList();
+        apartmentItemVo.setGraphVoList(graphVos);
+
+        //公寓标签
+        LambdaQueryWrapper<ApartmentLabel> apartmentLabelLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        apartmentLabelLambdaQueryWrapper.eq(ApartmentLabel::getApartmentId,apartmentInfo.getId());
+        List<ApartmentLabel> apartmentLabels = apartmentLabelMapper.selectList(apartmentLabelLambdaQueryWrapper);
+        Set<Long> labelIds = apartmentLabels.stream().map(ApartmentLabel::getLabelId).collect(Collectors.toSet());
+        List<LabelInfo> labelInfos = labelInfoMapper.selectBatchIds(labelIds);
+        apartmentItemVo.setLabelInfoList(labelInfos);
+
+        //最低租金
+        BigDecimal minRent = roomInfoMapper.selectMinRent(apartmentInfo.getId());
+        apartmentItemVo.setMinRent(minRent);
+        return apartmentItemVo;
     }
 }
 

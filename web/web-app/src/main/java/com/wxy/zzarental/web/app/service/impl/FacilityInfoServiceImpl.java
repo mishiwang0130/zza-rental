@@ -1,10 +1,17 @@
 package com.wxy.zzarental.web.app.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wxy.zzarental.model.entity.FacilityInfo;
+import com.wxy.zzarental.model.entity.RoomFacility;
+import com.wxy.zzarental.web.app.mapper.RoomFacilityMapper;
 import com.wxy.zzarental.web.app.service.FacilityInfoService;
 import com.wxy.zzarental.web.app.mapper.FacilityInfoMapper;
+import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
 * @author liubo
@@ -15,6 +22,17 @@ import org.springframework.stereotype.Service;
 public class FacilityInfoServiceImpl extends ServiceImpl<FacilityInfoMapper, FacilityInfo>
     implements FacilityInfoService{
 
+    @Resource
+    private RoomFacilityMapper roomFacilityMapper;
+
+    @Override
+    public List<FacilityInfo> listByRoomId(Long roomId) {
+        LambdaQueryWrapper<RoomFacility> roomFacilityLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        roomFacilityLambdaQueryWrapper.eq(RoomFacility::getRoomId, roomId);
+        List<RoomFacility> roomFacilities = roomFacilityMapper.selectList(roomFacilityLambdaQueryWrapper);
+        List<Long> facilityIds = roomFacilities.stream().map(RoomFacility::getFacilityId).collect(Collectors.toList());
+        return listByIds(facilityIds);
+    }
 }
 
 

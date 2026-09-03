@@ -27,8 +27,6 @@ public class PaymentTypeServiceImpl extends ServiceImpl<PaymentTypeMapper, Payme
     implements PaymentTypeService{
     @Resource
     private RoomPaymentTypeService roomPaymentTypeService;
-    @Resource
-    private PaymentTypeMapper paymentTypeMapper;
 
     @Override
     public List<PaymentType> getPaymentTypeByRoomId(Long id) {

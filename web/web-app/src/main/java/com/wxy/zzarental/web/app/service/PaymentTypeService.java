@@ -11,5 +11,14 @@ import java.util.List;
 * @createDate 2023-07-26 11:12:39
 */
 public interface PaymentTypeService extends IService<PaymentType> {
+    /**
+     * 按房间id获取付款类型
+     *
+     * @param id ID
+     * @return {@code List<PaymentType> }
+     * @author wxy
+     * @date 2026/09/03
+     */
     List<PaymentType> getPaymentTypeByRoomId(Long id);
+
 }

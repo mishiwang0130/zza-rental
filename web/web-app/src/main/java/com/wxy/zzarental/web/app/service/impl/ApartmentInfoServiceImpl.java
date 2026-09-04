@@ -2,13 +2,11 @@ package com.wxy.zzarental.web.app.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.wxy.zzarental.model.entity.ApartmentInfo;
-import com.wxy.zzarental.model.entity.ApartmentLabel;
-import com.wxy.zzarental.model.entity.GraphInfo;
-import com.wxy.zzarental.model.entity.LabelInfo;
+import com.wxy.zzarental.model.entity.*;
 import com.wxy.zzarental.web.app.mapper.*;
 import com.wxy.zzarental.web.app.service.ApartmentInfoService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.wxy.zzarental.web.app.vo.apartment.ApartmentDetailVo;
 import com.wxy.zzarental.web.app.vo.apartment.ApartmentItemVo;
 import com.wxy.zzarental.web.app.vo.graph.GraphVo;
 import jakarta.annotation.Resource;
@@ -71,6 +69,31 @@ public class ApartmentInfoServiceImpl extends ServiceImpl<ApartmentInfoMapper, A
         BigDecimal minRent = roomInfoMapper.selectMinRent(apartmentInfo.getId());
         apartmentItemVo.setMinRent(minRent);
         return apartmentItemVo;
+    }
+
+    @Resource
+    private ApartmentFacilityMapper apartmentFacilityMapper;
+    @Resource
+    private FacilityInfoMapper facilityInfoMapper;
+
+    @Override
+    public ApartmentDetailVo getDetailById(Long id) {
+        ApartmentItemVo apartmentItemVo = getInfoById(id);
+        ApartmentDetailVo apartmentDetailVo = new ApartmentDetailVo();
+        BeanUtil.copyProperties(apartmentItemVo,apartmentDetailVo);
+        //得到配套信息列表List<FacilityInfo> facilityInfoList;
+        LambdaQueryWrapper<ApartmentFacility> apartmentFacilityLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        apartmentFacilityLambdaQueryWrapper.eq(ApartmentFacility::getApartmentId,id);
+        List<ApartmentFacility> apartmentFacilities = apartmentFacilityMapper.selectList(apartmentFacilityLambdaQueryWrapper);
+        List<Long> facilityIds = apartmentFacilities.stream().map(ApartmentFacility::getFacilityId).toList();
+
+        LambdaQueryWrapper<FacilityInfo> facilityInfoLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        facilityInfoLambdaQueryWrapper.in(BaseEntity::getId,facilityIds);
+        List<FacilityInfo> facilityInfoList = facilityInfoMapper.selectList(facilityInfoLambdaQueryWrapper);
+
+
+        apartmentDetailVo.setFacilityInfoList(facilityInfoList);
+        return apartmentDetailVo;
     }
 }
 

@@ -2,6 +2,7 @@ package com.wxy.zzarental.web.app.service;
 
 import com.wxy.zzarental.model.entity.ApartmentInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.wxy.zzarental.web.app.vo.apartment.ApartmentDetailVo;
 import com.wxy.zzarental.web.app.vo.apartment.ApartmentItemVo;
 
 /**
@@ -19,4 +20,6 @@ public interface ApartmentInfoService extends IService<ApartmentInfo> {
      * @date 2026/09/03
      */
     ApartmentItemVo getInfoById(Long apartmentId);
+
+    ApartmentDetailVo getDetailById(Long id);
 }

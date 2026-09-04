@@ -1,5 +1,6 @@
 package com.wxy.zzarental.web.app.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.wxy.zzarental.model.entity.LeaseTerm;
 import com.wxy.zzarental.model.entity.RoomLeaseTerm;
@@ -10,6 +11,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -30,6 +32,9 @@ public class LeaseTermServiceImpl extends ServiceImpl<LeaseTermMapper, LeaseTerm
         LambdaQueryWrapper<RoomLeaseTerm> roomLeaseTermLambdaQueryWrapper = new LambdaQueryWrapper<>();
         roomLeaseTermLambdaQueryWrapper.eq(RoomLeaseTerm::getRoomId, id);
         List<RoomLeaseTerm> roomLeaseTerms = roomLeaseTermMapper.selectList(roomLeaseTermLambdaQueryWrapper);
+        if (CollUtil.isEmpty(roomLeaseTerms)) {
+            return Collections.emptyList();
+        }
         List<Long> leaseTermIds = roomLeaseTerms.stream().map(RoomLeaseTerm::getLeaseTermId).toList();
         return leaseTermMapper.selectBatchIds(leaseTermIds);
 

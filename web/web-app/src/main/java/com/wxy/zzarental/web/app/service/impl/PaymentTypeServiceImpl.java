@@ -34,6 +34,9 @@ public class PaymentTypeServiceImpl extends ServiceImpl<PaymentTypeMapper, Payme
         LambdaQueryWrapper<RoomPaymentType> roomPaymentTypeLambdaQueryWrapper = new LambdaQueryWrapper<>();
         roomPaymentTypeLambdaQueryWrapper.eq(RoomPaymentType::getId,id);
         List<RoomPaymentType> roomList = roomPaymentTypeService.list(roomPaymentTypeLambdaQueryWrapper);
+        if (CollUtil.isEmpty(roomList)) {
+            return Collections.emptyList();
+        }
         //拿到关联表中的paymentid
         List<Long> paymentIdList = roomList.stream().map(RoomPaymentType::getPaymentTypeId).distinct().collect(Collectors.toList());
         //判断该房间有没有支付方式

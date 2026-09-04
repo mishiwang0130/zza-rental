@@ -1,5 +1,6 @@
 package com.wxy.zzarental.web.app.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wxy.zzarental.model.entity.FacilityInfo;
@@ -10,6 +11,7 @@ import com.wxy.zzarental.web.app.mapper.FacilityInfoMapper;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,6 +32,9 @@ public class FacilityInfoServiceImpl extends ServiceImpl<FacilityInfoMapper, Fac
         LambdaQueryWrapper<RoomFacility> roomFacilityLambdaQueryWrapper = new LambdaQueryWrapper<>();
         roomFacilityLambdaQueryWrapper.eq(RoomFacility::getRoomId, roomId);
         List<RoomFacility> roomFacilities = roomFacilityMapper.selectList(roomFacilityLambdaQueryWrapper);
+        if (CollUtil.isEmpty(roomFacilities)) {
+            return Collections.emptyList();
+        }
         List<Long> facilityIds = roomFacilities.stream().map(RoomFacility::getFacilityId).collect(Collectors.toList());
         return listByIds(facilityIds);
     }

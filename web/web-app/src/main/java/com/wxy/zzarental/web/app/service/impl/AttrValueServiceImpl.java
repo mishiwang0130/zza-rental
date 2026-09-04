@@ -1,6 +1,7 @@
 package com.wxy.zzarental.web.app.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wxy.zzarental.model.entity.AttrKey;
@@ -15,6 +16,7 @@ import com.wxy.zzarental.web.app.vo.attr.AttrValueVo;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,6 +43,9 @@ public class AttrValueServiceImpl extends ServiceImpl<AttrValueMapper, AttrValue
         LambdaQueryWrapper<RoomAttrValue> attrValueVoLambdaQueryWrapper = new LambdaQueryWrapper<>();
         attrValueVoLambdaQueryWrapper.eq(RoomAttrValue::getRoomId, roomId);
         List<RoomAttrValue> roomAttrValues = roomAttrValueMapper.selectList(attrValueVoLambdaQueryWrapper);
+        if (CollUtil.isEmpty(roomAttrValues)) {
+            return Collections.emptyList();
+        }
         Set<Long> attrValueIds = roomAttrValues.stream().map(RoomAttrValue::getAttrValueId).collect(Collectors.toSet());
         List<AttrValue> attrValues = attrValueMapper.selectBatchIds(attrValueIds);
         List<Long> attrKeyIds = attrValues.stream().map(AttrValue::getAttrKeyId).distinct().toList();

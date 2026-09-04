@@ -1,6 +1,7 @@
 package com.wxy.zzarental.web.app.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wxy.zzarental.model.entity.ApartmentFeeValue;
@@ -16,6 +17,7 @@ import com.wxy.zzarental.web.app.vo.fee.FeeValueVo;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -41,8 +43,14 @@ public class FeeValueServiceImpl extends ServiceImpl<FeeValueMapper, FeeValue>
         LambdaQueryWrapper<ApartmentFeeValue> apartmentFeeValueLambdaQueryWrapper = new LambdaQueryWrapper<>();
         apartmentFeeValueLambdaQueryWrapper.eq(ApartmentFeeValue::getApartmentId, id);
         List<ApartmentFeeValue> apartmentFeeValues = apartmentFeeValueMapper.selectList(apartmentFeeValueLambdaQueryWrapper);
+        if (CollUtil.isEmpty(apartmentFeeValues)) {
+            return Collections.emptyList();
+        }
         List<Long> feevalueIds = apartmentFeeValues.stream().map(ApartmentFeeValue::getFeeValueId).toList();
         List<FeeValue> feeValues = feeValueMapper.selectBatchIds(feevalueIds);
+        if (CollUtil.isEmpty(feeValues)) {
+            return Collections.emptyList();
+        }
         List<Long> feekeyIds = feeValues.stream().map(FeeValue::getFeeKeyId).distinct().toList();
         Map<Long, String> feeNameMap = feeKeyMapper.selectBatchIds(feekeyIds).stream().collect(Collectors.toMap(BaseEntity::getId, FeeKey::getName,(key1, key2)->key1));
         return feeValues.stream().map(

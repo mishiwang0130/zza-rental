@@ -59,6 +59,8 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
     private FeeValueService feeValueService;
     @Resource
     private LeaseTermService leaseTermService;
+    @Resource
+    private GraphInfoService graphInfoService;
 
     @Override
     public IPage<RoomItemVo> pageItem(Page<RoomItemVo> page, RoomQueryVo queryVo) {
@@ -161,11 +163,7 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
     private void setRoomItemVo(List<RoomItemVo> records) {
         // 这里传递进来的参数的地址值就是0x1234
         List<Long> roomIdList = records.stream().map(RoomItemVo::getId).toList();
-        LambdaQueryWrapper<GraphInfo> graphVoLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        graphVoLambdaQueryWrapper.eq(GraphInfo::getItemType, 2);
-        graphVoLambdaQueryWrapper.in(GraphInfo::getItemId, roomIdList);
-        List<GraphInfo> graphInfos = graphInfoMapper.selectList(graphVoLambdaQueryWrapper);
-        Map<Long, List<GraphInfo>> graphMap = graphInfos.stream().collect(Collectors.groupingBy(GraphInfo::getItemId));
+        Map<Long, List<GraphInfo>> graphMap = graphInfoService.mapByItemIds(2,roomIdList);
 
 
         //标签

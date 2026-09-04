@@ -17,6 +17,11 @@ public enum ResultCodeEnum {
     ILLEGAL_REQUEST(205, "非法请求"),
     REPEAT_SUBMIT(206, "重复提交"),
     DELETE_ERROR(207, "请先删除子集"),
+    APARTMENTID_ERROR(208,"公寓id不存在"),
+    VIEW_APPOINTMENT_NOT_EXIST(209,"该预约不存在"),
+    VIEW_APPOINTMENT_ERROR(210,"该预约不属于当前用户"),
+    LEASEAGREEMENT_NOT_EXIST(211,"租约不存在"),
+
 
     ADMIN_ACCOUNT_EXIST_ERROR(301, "账号已存在"),
     ADMIN_CAPTCHA_CODE_ERROR(302, "验证码错误"),
@@ -40,9 +45,15 @@ public enum ResultCodeEnum {
     APP_SEND_SMS_ERROR(508, "验证码发送失败"),
 
 
+
     TOKEN_EXPIRED(601, "token过期"),
     TOKEN_INVALID(602, "token非法"),
-    TOKEN_NOT_EXIST(603,"token不存在");
+    TOKEN_NOT_EXIST(603,"token不存在"),
+
+    USER_NOT_EXIST(701, "用户不存在"),
+    PHONE_ERROR(702, "手机号不正确"),
+    ROOM_ID_IS_NULL(703, "房间id不能为空"),
+    ROOM_ID_ERROR(704,"房间id不存在" );
 
 
     private final Integer code;

@@ -32,4 +32,6 @@ public interface RoomInfoMapper extends BaseMapper<RoomInfo> {
     IPage<RoomItemVo> pageItem(@Param("page") Page<RoomItemVo> page,
                                @Param("queryVo") RoomQueryVo queryVo,
                                @Param("payRoomIds") List<Long> payRoomIds);
+
+    IPage<RoomItemVo> pageItemByApartmentId(Page<RoomItemVo> page, Long id);
 }

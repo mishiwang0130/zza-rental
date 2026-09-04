@@ -46,5 +46,11 @@
             order by ri.rent ${queryVo.orderType}
         </if>
     </select>
+    <select id="pageItemByApartmentId" resultMap="roomItemVoMap">
+        SELECT ri.id,ri.room_number,ri.rent,ai.id as apartment_id,ai.* FROM `room_info` AS ri
+        LEFT JOIN apartment_info as ai ON ri.apartment_id=ai.id and ai.is_deleted=0
+        where ri.apartment_id=#{id} and ri.is_deleted=0 and ri.is_release=1 and ri.id not in (
+        SELECT room_id FROM lease_agreement WHERE is_deleted = 0 AND `status`IN(2,5) )
+    </select>
 
 </mapper>

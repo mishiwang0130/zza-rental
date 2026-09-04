@@ -81,68 +81,16 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
         IPage<RoomItemVo> roomInfoPage = roomInfoMapper.pageItem(page, queryVo, payRoomIds);
 
         // 如果分页返回空，则直接返回
+        // 比如说现在这个roomInfoPage的地址值是0x1111，他里面的records的地址值是0x1234，我们这样去get相当于
+        // 将records对象的引用指向roomInfoPage里面的records的地址值，也就是0x1234，此时records也是0x1234
         List<RoomItemVo> records = roomInfoPage.getRecords();
         if (CollUtil.isEmpty(records)) {
             return roomInfoPage;
         }
 
-        // 分页不为空，给IPage<RoomItemVo>的每个RoomItemVo组装房间图片列表、房间标签列表、房间所属公寓信息
-        //查关联数据，需要房间id
-        List<Long> roomIds = records.stream().map(RoomItemVo::getId).distinct().collect(Collectors.toList());
-        //图片，标签
-        //得到图片的ids
-        LambdaQueryWrapper<GraphInfo> graphVoLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        graphVoLambdaQueryWrapper.eq(GraphInfo::getItemType, 2);
-        graphVoLambdaQueryWrapper.in(GraphInfo::getItemId, roomIds);
-        List<GraphInfo> graphInfos = graphInfoMapper.selectList(graphVoLambdaQueryWrapper);
-        Map<Long, List<GraphInfo>> graphMap = graphInfos.stream().collect(Collectors.groupingBy(GraphInfo::getItemId));
-
-
-        //标签
-        LambdaQueryWrapper<RoomLabel> roomLabelLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        roomLabelLambdaQueryWrapper.in(RoomLabel::getRoomId, roomIds);
-        // 不需要显示把删除字段写出来，mybatisplus会自己加
-//        roomLabelLambdaQueryWrapper.eq(BaseEntity::getIsDeleted,0);
-        List<RoomLabel> roomLabels = roomLabelMapper.selectList(roomLabelLambdaQueryWrapper);
-        // 转换成房间id和标签列表的map
-        Map<Long, List<RoomLabel>> roomLabelMap = roomLabels.stream().collect(Collectors.groupingBy(RoomLabel::getRoomId));
-        // 获取到房间标签关联列表后，由于返回值需要的是标签信息，所以要取出列表中的标签id，去查询标签表
-        // 收集标签id集合
-        Set<Long> labelIdSet = roomLabels.stream().map(RoomLabel::getLabelId).collect(Collectors.toSet());
-        // 根据标签id查询标签列表
-        List<LabelInfo> labelInfos = labelInfoMapper.selectBatchIds(labelIdSet);
-        // 转换成map
-        Map<Long, LabelInfo> labelInfoMap = labelInfos.stream().collect(Collectors.toMap(BaseEntity::getId, Function.identity(), (key1, key2) -> key1));
-
-        // 由于需要的不是Map<房间id, 房间标签关联集合>而是Map<房间id, 标签信息集合>
-        // 所以要将Map<房间id, 房间标签关联集合>转换为Map<房间id, 标签信息集合>
-        // 最终需要的map
-        Map<Long, List<LabelInfo>> labelMap = new HashMap<>();
-        // 遍历roomLabelMap，将每一个value转换成需要的标签信息集合
-        roomLabelMap.forEach((key, roomLabelList) -> {
-            List<LabelInfo> list = roomLabelList.stream()
-                    .map(item -> labelInfoMap.get(item.getLabelId())).toList();
-            labelMap.put(key, list);
-        });
-
-        //组装，用set，有三个map,roomitemvo是一个集合，我们应该是给其中的每一个组装
-        records.forEach(roomItemVo -> {
-            //图片
-            List<GraphVo> graphList = graphMap.getOrDefault(roomItemVo.getId(), new ArrayList<>()).stream().map(
-                    graphInfo -> {
-                        GraphVo graphVo = new GraphVo();
-                        graphVo.setName(graphInfo.getName());
-                        graphVo.setUrl(graphInfo.getUrl());
-                        return graphVo;
-                    }).toList();
-
-            roomItemVo.setGraphVoList(graphList);
-
-            //标签
-            roomItemVo.setLabelInfoList(labelMap.get(roomItemVo.getId()));
-        });
-
-        roomInfoPage.setRecords(records);
+        // 因为他是对象，所以这里会直接将地址值传递给这个方法
+        // 方法内部是对records做了处理，但是没有改变他的地址值
+        setRoomItemVo(records);
         return roomInfoPage;
     }
 
@@ -185,6 +133,84 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
         roomDetailVo.setLeaseTermList(leaseTermService.listByRoomId(id));
 
         return roomDetailVo;
+    }
+
+    @Override
+    public IPage<RoomItemVo> pageItemByApartmentId(Page<RoomItemVo> page, Long id) {
+        IPage<RoomItemVo> roomItemVoIPage = roomInfoMapper.pageItemByApartmentId(page, id);
+        // 如果分页返回空，则直接返回
+        List<RoomItemVo> records = roomItemVoIPage.getRecords();
+        if (CollUtil.isEmpty(records)) {
+            return roomItemVoIPage;
+        }
+        // 以下代码都一样，都是组装RoomItemVo的其他属性，所以我们可以提取成方法
+        // 由于使用到的地方都是在我们这个类里面，所以直接提取成本类的私有方法
+        // Java分为值传递和引用传递，我们这里是引用传递，所以直接传records，实际上传的就是roomItemVoIPage里面的，而不是新对象
+        setRoomItemVo(records);
+
+        return roomItemVoIPage;
+    }
+
+    /**
+     * 设置房间项目vo
+     *
+     * @param records 记录
+     * @author wxy
+     * @date 2026/09/04
+     */
+    private void setRoomItemVo(List<RoomItemVo> records) {
+        // 这里传递进来的参数的地址值就是0x1234
+        List<Long> roomIdList = records.stream().map(RoomItemVo::getId).toList();
+        LambdaQueryWrapper<GraphInfo> graphVoLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        graphVoLambdaQueryWrapper.eq(GraphInfo::getItemType, 2);
+        graphVoLambdaQueryWrapper.in(GraphInfo::getItemId, roomIdList);
+        List<GraphInfo> graphInfos = graphInfoMapper.selectList(graphVoLambdaQueryWrapper);
+        Map<Long, List<GraphInfo>> graphMap = graphInfos.stream().collect(Collectors.groupingBy(GraphInfo::getItemId));
+
+
+        //标签
+        LambdaQueryWrapper<RoomLabel> roomLabelLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        roomLabelLambdaQueryWrapper.in(RoomLabel::getRoomId, roomIdList);
+        // 不需要显示把删除字段写出来，mybatisplus会自己加
+//        roomLabelLambdaQueryWrapper.eq(BaseEntity::getIsDeleted,0);
+        List<RoomLabel> roomLabels = roomLabelMapper.selectList(roomLabelLambdaQueryWrapper);
+        // 转换成房间id和标签列表的map
+        Map<Long, List<RoomLabel>> roomLabelMap = roomLabels.stream().collect(Collectors.groupingBy(RoomLabel::getRoomId));
+        // 获取到房间标签关联列表后，由于返回值需要的是标签信息，所以要取出列表中的标签id，去查询标签表
+        // 收集标签id集合
+        Set<Long> labelIdSet = roomLabels.stream().map(RoomLabel::getLabelId).collect(Collectors.toSet());
+        // 根据标签id查询标签列表
+        List<LabelInfo> labelInfos = labelInfoMapper.selectBatchIds(labelIdSet);
+        // 转换成map
+        Map<Long, LabelInfo> labelInfoMap = labelInfos.stream().collect(Collectors.toMap(BaseEntity::getId, Function.identity(), (key1, key2) -> key1));
+
+        // 由于需要的不是Map<房间id, 房间标签关联集合>而是Map<房间id, 标签信息集合>
+        // 所以要将Map<房间id, 房间标签关联集合>转换为Map<房间id, 标签信息集合>
+        // 最终需要的map
+        Map<Long, List<LabelInfo>> labelMap = new HashMap<>();
+        // 遍历roomLabelMap，将每一个value转换成需要的标签信息集合
+        roomLabelMap.forEach((key, roomLabelList) -> {
+            List<LabelInfo> list = roomLabelList.stream()
+                    .map(item -> labelInfoMap.get(item.getLabelId())).toList();
+            labelMap.put(key, list);
+        });
+        //组装，用set，有三个map,roomitemvo是一个集合，我们应该是给其中的每一个组装
+        // 这里通过for循环去对records进行赋值操作，只是遍历了他，所以records还是0x1234
+        records.forEach(roomItemVo -> {
+            //图片
+            List<GraphVo> graphList = graphMap.getOrDefault(roomItemVo.getId(), new ArrayList<>()).stream().map(
+                    graphInfo -> {
+                        GraphVo graphVo = new GraphVo();
+                        graphVo.setName(graphInfo.getName());
+                        graphVo.setUrl(graphInfo.getUrl());
+                        return graphVo;
+                    }).toList();
+
+            roomItemVo.setGraphVoList(graphList);
+
+            //标签
+            roomItemVo.setLabelInfoList(labelMap.get(roomItemVo.getId()));
+        });
     }
 }
 

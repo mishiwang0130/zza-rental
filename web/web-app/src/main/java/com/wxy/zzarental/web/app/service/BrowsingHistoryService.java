@@ -12,5 +12,15 @@ import com.wxy.zzarental.web.app.vo.history.HistoryItemVo;
 * @createDate 2023-07-26 11:12:39
 */
 public interface BrowsingHistoryService extends IService<BrowsingHistory> {
-    IPage<HistoryItemVo> pageItemByUserId(Page<HistoryItemVo> page, Long userId);
+    IPage<HistoryItemVo> pageItemByUserId(Page<BrowsingHistory> page, Long userId);
+
+    /**
+     * 保存用户浏览房间记录
+     *
+     * @param userId 用户ID
+     * @param id     ID
+     * @author wxy
+     * @date 2026/09/04
+     */
+    void saveHistory(Long userId, Long id);
 }

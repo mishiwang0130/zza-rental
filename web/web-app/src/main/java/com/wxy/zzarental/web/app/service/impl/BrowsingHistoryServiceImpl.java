@@ -17,8 +17,10 @@ import com.wxy.zzarental.web.app.service.GraphInfoService;
 import com.wxy.zzarental.web.app.vo.graph.GraphVo;
 import com.wxy.zzarental.web.app.vo.history.HistoryItemVo;
 import jakarta.annotation.Resource;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -37,22 +39,21 @@ public class BrowsingHistoryServiceImpl extends ServiceImpl<BrowsingHistoryMappe
     @Resource
     private RoomInfoMapper roomInfoMapper;
     @Resource
-    private GraphInfoMapper graphInfoMapper;
-    @Resource
     private ApartmentInfoMapper apartmentInfoMapper;
-    @Resource
-    private ApartmentInfoService apartmentInfoService;
     @Resource
     private GraphInfoService graphInfoService;
     @Override
-    public IPage<HistoryItemVo> pageItemByUserId(Page<HistoryItemVo> page, Long userId) {
+    public IPage<HistoryItemVo> pageItemByUserId(Page<BrowsingHistory> page, Long userId) {
         LambdaQueryWrapper<BrowsingHistory> browsingHistoryLambdaQueryWrapper = new LambdaQueryWrapper<>();
         browsingHistoryLambdaQueryWrapper.eq(BrowsingHistory::getUserId,userId);
-        List<BrowsingHistory> browsingHistories = browsingHistoryMapper.selectList(browsingHistoryLambdaQueryWrapper);
-        if (CollUtil.isEmpty(browsingHistories)) {
-            return page;
+        // 对浏览记录分页，需要传两个参数，浏览记录的page和浏览记录的wrapper
+        // 调用什么的mapper，就要传什么泛型，这里是调用BrowsingHistory的mapper，page和wrapper都要是BrowsingHistory的
+        IPage<BrowsingHistory> resultPage = browsingHistoryMapper.selectPage(page, browsingHistoryLambdaQueryWrapper);
+        List<BrowsingHistory> records = resultPage.getRecords();
+        if (CollUtil.isEmpty(records)) {
+            return new Page<>(resultPage.getCurrent(), resultPage.getSize(), resultPage.getTotal());
         }
-        List<Long> roomIdList = browsingHistories.stream().map(BrowsingHistory::getRoomId).toList();
+        List<Long> roomIdList = records.stream().map(BrowsingHistory::getRoomId).toList();
         List<RoomInfo> roomInfoList = roomInfoMapper.selectBatchIds(roomIdList);
         Map<Long, RoomInfo> roomInfoMap = roomInfoList.stream().collect(Collectors.toMap(BaseEntity::getId, Function.identity(), (key1, key2) -> key1));
 
@@ -63,7 +64,7 @@ public class BrowsingHistoryServiceImpl extends ServiceImpl<BrowsingHistoryMappe
         List<ApartmentInfo> apartmentInfos = apartmentInfoMapper.selectBatchIds(apartmentIds);
         Map<Long, ApartmentInfo> apartmentInfoMap = apartmentInfos.stream().collect(Collectors.toMap(BaseEntity::getId, Function.identity(), (key1, key2) -> key1));
 
-        List<HistoryItemVo> historyItemVos = browsingHistories.stream().map(
+        List<HistoryItemVo> historyItemVos = records.stream().map(
                 browsingHistory -> {
                     HistoryItemVo historyItemVo = new HistoryItemVo();
                     BeanUtil.copyProperties(browsingHistory, historyItemVo);
@@ -91,7 +92,29 @@ public class BrowsingHistoryServiceImpl extends ServiceImpl<BrowsingHistoryMappe
                     return historyItemVo;
                 }
         ).toList();
-        page.setRecords(historyItemVos);
-        return page;
+
+        Page<HistoryItemVo> voPage = new Page<>(resultPage.getCurrent(), resultPage.getSize(), resultPage.getTotal());
+        voPage.setRecords(historyItemVos);
+        return voPage;
+    }
+    @Async
+    @Override
+    public void saveHistory(Long userId, Long id) {
+        LambdaQueryWrapper<BrowsingHistory> browsingHistoryLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        browsingHistoryLambdaQueryWrapper.eq(BrowsingHistory::getUserId,userId);
+        browsingHistoryLambdaQueryWrapper.eq(BrowsingHistory::getRoomId,id);
+        BrowsingHistory browsingHistory = browsingHistoryMapper.selectOne(browsingHistoryLambdaQueryWrapper);
+        if (browsingHistory != null){
+            Date nowDate = new Date();
+            browsingHistory.setBrowseTime(nowDate);
+            browsingHistoryMapper.updateById(browsingHistory);
+            return;
+        }
+        BrowsingHistory newBrowsingHistory = new BrowsingHistory();
+        Date date = new Date();
+        newBrowsingHistory.setBrowseTime(date);
+        newBrowsingHistory.setUserId(userId);
+        newBrowsingHistory.setRoomId(id);
+        browsingHistoryMapper.insert(newBrowsingHistory);
     }
 }

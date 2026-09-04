@@ -5,6 +5,7 @@ import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.wxy.zzarental.common.login.LoginUserHolder;
 import com.wxy.zzarental.model.entity.*;
 import com.wxy.zzarental.model.enums.ReleaseStatus;
 import com.wxy.zzarental.web.app.mapper.*;
@@ -34,8 +35,6 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
         implements RoomInfoService {
 
     @Resource
-    private ApartmentInfoMapper apartmentInfoMapper;
-    @Resource
     private RoomInfoMapper roomInfoMapper;
     @Resource
     private RoomPaymentTypeMapper roomPaymentTypeMapper;
@@ -61,6 +60,8 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
     private LeaseTermService leaseTermService;
     @Resource
     private GraphInfoService graphInfoService;
+    @Resource
+    private BrowsingHistoryService browsingHistoryService;
 
     @Override
     public IPage<RoomItemVo> pageItem(Page<RoomItemVo> page, RoomQueryVo queryVo) {
@@ -133,6 +134,9 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
 
         //租期列表
         roomDetailVo.setLeaseTermList(leaseTermService.listByRoomId(id));
+
+        // TODO wxy 学完mq之后将异步注解改为MQ
+        browsingHistoryService.saveHistory(LoginUserHolder.getLoginUser().getUserId(),id);
 
         return roomDetailVo;
     }

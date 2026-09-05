@@ -1,7 +1,12 @@
 package com.wxy.zzarental.web.app.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.google.gson.Gson;
+import com.wxy.zzarental.common.util.RedisKeyUtil;
+import com.wxy.zzarental.common.util.RedisUtil;
 import com.wxy.zzarental.model.entity.*;
 import com.wxy.zzarental.web.app.mapper.*;
 import com.wxy.zzarental.web.app.service.ApartmentInfoService;
@@ -14,7 +19,9 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -75,10 +82,26 @@ public class ApartmentInfoServiceImpl extends ServiceImpl<ApartmentInfoMapper, A
     private ApartmentFacilityMapper apartmentFacilityMapper;
     @Resource
     private FacilityInfoMapper facilityInfoMapper;
+    @Resource
+    private RedisUtil redisUtil;
+
 
     @Override
     public ApartmentDetailVo getDetailById(Long id) {
+
+        String js = redisUtil.get(RedisKeyUtil.getApartmentKey(id));
+        if (StrUtil.isNotBlank(js)){
+            Gson gson = new Gson();
+            return gson.fromJson(js,ApartmentDetailVo.class);
+        }
+
+
+
         ApartmentItemVo apartmentItemVo = getInfoById(id);
+        if (apartmentItemVo == null) {
+            redisUtil.set(RedisKeyUtil.getApartmentKey(id),null,60*60+ RandomUtil.randomInt(20,200),TimeUnit.SECONDS);
+            return null;
+        }
         ApartmentDetailVo apartmentDetailVo = new ApartmentDetailVo();
         BeanUtil.copyProperties(apartmentItemVo,apartmentDetailVo);
         //得到配套信息列表List<FacilityInfo> facilityInfoList;
@@ -93,6 +116,10 @@ public class ApartmentInfoServiceImpl extends ServiceImpl<ApartmentInfoMapper, A
 
 
         apartmentDetailVo.setFacilityInfoList(facilityInfoList);
+        Gson gson = new Gson();
+        String json = gson.toJson(apartmentDetailVo);
+
+        redisUtil.set(RedisKeyUtil.getApartmentKey(id),json,60*60+ RandomUtil.randomInt(20,100), TimeUnit.SECONDS);
         return apartmentDetailVo;
     }
 }

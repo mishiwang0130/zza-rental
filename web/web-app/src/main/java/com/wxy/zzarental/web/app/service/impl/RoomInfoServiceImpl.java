@@ -2,10 +2,15 @@ package com.wxy.zzarental.web.app.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.wxy.zzarental.common.login.LoginUserHolder;
+import com.wxy.zzarental.common.util.RedisKeyUtil;
+import com.wxy.zzarental.common.util.RedisUtil;
 import com.wxy.zzarental.model.entity.*;
 import com.wxy.zzarental.model.enums.ReleaseStatus;
 import com.wxy.zzarental.web.app.mapper.*;
@@ -21,6 +26,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -62,78 +69,144 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
     private GraphInfoService graphInfoService;
     @Resource
     private BrowsingHistoryService browsingHistoryService;
+    @Resource
+    private RedisUtil redisUtil;
 
     @Override
     public IPage<RoomItemVo> pageItem(Page<RoomItemVo> page, RoomQueryVo queryVo) {
-        //条件有：省市区，最大租金，最小租金，支付方式，排序
-        // 由于查询条件涉及到公寓表的省市区，房间表的租金，支付方式表的支付方式，所以lambdawrapper无法写分页，必须写sql
-        // 分页查询出IPage<RoomItemVo>，但是只查询出RoomItemVo中的房间id、房间号、房间租金
-        //支付方式，PaymentTyped的id就是queryvo里面有paymentTypeId,如果要用的就是id，为什么还需要查出来，这个条件是不是拼接再要啊
-        List<Long> payRoomIds = new ArrayList<>();
-        if (queryVo.getPaymentTypeId() != null) {
-            LambdaQueryWrapper<RoomPaymentType> paymentTypeLambdaQueryWrapper = new LambdaQueryWrapper<>();
-            paymentTypeLambdaQueryWrapper.eq(RoomPaymentType::getPaymentTypeId, queryVo.getPaymentTypeId());
-            List<RoomPaymentType> paymentTypes = roomPaymentTypeMapper.selectList(paymentTypeLambdaQueryWrapper);
-            if (CollUtil.isEmpty(paymentTypes)) {
-                Page<RoomItemVo> pageEmpty = new Page<>(page.getCurrent(), page.getSize(), 0);
-                pageEmpty.setRecords(new ArrayList<>());
-                return pageEmpty;
+
+        //缓存
+        if(queryVo.getProvinceId() ==null && queryVo.getCityId() == null && queryVo.getDistrictId() == null &&
+        queryVo.getPaymentTypeId() == null && StrUtil.isBlank(queryVo.getOrderType()) && queryVo.getMaxRent() == null &&
+        queryVo.getMinRent() == null) {
+            String jsonStr = redisUtil.get(RedisKeyUtil.getRoomPageKey(page.getCurrent(), page.getSize()));
+            if (StrUtil.isNotBlank(jsonStr)) {
+                Gson gson = new Gson();
+                return gson.fromJson(jsonStr, new TypeToken<IPage<RoomItemVo>>() {
+                }.getType());
             }
-            payRoomIds = paymentTypes.stream().map(RoomPaymentType::getRoomId).distinct().toList();
         }
-        IPage<RoomItemVo> roomInfoPage = roomInfoMapper.pageItem(page, queryVo, payRoomIds);
+        IPage<RoomItemVo> roomInfoPage = null;
 
-        // 如果分页返回空，则直接返回
-        // 比如说现在这个roomInfoPage的地址值是0x1111，他里面的records的地址值是0x1234，我们这样去get相当于
-        // 将records对象的引用指向roomInfoPage里面的records的地址值，也就是0x1234，此时records也是0x1234
-        List<RoomItemVo> records = roomInfoPage.getRecords();
-        if (CollUtil.isEmpty(records)) {
-            return roomInfoPage;
+//同步代码块欧克，我想起了一点点
+        synchronized (Object.class) {
+            List<Long> payRoomIds = new ArrayList<>();
+            if (queryVo.getPaymentTypeId() != null) {
+                LambdaQueryWrapper<RoomPaymentType> paymentTypeLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                paymentTypeLambdaQueryWrapper.eq(RoomPaymentType::getPaymentTypeId, queryVo.getPaymentTypeId());
+                List<RoomPaymentType> paymentTypes = roomPaymentTypeMapper.selectList(paymentTypeLambdaQueryWrapper);
+                if (CollUtil.isEmpty(paymentTypes)) {
+                    Page<RoomItemVo> pageEmpty = new Page<>(page.getCurrent(), page.getSize(), 0);
+                    pageEmpty.setRecords(new ArrayList<>());
+                    return pageEmpty;
+                }
+                payRoomIds = paymentTypes.stream().map(RoomPaymentType::getRoomId).distinct().toList();
+            }
+            roomInfoPage = roomInfoMapper.pageItem(page, queryVo, payRoomIds);
+
+            // 如果分页返回空，则直接返回
+            // 比如说现在这个roomInfoPage的地址值是0x1111，他里面的records的地址值是0x1234，我们这样去get相当于
+            // 将records对象的引用指向roomInfoPage里面的records的地址值，也就是0x1234，此时records也是0x1234
+            List<RoomItemVo> records = roomInfoPage.getRecords();
+            if (CollUtil.isEmpty(records)) {
+                return roomInfoPage;
+            }
+
+            // 因为他是对象，所以这里会直接将地址值传递给这个方法
+            // 方法内部是对records做了处理，但是没有改变他的地址值
+
+            //最开始的不是默认的吗，那应该不需要key吧
+            setRoomItemVo(records);
+            if (queryVo.getProvinceId() == null && queryVo.getCityId() == null && queryVo.getDistrictId() == null &&
+                    queryVo.getPaymentTypeId() == null && StrUtil.isBlank(queryVo.getOrderType()) && queryVo.getMaxRent() == null &&
+                    queryVo.getMinRent() == null) {
+                Gson gson = new Gson();
+                String json = gson.toJson(roomInfoPage);
+                redisUtil.set(RedisKeyUtil.getRoomPageKey(page.getCurrent(), page.getSize()), json, 60 * 60, TimeUnit.SECONDS);
+            }
         }
 
-        // 因为他是对象，所以这里会直接将地址值传递给这个方法
-        // 方法内部是对records做了处理，但是没有改变他的地址值
-        setRoomItemVo(records);
+
         return roomInfoPage;
     }
 
     @Override
     public RoomDetailVo getDetailById(Long id) {
-        RoomInfo roomInfo = roomInfoMapper.selectById(id);
-        if (roomInfo == null) {
-            return null;
+        // 1,2,3 数据库id
+        // 定义布隆过滤器，那你怎么知道应该容量选多大
+//        Integer arr[] = new Integer[100]; // 只会存0和1
+        // 1 -> 1 3 5
+        // arr -> 0 1 0 1 0 1 0000
+        // 2 -> 2 4 6
+        // arr -> 0 1 1 1 1 1 1  000
+        // 3 -> 1 6 9
+        // arr -> 0 1 1 1 1 1 1  0 0 1
+        // 5 -> 0 7 8
+        // arr -> 1 1 1 1 1 1 1  1 1 1
+        // 布隆过滤器的判断,等一下，这个是对redis的查还是数就是这样，没有错呀只有7是不等于1，所以是true据库的查，那它返回空，说明是哪没有数据，||是或不就是任意满足一个就放回true
+        // 4 -> 1 3 7
+//
+//        if (arr[1] != 1 || arr[3] != 1 || arr[7] != 1) {
+//            return null;
+//        }
+        String jsonStr = redisUtil.get(RedisKeyUtil.getRoomKey(id));
+        if (StrUtil.isNotBlank(jsonStr)) {
+            Gson gson = new Gson();
+            return gson.fromJson(jsonStr, RoomDetailVo.class);
         }
+        ReentrantLock lock = new ReentrantLock();
         RoomDetailVo roomDetailVo = new RoomDetailVo();
-        BeanUtil.copyProperties(roomInfo, roomDetailVo);
+        // 公寓
+        try {
+            lock.lock();
+            jsonStr = redisUtil.get(RedisKeyUtil.getRoomKey(id));
+            if (StrUtil.isNotBlank(jsonStr)) {
+                Gson gson = new Gson();
+                return gson.fromJson(jsonStr, RoomDetailVo.class);
+            }
+            RoomInfo roomInfo = roomInfoMapper.selectById(id);
+            if (roomInfo == null) {
+                return null;
+            }
+            BeanUtil.copyProperties(roomInfo, roomDetailVo);
 
-        //公寓信息
-        ApartmentItemVo apartmentItemVo = apartmentInfoService.getInfoById(roomInfo.getApartmentId());
-        roomDetailVo.setApartmentItemVo(apartmentItemVo);
+            //公寓信息
+            ApartmentItemVo apartmentItemVo = apartmentInfoService.getInfoById(roomInfo.getApartmentId());
+            roomDetailVo.setApartmentItemVo(apartmentItemVo);
 
-        //图片列表 List<GraphVo> graphVoList
-        LambdaQueryWrapper<GraphInfo> graphInfoLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        graphInfoLambdaQueryWrapper.eq(GraphInfo::getItemId, id);
-        List<GraphInfo> graphInfos = graphInfoMapper.selectList(graphInfoLambdaQueryWrapper);
-        List<GraphVo> graphVoList = BeanUtil.copyToList(graphInfos, GraphVo.class);
-        roomDetailVo.setGraphVoList(graphVoList);
+            //图片列表 List<GraphVo> graphVoList
+            LambdaQueryWrapper<GraphInfo> graphInfoLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            graphInfoLambdaQueryWrapper.eq(GraphInfo::getItemId, id);
+            List<GraphInfo> graphInfos = graphInfoMapper.selectList(graphInfoLambdaQueryWrapper);
+            List<GraphVo> graphVoList = BeanUtil.copyToList(graphInfos, GraphVo.class);
+            roomDetailVo.setGraphVoList(graphVoList);
 
-        //属性信息列表
-        roomDetailVo.setAttrValueVoList(attrValueService.listByRoomId(id));
+            //属性信息列表
+            roomDetailVo.setAttrValueVoList(attrValueService.listByRoomId(id));
 
-        // 配套信息列表 FacilityInfo
-        roomDetailVo.setFacilityInfoList(facilityInfoService.listByRoomId(id));
+            // 配套信息列表 FacilityInfo
+            roomDetailVo.setFacilityInfoList(facilityInfoService.listByRoomId(id));
 
-        //标签信息列表
-        roomDetailVo.setLabelInfoList(labelInfoService.listByRoomId(id));
+            //标签信息列表
+            roomDetailVo.setLabelInfoList(labelInfoService.listByRoomId(id));
 
-        //支付方式列表
-        roomDetailVo.setPaymentTypeList(paymentTypeService.getPaymentTypeByRoomId(id));
+            //支付方式列表
+            roomDetailVo.setPaymentTypeList(paymentTypeService.getPaymentTypeByRoomId(id));
 
-        //杂费列表
-        roomDetailVo.setFeeValueVoList(feeValueService.listByApartmentId(roomInfo.getApartmentId()));
+            //杂费列表
+            roomDetailVo.setFeeValueVoList(feeValueService.listByApartmentId(roomInfo.getApartmentId()));
+            //很多缓存一起失效，我知道了，刚刚那个是一个key100000同时查，现在是10key10000人查，也加锁呗，等一下
+            //租期列表
+            roomDetailVo.setLeaseTermList(leaseTermService.listByRoomId(id));
+            // 放进缓存中,缓存也可以根据key更新吗，这样不是会遍慢吗，等一下，那个查redis的不是也要进来吗，那十万个，只有第一个还需进来创新的，其他的直接走缓存里面的了
+            Gson gson = new Gson();
+            String json = gson.toJson(roomDetailVo);
+            redisUtil.set(RedisKeyUtil.getRoomKey(id), json, 60*60, TimeUnit.SECONDS);
+        }
+        finally {
+            lock.unlock();
+        }
 
-        //租期列表
-        roomDetailVo.setLeaseTermList(leaseTermService.listByRoomId(id));
 
         // TODO wxy 学完mq之后将异步注解改为MQ
         browsingHistoryService.saveHistory(LoginUserHolder.getLoginUser().getUserId(),id);

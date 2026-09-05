@@ -7,15 +7,14 @@ import com.wxy.zzarental.common.exception.ZZAException;
 import com.wxy.zzarental.common.login.LoginUserHolder;
 import com.wxy.zzarental.common.result.ResultCodeEnum;
 import com.wxy.zzarental.model.entity.*;
-import com.wxy.zzarental.web.app.mapper.LeaseAgreementMapper;
-import com.wxy.zzarental.web.app.mapper.RoomInfoMapper;
-import com.wxy.zzarental.web.app.mapper.UserInfoMapper;
-import com.wxy.zzarental.web.app.service.ApartmentInfoService;
-import com.wxy.zzarental.web.app.service.GraphInfoService;
-import com.wxy.zzarental.web.app.service.LeaseAgreementService;
+import com.wxy.zzarental.model.enums.ItemType;
+import com.wxy.zzarental.model.enums.LeaseStatus;
+import com.wxy.zzarental.web.app.mapper.*;
+import com.wxy.zzarental.web.app.service.*;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.wxy.zzarental.web.app.service.RoomInfoService;
+import com.wxy.zzarental.web.app.vo.agreement.AgreementDetailVo;
 import com.wxy.zzarental.web.app.vo.agreement.AgreementItemVo;
+import com.wxy.zzarental.web.app.vo.apartment.ApartmentDetailVo;
 import com.wxy.zzarental.web.app.vo.graph.GraphVo;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -48,6 +47,12 @@ public class LeaseAgreementServiceImpl extends ServiceImpl<LeaseAgreementMapper,
     private ApartmentInfoService apartmentInfoService;
     @Resource
     private UserInfoMapper userInfoMapper;
+    @Resource
+    private GraphInfoMapper graphInfoMapper;
+    @Resource
+    private  PaymentTypeMapper paymentTypeMapper;
+    @Resource
+    private LeaseTermMapper leaseTermMapper;
 
 
 
@@ -73,6 +78,7 @@ public class LeaseAgreementServiceImpl extends ServiceImpl<LeaseAgreementMapper,
                     Long roomId = leaseAgreement.getRoomId();
                     AgreementItemVo agreementItemVo = new AgreementItemVo();
                     BeanUtil.copyProperties(leaseAgreement, agreementItemVo);
+                    agreementItemVo.setLeaseStatus(leaseAgreement.getStatus());
 
                     //房间名称
                     RoomInfo roomInfo = roomInfoMap.get(roomId);
@@ -136,6 +142,55 @@ public class LeaseAgreementServiceImpl extends ServiceImpl<LeaseAgreementMapper,
         }
         leaseAgreementMapper.updateById(leaseAgreement);
 
+    }
+
+    @Override
+    public AgreementDetailVo getDetailById(Long id) {
+        LeaseAgreement leaseAgreement = leaseAgreementMapper.selectById(id);
+        if (leaseAgreement == null){
+            throw  new ZZAException(ResultCodeEnum.LEASEAGREEMENT_NOT_EXIST);
+        }
+        String phone= LoginUserHolder.getLoginUser().getUserName();
+        if (!leaseAgreement.getPhone().equals(phone)){
+            throw new ZZAException(ResultCodeEnum.LEASE_AGREEMENT_ERROR);
+        }
+        AgreementDetailVo agreementDetailVo = new AgreementDetailVo();
+        BeanUtil.copyProperties(leaseAgreement,agreementDetailVo);
+        //公寓id
+        Long apartmentId = leaseAgreement.getApartmentId();
+        //公寓名称
+        ApartmentInfo apartmentInfo = apartmentInfoService.getById(apartmentId);
+        if (apartmentInfo != null) {
+            agreementDetailVo.setApartmentName(apartmentInfo.getName());
+        }
+        //公寓图片列表
+        List<GraphVo> apartmentGraphVoList = graphInfoMapper.selectListByIdAndType(apartmentId, ItemType.APARTMENT);
+        agreementDetailVo.setApartmentGraphVoList(apartmentGraphVoList);
+        //房间id
+        Long roomId = leaseAgreement.getRoomId();
+        //房间号
+        agreementDetailVo.setRoomNumber(roomInfoMapper.selectById(roomId).getRoomNumber());
+        //房间图片
+        List<GraphVo> roomGraphVoList = graphInfoMapper.selectListByIdAndType(roomId, ItemType.ROOM);
+        agreementDetailVo.setRoomGraphVoList(roomGraphVoList);
+        //支付id
+        Long paymentTypeId = leaseAgreement.getPaymentTypeId();
+        //支付方式
+        PaymentType paymentType = paymentTypeMapper.selectById(paymentTypeId);
+        agreementDetailVo.setPaymentTypeName(paymentType.getName());
+        //租期id
+        Long leaseTermId = leaseAgreement.getLeaseTermId();
+        LeaseTerm leaseTerm = leaseTermMapper.selectById(leaseTermId);
+        if (leaseTerm == null){
+            throw new ZZAException(ResultCodeEnum.LEASE_ID_ERROR);
+        }
+        //租期月数
+        agreementDetailVo.setLeaseTermMonthCount(leaseTerm.getMonthCount());
+        //租期单位
+        agreementDetailVo.setLeaseTermUnit(leaseTerm.getUnit());
+
+
+        return agreementDetailVo;
     }
 }
 

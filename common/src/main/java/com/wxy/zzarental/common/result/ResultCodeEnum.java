@@ -21,6 +21,8 @@ public enum ResultCodeEnum {
     VIEW_APPOINTMENT_NOT_EXIST(209,"该预约不存在"),
     VIEW_APPOINTMENT_ERROR(210,"该预约不属于当前用户"),
     LEASEAGREEMENT_NOT_EXIST(211,"租约不存在"),
+    LEASE_AGREEMENT_ERROR(212,"该租约不属于当前用户"),
+    LEASE_ID_ERROR(213,"未填租期"),
 
 
     ADMIN_ACCOUNT_EXIST_ERROR(301, "账号已存在"),

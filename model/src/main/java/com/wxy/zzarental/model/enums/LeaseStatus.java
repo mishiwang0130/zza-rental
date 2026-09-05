@@ -3,6 +3,8 @@ package com.wxy.zzarental.model.enums;
 import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import java.util.Arrays;
+
 public enum LeaseStatus implements BaseEnum {
 
     SIGNING(1, "签约待确认"),
@@ -22,6 +24,12 @@ public enum LeaseStatus implements BaseEnum {
     LeaseStatus(Integer code, String name) {
         this.code = code;
         this.name = name;
+    }
+
+    public static LeaseStatus isExistById(Integer leaseStatus) {
+        return Arrays.stream(LeaseStatus.values())
+                .filter(item -> item.getCode().equals(leaseStatus))
+                .findFirst().orElseThrow(() -> new RuntimeException("不支持的枚举类型"));
     }
 
     @Override

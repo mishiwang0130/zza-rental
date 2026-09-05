@@ -2,8 +2,10 @@ package com.wxy.zzarental.web.app.controller.leasaterm;
 
 import com.wxy.zzarental.common.result.Result;
 import com.wxy.zzarental.model.entity.LeaseTerm;
+import com.wxy.zzarental.web.app.service.LeaseTermService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -16,9 +18,12 @@ import java.util.List;
 @Tag(name = "租期信息")
 public class LeaseTermController {
 
+    @Resource
+    private LeaseTermService leaseTermService;
+
     @GetMapping("listByRoomId")
     @Operation(summary = "根据房间id获取可选获取租期列表")
     public Result<List<LeaseTerm>> list(@RequestParam Long id) {
-        return Result.ok();
+        return Result.ok(leaseTermService.listByRoomId(id));
     }
 }

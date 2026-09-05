@@ -2,6 +2,10 @@ package com.wxy.zzarental.web.app.mapper;
 
 import com.wxy.zzarental.model.entity.GraphInfo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.wxy.zzarental.model.enums.ItemType;
+import com.wxy.zzarental.web.app.vo.graph.GraphVo;
+
+import java.util.List;
 
 /**
 * @author liubo
@@ -11,6 +15,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 */
 public interface GraphInfoMapper extends BaseMapper<GraphInfo> {
 
+    List<GraphVo> selectListByIdAndType(Long id, ItemType itemType);
 }
 
 

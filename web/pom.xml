@@ -50,6 +50,22 @@
             <groupId>com.github.xiaoymin</groupId>
             <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
         </dependency>
+        <!-- Redisson：提供分布式锁、布隆过滤器等高级 Redis 能力 -->
+        <!-- 项目当前使用 Spring Boot 3.5.16，需排除 starter 默认带的 spring-data-41，改用 spring-data-35 以匹配版本 -->
+        <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson-spring-boot-starter</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.redisson</groupId>
+                    <artifactId>redisson-spring-data-41</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson-spring-data-35</artifactId>
+        </dependency>
     </dependencies>
     <!-- Spring Boot Maven插件，用于打包可执行的JAR文件 -->
     <build>

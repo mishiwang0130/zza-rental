@@ -44,3 +44,6 @@ minio:
 springdoc:
   default-flat-param-object: true
 
+# knife4j 4.5.0 + springdoc 2.8 + Spring Boot 3.5：需关闭文档增强，否则 doc.html 加载失败
+knife4j:
+  enable: false

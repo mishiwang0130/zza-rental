@@ -2,7 +2,7 @@ package com.wxy.zzarental.web.admin.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.wxy.zzarental.model.entity.SystemPost;
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.baomidou.mybatisplus.spring.service.IService;
 import com.wxy.zzarental.web.admin.vo.system.user.SystemPostItemVo;
 
 /**

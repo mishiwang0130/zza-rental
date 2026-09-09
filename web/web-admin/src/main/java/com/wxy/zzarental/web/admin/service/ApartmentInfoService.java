@@ -7,7 +7,7 @@ import com.wxy.zzarental.web.admin.vo.apartment.ApartmentDetailVo;
 import com.wxy.zzarental.web.admin.vo.apartment.ApartmentItemVo;
 import com.wxy.zzarental.web.admin.vo.apartment.ApartmentQueryVo;
 import com.wxy.zzarental.web.admin.vo.apartment.ApartmentSubmitVo;
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.baomidou.mybatisplus.spring.service.IService;
 
 /**
 * @author liubo

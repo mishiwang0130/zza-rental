@@ -2,7 +2,7 @@ package com.wxy.zzarental.web.admin.service;
 
 import com.wxy.zzarental.model.entity.AttrKey;
 import com.wxy.zzarental.web.admin.vo.attr.AttrKeyVo;
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.baomidou.mybatisplus.spring.service.IService;
 
 import java.util.List;
 

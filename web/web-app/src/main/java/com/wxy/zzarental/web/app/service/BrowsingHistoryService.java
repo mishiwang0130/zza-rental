@@ -3,7 +3,7 @@ package com.wxy.zzarental.web.app.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wxy.zzarental.model.entity.BrowsingHistory;
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.baomidou.mybatisplus.spring.service.IService;
 import com.wxy.zzarental.web.app.vo.history.HistoryItemVo;
 
 /**

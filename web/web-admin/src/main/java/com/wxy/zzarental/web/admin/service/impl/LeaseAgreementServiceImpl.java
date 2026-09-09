@@ -7,7 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wxy.zzarental.model.entity.*;
 import com.wxy.zzarental.web.admin.mapper.*;
 import com.wxy.zzarental.web.admin.service.LeaseAgreementService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.wxy.zzarental.web.admin.vo.agreement.AgreementQueryVo;
 import com.wxy.zzarental.web.admin.vo.agreement.AgreementVo;
 import jakarta.annotation.Resource;

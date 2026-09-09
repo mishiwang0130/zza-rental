@@ -10,7 +10,7 @@ import com.wxy.zzarental.common.util.RedisUtil;
 import com.wxy.zzarental.model.entity.*;
 import com.wxy.zzarental.web.app.mapper.*;
 import com.wxy.zzarental.web.app.service.ApartmentInfoService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.wxy.zzarental.web.app.vo.apartment.ApartmentDetailVo;
 import com.wxy.zzarental.web.app.vo.apartment.ApartmentItemVo;
 import com.wxy.zzarental.web.app.vo.graph.GraphVo;
@@ -85,10 +85,19 @@ public class ApartmentInfoServiceImpl extends ServiceImpl<ApartmentInfoMapper, A
     @Resource
     private RedisUtil redisUtil;
 
+    // setnx == 1
+    // 删除缓存,这个删除缓存是在下架公寓的接口里面s
+    // 下架公寓
+    // 删除缓存
+    // del key
+    //你这里删除key，那现在没有key，现在的setnx =1
 
     @Override
     public ApartmentDetailVo getDetailById(Long id) {
-
+        // setnx == 0，此时往rdis插入失败，代表下架公寓接口正在执行，所以我们接口需要等待Thread.sleep(1);
+        // 你说的好乱啊，究竟这里要什么条件才走，等于1走
+//你这里说要满足 ==0 又说==1 才执行，啥意思啊，，那你怎么怎么可能等到==1，你不是说注释赋值吗，你现在让setnx等于1，那你判断啥啊在
+        //
         String js = redisUtil.get(RedisKeyUtil.getApartmentKey(id));
         if (StrUtil.isNotBlank(js)){
             Gson gson = new Gson();

@@ -1,7 +1,7 @@
 package com.wxy.zzarental.web.app.service;
 
 import com.wxy.zzarental.model.entity.ApartmentInfo;
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.baomidou.mybatisplus.spring.service.IService;
 import com.wxy.zzarental.web.app.vo.apartment.ApartmentDetailVo;
 import com.wxy.zzarental.web.app.vo.apartment.ApartmentItemVo;
 

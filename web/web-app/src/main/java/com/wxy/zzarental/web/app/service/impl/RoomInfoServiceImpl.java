@@ -2,20 +2,23 @@ package com.wxy.zzarental.web.app.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.wxy.zzarental.common.constant.MQConstant;
 import com.wxy.zzarental.common.login.LoginUserHolder;
 import com.wxy.zzarental.common.util.RedisKeyUtil;
 import com.wxy.zzarental.common.util.RedisUtil;
 import com.wxy.zzarental.model.entity.*;
 import com.wxy.zzarental.model.enums.ReleaseStatus;
 import com.wxy.zzarental.web.app.mapper.*;
+import com.wxy.zzarental.web.app.mq.message.SaveBrowsHistoryMQMsg;
 import com.wxy.zzarental.web.app.service.*;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.wxy.zzarental.web.app.vo.apartment.ApartmentItemVo;
 import com.wxy.zzarental.web.app.vo.graph.GraphVo;
 import com.wxy.zzarental.web.app.vo.room.RoomDetailVo;
@@ -23,6 +26,7 @@ import com.wxy.zzarental.web.app.vo.room.RoomItemVo;
 import com.wxy.zzarental.web.app.vo.room.RoomQueryVo;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -71,6 +75,8 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
     private BrowsingHistoryService browsingHistoryService;
     @Resource
     private RedisUtil redisUtil;
+    @Resource
+    private RocketMQTemplate rocketMQTemplate;
 
     @Override
     public IPage<RoomItemVo> pageItem(Page<RoomItemVo> page, RoomQueryVo queryVo) {
@@ -207,9 +213,17 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
             lock.unlock();
         }
 
+        // 发送保存浏览记录的消息到mq,让消费者异步处理, 所以我们这里只需要发送消息
+        // 思考我们的消费者需要用到什么参数:
+        // 1. 消费者的逻辑就是保存浏览记录,所以直接查看保存浏览记录会需要什么参数
+        // 2. 观察发现保存浏览记录需要两个参数,分别是用户ID和房间ID
+        // 3. 由于mq传递参数只能传递一个,所以需要将两个参数封装到一个对象中,转为json字符串发送
+        // 1. 封装参数, 得到json字符串
+        // 2.查看rocketmq如何发送消息, 发送, 然后结束
+        SaveBrowsHistoryMQMsg saveBrowsHistoryMQMsg = new SaveBrowsHistoryMQMsg(IdUtil.simpleUUID(), LoginUserHolder.getLoginUser().getUserId(), id);
+        rocketMQTemplate.convertAndSend(MQConstant.SAVE_BROWSING_HISTORY_TOPIC,saveBrowsHistoryMQMsg);
 
-        // TODO wxy 学完mq之后将异步注解改为MQ
-        browsingHistoryService.saveHistory(LoginUserHolder.getLoginUser().getUserId(),id);
+
 
         return roomDetailVo;
     }

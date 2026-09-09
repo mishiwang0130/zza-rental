@@ -1,6 +1,6 @@
 package com.wxy.zzarental.web.app.service.impl;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.wxy.zzarental.model.entity.ApartmentFeeValue;
 import com.wxy.zzarental.web.app.service.ApartmentFeeValueService;
 import com.wxy.zzarental.web.app.mapper.ApartmentFeeValueMapper;

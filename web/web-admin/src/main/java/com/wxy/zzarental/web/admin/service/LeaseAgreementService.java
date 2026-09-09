@@ -5,7 +5,7 @@ import com.wxy.zzarental.model.entity.LeaseAgreement;
 import com.wxy.zzarental.web.admin.vo.agreement.AgreementQueryVo;
 import com.wxy.zzarental.web.admin.vo.agreement.AgreementVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.baomidou.mybatisplus.spring.service.IService;
 
 /**
 * @author liubo

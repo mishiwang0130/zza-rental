@@ -8,7 +8,7 @@ import com.wxy.zzarental.model.entity.PaymentType;
 import com.wxy.zzarental.model.entity.RoomPaymentType;
 import com.wxy.zzarental.web.app.mapper.PaymentTypeMapper;
 import com.wxy.zzarental.web.app.service.PaymentTypeService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.wxy.zzarental.web.app.service.RoomPaymentTypeService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;

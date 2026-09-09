@@ -5,6 +5,7 @@ import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.wxy.zzarental.common.login.LoginUserHolder;
 import com.wxy.zzarental.model.entity.*;
 import com.wxy.zzarental.web.app.mapper.ApartmentInfoMapper;
 import com.wxy.zzarental.web.app.mapper.BrowsingHistoryMapper;
@@ -12,13 +13,14 @@ import com.wxy.zzarental.web.app.mapper.GraphInfoMapper;
 import com.wxy.zzarental.web.app.mapper.RoomInfoMapper;
 import com.wxy.zzarental.web.app.service.ApartmentInfoService;
 import com.wxy.zzarental.web.app.service.BrowsingHistoryService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.wxy.zzarental.web.app.service.GraphInfoService;
 import com.wxy.zzarental.web.app.vo.graph.GraphVo;
 import com.wxy.zzarental.web.app.vo.history.HistoryItemVo;
 import jakarta.annotation.Resource;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -97,8 +99,9 @@ public class BrowsingHistoryServiceImpl extends ServiceImpl<BrowsingHistoryMappe
         voPage.setRecords(historyItemVos);
         return voPage;
     }
-    @Async
+
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void saveHistory(Long userId, Long id) {
         LambdaQueryWrapper<BrowsingHistory> browsingHistoryLambdaQueryWrapper = new LambdaQueryWrapper<>();
         browsingHistoryLambdaQueryWrapper.eq(BrowsingHistory::getUserId,userId);

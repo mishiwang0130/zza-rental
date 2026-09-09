@@ -3,7 +3,7 @@ package com.wxy.zzarental.web.app.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.wxy.zzarental.model.entity.AttrKey;
 import com.wxy.zzarental.model.entity.AttrValue;
 import com.wxy.zzarental.model.entity.BaseEntity;

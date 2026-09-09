@@ -1,7 +1,7 @@
 package com.wxy.zzarental.web.app.service;
 
 import com.wxy.zzarental.model.entity.DistrictInfo;
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.baomidou.mybatisplus.spring.service.IService;
 
 /**
 * @author liubo

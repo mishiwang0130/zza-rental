@@ -1,6 +1,6 @@
 package com.wxy.zzarental.web.admin.service.impl;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.wxy.zzarental.model.entity.ProvinceInfo;
 import com.wxy.zzarental.web.admin.service.ProvinceInfoService;
 import com.wxy.zzarental.web.admin.mapper.ProvinceInfoMapper;

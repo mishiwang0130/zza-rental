@@ -6,6 +6,7 @@ import com.wxy.zzarental.common.util.VOConverter;
 import com.wxy.zzarental.model.entity.LeaseAgreement;
 import com.wxy.zzarental.model.enums.LeaseStatus;
 import com.wxy.zzarental.web.app.service.LeaseAgreementService;
+import com.wxy.zzarental.web.app.controller.assembler.AppApiAssembler;
 import com.wxy.zzarental.web.app.vo.agreement.AgreementDetailRespVO;
 import com.wxy.zzarental.web.app.vo.agreement.AgreementItemRespVO;
 import com.wxy.zzarental.web.app.vo.agreement.AgreementSaveReqVO;
@@ -28,14 +29,14 @@ public class LeaseAgreementController {
     @GetMapping("listItem")
     public Result<List<AgreementItemRespVO>> listItem() {
         String phone = LoginUserHolder.getLoginUser().getUserName();
-        List<AgreementItemRespVO> list = leaseAgreementService.listItemByPhone(phone);
+        List<AgreementItemRespVO> list = AppApiAssembler.toAgreementList(leaseAgreementService.listItemByPhone(phone));
         return Result.ok(list);
     }
 
     @Operation(summary = "根据id获取租约详细信息")
     @GetMapping("getDetailById")
     public Result<AgreementDetailRespVO> getDetailById(@RequestParam Long id) {
-        AgreementDetailRespVO agreementDetailVo = leaseAgreementService.getDetailById(id);
+        AgreementDetailRespVO agreementDetailVo = AppApiAssembler.toResponse(leaseAgreementService.getDetailById(id));
         return Result.ok(agreementDetailVo);
     }
 

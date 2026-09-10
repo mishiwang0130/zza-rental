@@ -1,27 +1,24 @@
 package com.wxy.zzarental.web.admin.service.impl;
 
-import cn.hutool.core.stream.StreamUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.wxy.zzarental.model.entity.BaseEntity;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wxy.zzarental.model.entity.SystemPost;
 import com.wxy.zzarental.model.entity.SystemUser;
 import com.wxy.zzarental.web.admin.mapper.SystemPostMapper;
 import com.wxy.zzarental.web.admin.mapper.SystemUserMapper;
 import com.wxy.zzarental.web.admin.service.SystemUserService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.wxy.zzarental.web.admin.vo.system.user.SystemUserItemRespVO;
-import com.wxy.zzarental.web.admin.vo.system.user.SystemUserPageReqVO;
+import com.wxy.zzarental.web.admin.service.dto.SystemUserItemDTO;
+import com.wxy.zzarental.web.admin.service.query.SystemUserQuery;
 import jakarta.annotation.Resource;
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Service;
 
 /**
  * @author liubo
@@ -36,9 +33,8 @@ public class SystemUserServiceImpl extends ServiceImpl<SystemUserMapper, SystemU
     @Resource
     private SystemPostMapper systemPostMapper;
 
-
     @Override
-    public IPage<SystemUserItemRespVO> pageUser(Page<SystemUser> systemUserPage, SystemUserPageReqVO queryVo) {
+    public IPage<SystemUserItemDTO> pageUser(Page<SystemUser> systemUserPage, SystemUserQuery queryVo) {
 //        //联表查，多了一个岗位名称，可以根据SystemUser里面的岗位id查，条件是员工姓名和手机号码
         //先查自带的部分，让它分页
         //自带部分的条件是员工姓名和手机号码，都用like吧
@@ -54,8 +50,8 @@ public class SystemUserServiceImpl extends ServiceImpl<SystemUserMapper, SystemU
         //要从实体类转vo
         // 1. 取出分页中的SystemUser列表（resultPage.getRecords()）
         List<SystemUser> userList = resultPage.getRecords();
-        // 3. 得到一个List<SystemUserItemRespVO>
-        List<SystemUserItemRespVO> voList = new ArrayList<>();
+        // 3. 得到一个List<SystemUserItemDTO>
+        List<SystemUserItemDTO> voList = new ArrayList<>();
         List<Long> postIds = userList.stream().map(SystemUser::getPostId).distinct().toList();
         // 一次数据库查询
         List<SystemPost> systemPosts = systemPostMapper.selectBatchIds(postIds);
@@ -63,36 +59,31 @@ public class SystemUserServiceImpl extends ServiceImpl<SystemUserMapper, SystemU
         Map<Long,String> postNameMap = systemPosts.stream().collect(Collectors.toMap(SystemPost::getId,SystemPost::getName)) ;
         // 这里你遍历的是一个空的voList,我要用这个存放转换好的vo对象呀,现在对了
         for(SystemUser user : userList ){
-            SystemUserItemRespVO vo = new SystemUserItemRespVO();
-            // 2. 将每一个SystemUser转换为SystemUserItemRespVO，得到vo对象
+            SystemUserItemDTO vo = new SystemUserItemDTO();
+            // 2. 将每一个SystemUser转换为SystemUserItemDTO，得到vo对象
             BeanUtils.copyProperties(user,vo);
             //我要把名称的写这里面，这里正好可以一个一个处理
             // 整个循环受益
             vo.setPostName(postNameMap.get(user.getPostId()));
 
-
             voList.add(vo);
         }
         // 以上全对
 
-        // 4. 创建一个新的空Page对象，Page<SystemUserItemRespVO>，填充分页结果的current、size、total以及转换后的List<SystemUserItemRespVO>
+        // 4. 创建一个新的空Page对象，Page<SystemUserItemDTO>，填充分页结果的current、size、total以及转换后的List<SystemUserItemDTO>
         // 我们这里实际上就是要把我们的resultPage(数据库查出来的分页)转换为我们要的泛型，所以要挨个转换然后赋值,所以是要用resultPage
-        Page<SystemUserItemRespVO> page = new Page<>(resultPage.getCurrent(), resultPage.getSize(), resultPage.getTotal());
+        Page<SystemUserItemDTO> page = new Page<>(resultPage.getCurrent(), resultPage.getSize(), resultPage.getTotal());
         page.setRecords(voList);
         return page;
     }
 
     @Override
-    public SystemUserItemRespVO getSystemUserById(Long id) {
+    public SystemUserItemDTO getSystemUserById(Long id) {
         SystemUser systemUser = systemUserMapper.selectById(id);
         SystemPost systemPost = systemPostMapper.selectById(systemUser.getPostId());
-        SystemUserItemRespVO systemUserItemVo = new SystemUserItemRespVO();
+        SystemUserItemDTO systemUserItemVo = new SystemUserItemDTO();
         BeanUtils.copyProperties(systemUser,systemUserItemVo);
         systemUserItemVo.setPostName(systemPost.getName());
         return systemUserItemVo;
     }
 }
-
-
-
-

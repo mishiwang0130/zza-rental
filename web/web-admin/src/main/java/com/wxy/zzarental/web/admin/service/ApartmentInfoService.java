@@ -2,12 +2,12 @@ package com.wxy.zzarental.web.admin.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.wxy.zzarental.model.entity.ApartmentInfo;
-import com.wxy.zzarental.web.admin.vo.apartment.ApartmentDetailRespVO;
-import com.wxy.zzarental.web.admin.vo.apartment.ApartmentItemRespVO;
-import com.wxy.zzarental.web.admin.vo.apartment.ApartmentPageReqVO;
-import com.wxy.zzarental.web.admin.vo.apartment.ApartmentSaveReqVO;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.wxy.zzarental.model.entity.ApartmentInfo;
+import com.wxy.zzarental.web.admin.service.command.ApartmentSaveCommand;
+import com.wxy.zzarental.web.admin.service.dto.ApartmentDetailDTO;
+import com.wxy.zzarental.web.admin.service.dto.ApartmentItemDTO;
+import com.wxy.zzarental.web.admin.service.query.ApartmentQuery;
 
 /**
 * @author liubo
@@ -16,11 +16,11 @@ import com.baomidou.mybatisplus.extension.service.IService;
 */
 public interface ApartmentInfoService extends IService<ApartmentInfo> {
 
-    void saveOrUpdateApart(ApartmentSaveReqVO apartmentSubmitVo);
+    void saveOrUpdateApart(ApartmentSaveCommand apartmentSubmitVo);
 
-    IPage<ApartmentItemRespVO> pageItem(Page<ApartmentItemRespVO> page, ApartmentPageReqVO queryVo);
+    IPage<ApartmentItemDTO> pageItem(Page<ApartmentItemDTO> page, ApartmentQuery queryVo);
 
-    ApartmentDetailRespVO getDetailById(Long id);
+    ApartmentDetailDTO getDetailById(Long id);
 
     void removeApartmentById(Long id);
 }

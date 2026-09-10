@@ -1,7 +1,7 @@
 package com.wxy.zzarental.web.admin.custom.config;
 
 import com.wxy.zzarental.web.admin.custom.converter.StringToBaseEnumConverter;
-import com.wxy.zzarental.web.admin.custom.interceptor.AuthenticationInterceptor;
+import com.wxy.zzarental.common.login.AuthenticationInterceptor;
 import jakarta.annotation.Resource;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;

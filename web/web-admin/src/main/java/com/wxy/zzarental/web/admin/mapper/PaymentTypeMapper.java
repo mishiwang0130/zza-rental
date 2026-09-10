@@ -1,9 +1,7 @@
 package com.wxy.zzarental.web.admin.mapper;
 
-import com.wxy.zzarental.model.entity.PaymentType;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-
-import java.util.List;
+import com.wxy.zzarental.model.entity.PaymentType;
 
 /**
  * @author liubo
@@ -14,7 +12,3 @@ import java.util.List;
 public interface PaymentTypeMapper extends BaseMapper<PaymentType> {
 
 }
-
-
-
-

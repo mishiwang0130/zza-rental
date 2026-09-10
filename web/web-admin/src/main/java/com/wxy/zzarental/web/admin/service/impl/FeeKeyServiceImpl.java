@@ -1,17 +1,16 @@
 package com.wxy.zzarental.web.admin.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wxy.zzarental.model.entity.FeeKey;
 import com.wxy.zzarental.model.entity.FeeValue;
 import com.wxy.zzarental.web.admin.mapper.FeeKeyMapper;
 import com.wxy.zzarental.web.admin.mapper.FeeValueMapper;
 import com.wxy.zzarental.web.admin.service.FeeKeyService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.wxy.zzarental.web.admin.vo.fee.FeeKeyRespVO;
+import com.wxy.zzarental.web.admin.service.dto.FeeKeyDTO;
 import jakarta.annotation.Resource;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
+import org.springframework.stereotype.Service;
 
 /**
 * @author liubo
@@ -27,7 +26,7 @@ public class FeeKeyServiceImpl extends ServiceImpl<FeeKeyMapper, FeeKey>
     @Resource
     private FeeValueMapper feeValueMapper;
     @Override
-    public List<FeeKeyRespVO> feeInfoList() {
+    public List<FeeKeyDTO> feeInfoList() {
         return feeKeyMapper.selectList();
     }
 
@@ -41,7 +40,3 @@ public class FeeKeyServiceImpl extends ServiceImpl<FeeKeyMapper, FeeKey>
         feeValueMapper.deleteBatchIds(feeValueList);
     }
 }
-
-
-
-

@@ -4,9 +4,9 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wxy.zzarental.model.entity.RoomInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.wxy.zzarental.web.app.vo.room.RoomDetailRespVO;
-import com.wxy.zzarental.web.app.vo.room.RoomItemRespVO;
-import com.wxy.zzarental.web.app.vo.room.RoomPageReqVO;
+import com.wxy.zzarental.web.app.service.dto.RoomDetailDTO;
+import com.wxy.zzarental.web.app.service.dto.RoomItemDTO;
+import com.wxy.zzarental.web.app.service.query.RoomQuery;
 
 /**
 * @author liubo
@@ -18,13 +18,13 @@ public interface RoomInfoService extends IService<RoomInfo> {
      * 按降序或升序排序的分页
      *
      * @param page 页
-     * @return {@code IPage<RoomItemRespVO> }
+     * @return {@code IPage<RoomItemDTO> }
      * @author wxy
      * @date 2026/09/03
      */
-    IPage<RoomItemRespVO> pageItem(Page<RoomItemRespVO> page, RoomPageReqVO queryVo);
+    IPage<RoomItemDTO> pageItem(Page<RoomItemDTO> page, RoomQuery queryVo);
 
-    RoomDetailRespVO getDetailById(Long id);
+    RoomDetailDTO getDetailById(Long id);
 
-    IPage<RoomItemRespVO> pageItemByApartmentId(Page<RoomItemRespVO> page, Long id);
+    IPage<RoomItemDTO> pageItemByApartmentId(Page<RoomItemDTO> page, Long id);
 }

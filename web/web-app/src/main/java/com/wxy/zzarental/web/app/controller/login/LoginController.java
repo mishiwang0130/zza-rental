@@ -4,6 +4,7 @@ package com.wxy.zzarental.web.app.controller.login;
 import com.wxy.zzarental.common.login.LoginUserHolder;
 import com.wxy.zzarental.common.result.Result;
 import com.wxy.zzarental.web.app.service.LoginService;
+import com.wxy.zzarental.web.app.controller.assembler.AppApiAssembler;
 import com.wxy.zzarental.web.app.vo.user.LoginReqVO;
 import com.wxy.zzarental.web.app.vo.user.UserInfoRespVO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,7 +29,7 @@ public class LoginController {
     @PostMapping("login")
     @Operation(summary = "登录")
     public Result<String> login(@RequestBody LoginReqVO loginVo) {
-        return Result.ok(loginService.login(loginVo));
+        return Result.ok(loginService.login(AppApiAssembler.toCommand(loginVo)));
     }
 
     @GetMapping("info")
@@ -36,7 +37,7 @@ public class LoginController {
     public Result<UserInfoRespVO> info() {
         Long userId = LoginUserHolder.getLoginUser().getUserId();
 
-        return Result.ok(loginService.getLoginUserById(userId));
+        return Result.ok(AppApiAssembler.toResponse(loginService.getLoginUserById(userId)));
     }
 }
 

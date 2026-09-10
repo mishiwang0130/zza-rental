@@ -6,6 +6,7 @@ import com.wxy.zzarental.common.login.LoginUserHolder;
 import com.wxy.zzarental.common.result.Result;
 import com.wxy.zzarental.model.entity.BrowsingHistory;
 import com.wxy.zzarental.web.app.service.BrowsingHistoryService;
+import com.wxy.zzarental.web.app.controller.assembler.AppApiAssembler;
 import com.wxy.zzarental.web.app.vo.history.HistoryItemRespVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,7 +28,7 @@ public class BrowsingHistoryController {
     public Result<IPage<HistoryItemRespVO>> page(@RequestParam long current, @RequestParam long size) {
         Page<BrowsingHistory> page = new Page<>(current, size);
         Long userId = LoginUserHolder.getLoginUser().getUserId();
-        IPage<HistoryItemRespVO> resultPage =  browsingHistoryService.pageItemByUserId(page,userId);
+        IPage<HistoryItemRespVO> resultPage = AppApiAssembler.toHistoryPage(browsingHistoryService.pageItemByUserId(page,userId));
         return Result.ok(resultPage);
     }
 }

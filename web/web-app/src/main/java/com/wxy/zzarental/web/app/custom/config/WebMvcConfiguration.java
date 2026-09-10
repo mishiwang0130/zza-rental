@@ -1,6 +1,6 @@
 package com.wxy.zzarental.web.app.custom.config;
 
-import com.wxy.zzarental.web.app.custom.interceptor.AuthenticationInterceptor;
+import com.wxy.zzarental.common.login.AuthenticationInterceptor;
 import jakarta.annotation.Resource;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;

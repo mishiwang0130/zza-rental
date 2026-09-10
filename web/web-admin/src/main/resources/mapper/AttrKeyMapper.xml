@@ -4,10 +4,10 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.wxy.zzarental.web.admin.mapper.AttrKeyMapper">
 
-    <resultMap id="attrkeyMap" type="com.wxy.zzarental.web.admin.vo.attr.AttrKeyRespVO">
+    <resultMap id="attrkeyMap" type="com.wxy.zzarental.web.admin.service.dto.AttrKeyDTO">
         <id property="id" column="id" />
         <result property="name" column="name" />
-        <collection property="attrValueList" ofType="com.wxy.zzarental.web.admin.vo.attr.AttrValueRespVO">
+        <collection property="attrValueList" ofType="com.wxy.zzarental.web.admin.service.dto.AttrValueDTO">
             <id property="id" column="vId" />
             <result property="name" column="vName" />
             <result property="attrKeyId" column="attr_key_id" />

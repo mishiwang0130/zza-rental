@@ -1,29 +1,26 @@
 package com.wxy.zzarental.web.admin.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.wf.captcha.SpecCaptcha;
 import com.wxy.zzarental.common.exception.ZZAException;
 import com.wxy.zzarental.common.result.ResultCodeEnum;
-import com.wxy.zzarental.common.util.JwtUtil;
+import com.wxy.zzarental.common.jwt.JwtTokenService;
 import com.wxy.zzarental.model.entity.SystemUser;
-import com.wxy.zzarental.model.enums.BaseEnum;
 import com.wxy.zzarental.model.enums.BaseStatus;
 import com.wxy.zzarental.web.admin.mapper.SystemUserMapper;
 import com.wxy.zzarental.web.admin.service.LoginService;
 import com.wxy.zzarental.common.util.RedisKeyUtil;
-import com.wxy.zzarental.web.admin.vo.login.CaptchaRespVO;
-import com.wxy.zzarental.web.admin.vo.login.LoginReqVO;
-import com.wxy.zzarental.web.admin.vo.system.user.SystemUserInfoRespVO;
+import com.wxy.zzarental.web.admin.service.dto.CaptchaDTO;
+import com.wxy.zzarental.web.admin.service.command.LoginCommand;
+import com.wxy.zzarental.web.admin.service.dto.SystemUserInfoDTO;
 import jakarta.annotation.Resource;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.security.Key;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -38,19 +35,22 @@ public class LoginServiceImpl implements LoginService {
     @Resource
     private SystemUserMapper systemUserMapper;
 
+    @Resource
+    private JwtTokenService jwtTokenService;
+
     @Override
-    public CaptchaRespVO getCaptcha() {
+    public CaptchaDTO getCaptcha() {
         SpecCaptcha specCaptcha = new SpecCaptcha(130, 48, 5);
         String code = specCaptcha.text().toLowerCase();
         String key = UUID.randomUUID().toString(true);
         String redisKey = RedisKeyUtil.getCaptcha(key);
         // 将code保存到redis中，并设置60*5秒的过期时间
         stringRedisTemplate.opsForValue().set(redisKey,code,60*5, TimeUnit.SECONDS);
-        return new CaptchaRespVO(specCaptcha.toBase64(),key);
+        return new CaptchaDTO(specCaptcha.toBase64(),key);
     }
     @Transactional(rollbackFor = ZZAException.class)
     @Override
-    public String login(LoginReqVO loginVo) {
+    public String login(LoginCommand loginVo) {
 
         //根据key去redis查code，为空说明过期
         String key = loginVo.getCaptchaKey();
@@ -90,13 +90,13 @@ public class LoginServiceImpl implements LoginService {
             throw new ZZAException(ResultCodeEnum.ADMIN_ACCOUNT_ERROR);
         }
 
-        return JwtUtil.createToken(systemUser.getId(),systemUser.getUsername());
+        return jwtTokenService.createToken(systemUser.getId(),systemUser.getUsername());
     }
 
     @Override
-    public SystemUserInfoRespVO getLoginUserInfoById(Long userId) {
+    public SystemUserInfoDTO getLoginUserInfoById(Long userId) {
         SystemUser systemUser = systemUserMapper.selectById(userId);
-        SystemUserInfoRespVO systemUserInfoVo = new SystemUserInfoRespVO();
+        SystemUserInfoDTO systemUserInfoVo = new SystemUserInfoDTO();
         systemUserInfoVo.setName(systemUser.getName());
         systemUserInfoVo.setAvatarUrl(systemUser.getAvatarUrl());
         return systemUserInfoVo;

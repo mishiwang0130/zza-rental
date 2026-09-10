@@ -2,7 +2,7 @@ package com.wxy.zzarental.web.app.service;
 
 import com.wxy.zzarental.model.entity.FeeValue;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.wxy.zzarental.web.app.vo.fee.FeeValueRespVO;
+import com.wxy.zzarental.web.app.service.dto.FeeValueDTO;
 
 import java.util.List;
 
@@ -12,5 +12,5 @@ import java.util.List;
 * @createDate 2023-07-26 11:12:39
 */
 public interface FeeValueService extends IService<FeeValue> {
-    List<FeeValueRespVO> listByApartmentId(Long id);
+    List<FeeValueDTO> listByApartmentId(Long id);
 }

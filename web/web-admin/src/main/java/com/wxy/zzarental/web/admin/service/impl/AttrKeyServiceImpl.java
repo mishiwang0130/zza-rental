@@ -1,18 +1,17 @@
 package com.wxy.zzarental.web.admin.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wxy.zzarental.model.entity.AttrKey;
 import com.wxy.zzarental.model.entity.AttrValue;
 import com.wxy.zzarental.web.admin.mapper.AttrKeyMapper;
 import com.wxy.zzarental.web.admin.mapper.AttrValueMapper;
 import com.wxy.zzarental.web.admin.service.AttrKeyService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.wxy.zzarental.web.admin.vo.attr.AttrKeyRespVO;
+import com.wxy.zzarental.web.admin.service.dto.AttrKeyDTO;
 import jakarta.annotation.Resource;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Service;
 
 /**
 * @author liubo
@@ -29,7 +28,7 @@ public class AttrKeyServiceImpl extends ServiceImpl<AttrKeyMapper, AttrKey>
     private AttrValueMapper attrValueMapper;
 
     @Override
-    public List<AttrKeyRespVO> listAttrInfo() {
+    public List<AttrKeyDTO> listAttrInfo() {
         return attrKeyMapper.selectAttrInfo();
     }
 
@@ -45,7 +44,3 @@ public class AttrKeyServiceImpl extends ServiceImpl<AttrKeyMapper, AttrKey>
         }
     }
 }
-
-
-
-

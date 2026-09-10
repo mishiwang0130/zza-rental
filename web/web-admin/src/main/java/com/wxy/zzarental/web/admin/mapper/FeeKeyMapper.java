@@ -1,9 +1,8 @@
 package com.wxy.zzarental.web.admin.mapper;
 
-import com.wxy.zzarental.model.entity.FeeKey;
-import com.wxy.zzarental.web.admin.vo.fee.FeeKeyRespVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-
+import com.wxy.zzarental.model.entity.FeeKey;
+import com.wxy.zzarental.web.admin.service.dto.FeeKeyDTO;
 import java.util.List;
 
 /**
@@ -14,9 +13,5 @@ import java.util.List;
 */
 public interface FeeKeyMapper extends BaseMapper<FeeKey> {
 
-    List<FeeKeyRespVO> selectList();
+    List<FeeKeyDTO> selectList();
 }
-
-
-
-

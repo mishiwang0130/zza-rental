@@ -3,13 +3,11 @@ package com.wxy.zzarental.web.admin.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wxy.zzarental.model.entity.CityInfo;
-import com.wxy.zzarental.web.admin.mapper.LabelInfoMapper;
-import com.wxy.zzarental.web.admin.service.CityInfoService;
 import com.wxy.zzarental.web.admin.mapper.CityInfoMapper;
+import com.wxy.zzarental.web.admin.service.CityInfoService;
 import jakarta.annotation.Resource;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
+import org.springframework.stereotype.Service;
 
 /**
 * @author liubo
@@ -29,7 +27,3 @@ public class CityInfoServiceImpl extends ServiceImpl<CityInfoMapper, CityInfo>
         return list(queryWrapper);
     }
 }
-
-
-
-

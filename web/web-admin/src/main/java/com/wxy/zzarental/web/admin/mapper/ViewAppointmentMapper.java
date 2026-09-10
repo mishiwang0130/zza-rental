@@ -1,11 +1,11 @@
 package com.wxy.zzarental.web.admin.mapper;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.wxy.zzarental.model.entity.ViewAppointment;
-import com.wxy.zzarental.web.admin.vo.appointment.AppointmentPageReqVO;
-import com.wxy.zzarental.web.admin.vo.appointment.AppointmentRespVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.wxy.zzarental.model.entity.ViewAppointment;
+import com.wxy.zzarental.web.admin.service.dto.AppointmentDTO;
+import com.wxy.zzarental.web.admin.service.query.AppointmentQuery;
 
 /**
 * @author liubo
@@ -15,9 +15,5 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 */
 public interface ViewAppointmentMapper extends BaseMapper<ViewAppointment> {
 
-    IPage<AppointmentRespVO> selectPageAppointment(Page<AppointmentRespVO> page, AppointmentPageReqVO queryVo);
+    IPage<AppointmentDTO> selectPageAppointment(Page<AppointmentDTO> page, AppointmentQuery queryVo);
 }
-
-
-
-

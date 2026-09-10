@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wxy.zzarental.model.entity.BrowsingHistory;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.wxy.zzarental.web.app.vo.history.HistoryItemRespVO;
+import com.wxy.zzarental.web.app.service.dto.HistoryItemDTO;
 
 /**
 * @author liubo
@@ -12,7 +12,7 @@ import com.wxy.zzarental.web.app.vo.history.HistoryItemRespVO;
 * @createDate 2023-07-26 11:12:39
 */
 public interface BrowsingHistoryService extends IService<BrowsingHistory> {
-    IPage<HistoryItemRespVO> pageItemByUserId(Page<BrowsingHistory> page, Long userId);
+    IPage<HistoryItemDTO> pageItemByUserId(Page<BrowsingHistory> page, Long userId);
 
     /**
      * 保存用户浏览房间记录

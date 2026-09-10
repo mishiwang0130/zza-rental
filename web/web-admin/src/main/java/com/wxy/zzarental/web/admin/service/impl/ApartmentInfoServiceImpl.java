@@ -4,33 +4,26 @@ import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wxy.zzarental.common.exception.ZZAException;
-import com.wxy.zzarental.common.result.ResultCodeEnum;
-import com.wxy.zzarental.common.util.VOConverter;
 import com.wxy.zzarental.model.entity.*;
 import com.wxy.zzarental.model.enums.ItemType;
 import com.wxy.zzarental.model.enums.LeaseStatus;
 import com.wxy.zzarental.web.admin.mapper.*;
 import com.wxy.zzarental.web.admin.service.*;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.wxy.zzarental.web.admin.vo.apartment.ApartmentDetailRespVO;
-import com.wxy.zzarental.web.admin.vo.apartment.FacilityRespVO;
-import com.wxy.zzarental.web.admin.vo.apartment.LabelRespVO;
-import com.wxy.zzarental.web.admin.vo.apartment.ApartmentItemRespVO;
-import com.wxy.zzarental.web.admin.vo.apartment.ApartmentPageReqVO;
-import com.wxy.zzarental.web.admin.vo.apartment.ApartmentSaveReqVO;
-import com.wxy.zzarental.web.admin.vo.fee.FeeValueRespVO;
-import com.wxy.zzarental.web.admin.vo.graph.GraphRespVO;
-import com.wxy.zzarental.web.admin.vo.graph.GraphReqVO;
+import com.wxy.zzarental.web.admin.service.command.ApartmentSaveCommand;
+import com.wxy.zzarental.web.admin.service.dto.ApartmentDetailDTO;
+import com.wxy.zzarental.web.admin.service.dto.ApartmentItemDTO;
+import com.wxy.zzarental.web.admin.service.dto.FeeValueDTO;
+import com.wxy.zzarental.web.admin.service.dto.GraphDTO;
+import com.wxy.zzarental.web.admin.service.query.ApartmentQuery;
 import jakarta.annotation.Resource;
-import okhttp3.Cookie;
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author liubo
@@ -67,7 +60,7 @@ public class ApartmentInfoServiceImpl extends ServiceImpl<ApartmentInfoMapper, A
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void saveOrUpdateApart(ApartmentSaveReqVO apartmentSubmitVo) {
+    public void saveOrUpdateApart(ApartmentSaveCommand apartmentSubmitVo) {
         boolean isUpdate = apartmentSubmitVo.getId() != null;
         ApartmentInfo apartmentInfo = new ApartmentInfo();
         // 复制属性
@@ -94,7 +87,7 @@ public class ApartmentInfoServiceImpl extends ServiceImpl<ApartmentInfoMapper, A
             apartmentFeeValueService.remove(feeQueryWrapper);
         }
         //新增图片
-        List<GraphReqVO> graphVoList = apartmentSubmitVo.getGraphVoList();
+        List<GraphDTO> graphVoList = apartmentSubmitVo.getGraphVoList();
         if(CollUtil.isNotEmpty(graphVoList)){
             List<GraphInfo> graphInfoList = graphVoList.stream().map(item -> {
                 GraphInfo graphInfo = new GraphInfo();
@@ -106,8 +99,6 @@ public class ApartmentInfoServiceImpl extends ServiceImpl<ApartmentInfoMapper, A
             }).toList();
             graphInfoService.saveBatch(graphInfoList);
         }
-
-
 
         //新增设施
         List<Long> facilityInfoIds = apartmentSubmitVo.getFacilityInfoIds();
@@ -137,13 +128,12 @@ public class ApartmentInfoServiceImpl extends ServiceImpl<ApartmentInfoMapper, A
         }
     }
 
-
     @Override
-    public IPage<ApartmentItemRespVO> pageItem(Page<ApartmentItemRespVO> page, ApartmentPageReqVO queryVo) {
-        IPage<ApartmentItemRespVO> result = apartmentInfoMapper.pageItem(page, queryVo);
-        List<ApartmentItemRespVO> records = result.getRecords();
+    public IPage<ApartmentItemDTO> pageItem(Page<ApartmentItemDTO> page, ApartmentQuery queryVo) {
+        IPage<ApartmentItemDTO> result = apartmentInfoMapper.pageItem(page, queryVo);
+        List<ApartmentItemDTO> records = result.getRecords();
         // 获取公寓id
-        List<Long> idList = records.stream().map(ApartmentItemRespVO::getId).toList();
+        List<Long> idList = records.stream().map(ApartmentItemDTO::getId).toList();
         // 根据公寓id列表查询房间列表
         LambdaQueryWrapper<RoomInfo> roomQueryWrapper = new LambdaQueryWrapper<>();
         roomQueryWrapper.in(RoomInfo::getApartmentId, idList);
@@ -157,7 +147,6 @@ public class ApartmentInfoServiceImpl extends ServiceImpl<ApartmentInfoMapper, A
         leaseAgreementLambdaQueryWrapper.in(LeaseAgreement::getApartmentId, idList);
         leaseAgreementLambdaQueryWrapper.eq(LeaseAgreement::getStatus, LeaseStatus.SIGNED);
         leaseAgreementLambdaQueryWrapper.eq(LeaseAgreement::getStatus, LeaseStatus.WITHDRAWING);
-
 
         List<LeaseAgreement> leaseAgreementList = leaseAgreementService.list(leaseAgreementLambdaQueryWrapper);
         // 将已签约房间列表转换为Map<公寓id, 已签约房间数>
@@ -177,7 +166,7 @@ public class ApartmentInfoServiceImpl extends ServiceImpl<ApartmentInfoMapper, A
     }
 
     @Override
-    public ApartmentDetailRespVO getDetailById(Long id) {
+    public ApartmentDetailDTO getDetailById(Long id) {
         //公寓基础信息
         ApartmentInfo apartmentInfo = apartmentInfoMapper.selectById(id);
         //图片列表
@@ -185,27 +174,27 @@ public class ApartmentInfoServiceImpl extends ServiceImpl<ApartmentInfoMapper, A
 //        graphInfoQueryWrapper.eq(GraphInfo::getItemType, ItemType.APARTMENT);
 //        graphInfoQueryWrapper.eq(GraphInfo::getItemId, id);
 //        List<GraphInfo> graphInfoList = graphInfoService.list(graphInfoQueryWrapper);
-//        // 转换为GraphRespVO列表
-//        List<GraphRespVO> graphVoList = graphInfoList.stream().map(item -> {
-//            GraphRespVO graphVo = new GraphRespVO();
+//        // 转换为GraphDTO列表
+//        List<GraphDTO> graphVoList = graphInfoList.stream().map(item -> {
+//            GraphDTO graphVo = new GraphDTO();
 //            graphVo.setName(item.getName());
 //            graphVo.setUrl(item.getUrl());
 //            return graphVo;
 //        }).toList();
-        List<GraphRespVO> graphVoList = graphInfoMapper.selectListByIdAndType(id, ItemType.APARTMENT);
+        List<GraphDTO> graphVoList = graphInfoMapper.selectListByIdAndType(id, ItemType.APARTMENT);
         //标签列表
         List<LabelInfo> labelInfoList = labelInfoMapper.selectListByApartmentId(id);
 
         //配套列表
         List<FacilityInfo> facilityInfoList = facilityInfoMapper.selectListByApartmentId(id);
         //杂费列表
-        List<FeeValueRespVO> feeValueList = feeValueMapper.selectListByApartmentId(id);
+        List<FeeValueDTO> feeValueList = feeValueMapper.selectListByApartmentId(id);
 
-        ApartmentDetailRespVO apartmentDetailVo = new ApartmentDetailRespVO();
+        ApartmentDetailDTO apartmentDetailVo = new ApartmentDetailDTO();
         BeanUtils.copyProperties(apartmentInfo, apartmentDetailVo);
         apartmentDetailVo.setGraphVoList(graphVoList);
-        apartmentDetailVo.setLabelInfoList(VOConverter.toList(labelInfoList, LabelRespVO.class));
-        apartmentDetailVo.setFacilityInfoList(VOConverter.toList(facilityInfoList, FacilityRespVO.class));
+        apartmentDetailVo.setLabelInfoList(labelInfoList);
+        apartmentDetailVo.setFacilityInfoList(facilityInfoList);
         apartmentDetailVo.setFeeValueVoList(feeValueList);
         return apartmentDetailVo;
     }
@@ -219,7 +208,6 @@ public class ApartmentInfoServiceImpl extends ServiceImpl<ApartmentInfoMapper, A
         if(roomInfoMapper.selectCount(roomInfoLambdaQueryWrapper)>0){
             throw new ZZAException(310,"公寓下有房间，是否确认删除");
         }
-
 
         LambdaQueryWrapper<GraphInfo> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(GraphInfo::getItemId, id);

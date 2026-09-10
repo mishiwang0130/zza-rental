@@ -9,29 +9,23 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.wxy.zzarental.common.constant.MQConstant;
+import com.wxy.zzarental.web.app.infrastructure.messaging.BrowsingHistoryMessagePublisher;
 import com.wxy.zzarental.common.login.LoginUserHolder;
 import com.wxy.zzarental.common.util.RedisKeyUtil;
 import com.wxy.zzarental.common.util.RedisUtil;
-import com.wxy.zzarental.common.util.VOConverter;
 import com.wxy.zzarental.model.entity.*;
 import com.wxy.zzarental.model.enums.ReleaseStatus;
 import com.wxy.zzarental.web.app.mapper.*;
 import com.wxy.zzarental.web.app.mq.message.SaveBrowsHistoryMQMsg;
 import com.wxy.zzarental.web.app.service.*;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.wxy.zzarental.web.app.vo.apartment.ApartmentItemRespVO;
-import com.wxy.zzarental.web.app.vo.common.FacilityRespVO;
-import com.wxy.zzarental.web.app.vo.common.LabelRespVO;
-import com.wxy.zzarental.web.app.vo.graph.GraphRespVO;
-import com.wxy.zzarental.web.app.vo.leaseterm.LeaseTermRespVO;
-import com.wxy.zzarental.web.app.vo.payment.PaymentTypeRespVO;
-import com.wxy.zzarental.web.app.vo.room.RoomDetailRespVO;
-import com.wxy.zzarental.web.app.vo.room.RoomItemRespVO;
-import com.wxy.zzarental.web.app.vo.room.RoomPageReqVO;
+import com.wxy.zzarental.web.app.service.dto.ApartmentItemDTO;
+import com.wxy.zzarental.web.app.service.dto.GraphDTO;
+import com.wxy.zzarental.web.app.service.dto.RoomDetailDTO;
+import com.wxy.zzarental.web.app.service.dto.RoomItemDTO;
+import com.wxy.zzarental.web.app.service.query.RoomQuery;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -81,10 +75,10 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
     @Resource
     private RedisUtil redisUtil;
     @Resource
-    private RocketMQTemplate rocketMQTemplate;
+    private BrowsingHistoryMessagePublisher browsingHistoryMessagePublisher;
 
     @Override
-    public IPage<RoomItemRespVO> pageItem(Page<RoomItemRespVO> page, RoomPageReqVO queryVo) {
+    public IPage<RoomItemDTO> pageItem(Page<RoomItemDTO> page, RoomQuery queryVo) {
 
         //缓存
         if(queryVo.getProvinceId() ==null && queryVo.getCityId() == null && queryVo.getDistrictId() == null &&
@@ -93,11 +87,11 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
             String jsonStr = redisUtil.get(RedisKeyUtil.getRoomPageKey(page.getCurrent(), page.getSize()));
             if (StrUtil.isNotBlank(jsonStr)) {
                 Gson gson = new Gson();
-                return gson.fromJson(jsonStr, new TypeToken<IPage<RoomItemRespVO>>() {
+                return gson.fromJson(jsonStr, new TypeToken<IPage<RoomItemDTO>>() {
                 }.getType());
             }
         }
-        IPage<RoomItemRespVO> roomInfoPage = null;
+        IPage<RoomItemDTO> roomInfoPage = null;
 
 //同步代码块欧克，我想起了一点点
         synchronized (Object.class) {
@@ -107,7 +101,7 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
                 paymentTypeLambdaQueryWrapper.eq(RoomPaymentType::getPaymentTypeId, queryVo.getPaymentTypeId());
                 List<RoomPaymentType> paymentTypes = roomPaymentTypeMapper.selectList(paymentTypeLambdaQueryWrapper);
                 if (CollUtil.isEmpty(paymentTypes)) {
-                    Page<RoomItemRespVO> pageEmpty = new Page<>(page.getCurrent(), page.getSize(), 0);
+                    Page<RoomItemDTO> pageEmpty = new Page<>(page.getCurrent(), page.getSize(), 0);
                     pageEmpty.setRecords(new ArrayList<>());
                     return pageEmpty;
                 }
@@ -118,7 +112,7 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
             // 如果分页返回空，则直接返回
             // 比如说现在这个roomInfoPage的地址值是0x1111，他里面的records的地址值是0x1234，我们这样去get相当于
             // 将records对象的引用指向roomInfoPage里面的records的地址值，也就是0x1234，此时records也是0x1234
-            List<RoomItemRespVO> records = roomInfoPage.getRecords();
+            List<RoomItemDTO> records = roomInfoPage.getRecords();
             if (CollUtil.isEmpty(records)) {
                 return roomInfoPage;
             }
@@ -142,7 +136,7 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
     }
 
     @Override
-    public RoomDetailRespVO getDetailById(Long id) {
+    public RoomDetailDTO getDetailById(Long id) {
         // 1,2,3 数据库id
         // 定义布隆过滤器，那你怎么知道应该容量选多大
 //        Integer arr[] = new Integer[100]; // 只会存0和1
@@ -163,17 +157,17 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
         String jsonStr = redisUtil.get(RedisKeyUtil.getRoomKey(id));
         if (StrUtil.isNotBlank(jsonStr)) {
             Gson gson = new Gson();
-            return gson.fromJson(jsonStr, RoomDetailRespVO.class);
+            return gson.fromJson(jsonStr, RoomDetailDTO.class);
         }
         ReentrantLock lock = new ReentrantLock();
-        RoomDetailRespVO roomDetailVo = new RoomDetailRespVO();
+        RoomDetailDTO roomDetailVo = new RoomDetailDTO();
         // 公寓
         try {
             lock.lock();
             jsonStr = redisUtil.get(RedisKeyUtil.getRoomKey(id));
             if (StrUtil.isNotBlank(jsonStr)) {
                 Gson gson = new Gson();
-                return gson.fromJson(jsonStr, RoomDetailRespVO.class);
+                return gson.fromJson(jsonStr, RoomDetailDTO.class);
             }
             RoomInfo roomInfo = roomInfoMapper.selectById(id);
             if (roomInfo == null) {
@@ -182,33 +176,33 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
             BeanUtil.copyProperties(roomInfo, roomDetailVo);
 
             //公寓信息
-            ApartmentItemRespVO apartmentItemVo = apartmentInfoService.getInfoById(roomInfo.getApartmentId());
+            ApartmentItemDTO apartmentItemVo = apartmentInfoService.getInfoById(roomInfo.getApartmentId());
             roomDetailVo.setApartmentItemVo(apartmentItemVo);
 
-            //图片列表 List<GraphRespVO> graphVoList
+            //图片列表 List<GraphDTO> graphVoList
             LambdaQueryWrapper<GraphInfo> graphInfoLambdaQueryWrapper = new LambdaQueryWrapper<>();
             graphInfoLambdaQueryWrapper.eq(GraphInfo::getItemId, id);
             List<GraphInfo> graphInfos = graphInfoMapper.selectList(graphInfoLambdaQueryWrapper);
-            List<GraphRespVO> graphVoList = BeanUtil.copyToList(graphInfos, GraphRespVO.class);
+            List<GraphDTO> graphVoList = BeanUtil.copyToList(graphInfos, GraphDTO.class);
             roomDetailVo.setGraphVoList(graphVoList);
 
             //属性信息列表
             roomDetailVo.setAttrValueVoList(attrValueService.listByRoomId(id));
 
             // 配套信息列表 FacilityInfo
-            roomDetailVo.setFacilityInfoList(VOConverter.toList(facilityInfoService.listByRoomId(id), FacilityRespVO.class));
+            roomDetailVo.setFacilityInfoList(facilityInfoService.listByRoomId(id));
 
             //标签信息列表
-            roomDetailVo.setLabelInfoList(VOConverter.toList(labelInfoService.listByRoomId(id), LabelRespVO.class));
+            roomDetailVo.setLabelInfoList(labelInfoService.listByRoomId(id));
 
             //支付方式列表
-            roomDetailVo.setPaymentTypeList(VOConverter.toList(paymentTypeService.getPaymentTypeByRoomId(id), PaymentTypeRespVO.class));
+            roomDetailVo.setPaymentTypeList(paymentTypeService.getPaymentTypeByRoomId(id));
 
             //杂费列表
             roomDetailVo.setFeeValueVoList(feeValueService.listByApartmentId(roomInfo.getApartmentId()));
             //很多缓存一起失效，我知道了，刚刚那个是一个key100000同时查，现在是10key10000人查，也加锁呗，等一下
             //租期列表
-            roomDetailVo.setLeaseTermList(VOConverter.toList(leaseTermService.listByRoomId(id), LeaseTermRespVO.class));
+            roomDetailVo.setLeaseTermList(leaseTermService.listByRoomId(id));
             // 放进缓存中,缓存也可以根据key更新吗，这样不是会遍慢吗，等一下，那个查redis的不是也要进来吗，那十万个，只有第一个还需进来创新的，其他的直接走缓存里面的了
             Gson gson = new Gson();
             String json = gson.toJson(roomDetailVo);
@@ -226,7 +220,7 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
         // 1. 封装参数, 得到json字符串
         // 2.查看rocketmq如何发送消息, 发送, 然后结束
         SaveBrowsHistoryMQMsg saveBrowsHistoryMQMsg = new SaveBrowsHistoryMQMsg(IdUtil.simpleUUID(), LoginUserHolder.getLoginUser().getUserId(), id);
-        rocketMQTemplate.convertAndSend(MQConstant.SAVE_BROWSING_HISTORY_TOPIC,saveBrowsHistoryMQMsg);
+        browsingHistoryMessagePublisher.publish(saveBrowsHistoryMQMsg);
 
 
 
@@ -234,14 +228,14 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
     }
 
     @Override
-    public IPage<RoomItemRespVO> pageItemByApartmentId(Page<RoomItemRespVO> page, Long id) {
-        IPage<RoomItemRespVO> roomItemVoIPage = roomInfoMapper.pageItemByApartmentId(page, id);
+    public IPage<RoomItemDTO> pageItemByApartmentId(Page<RoomItemDTO> page, Long id) {
+        IPage<RoomItemDTO> roomItemVoIPage = roomInfoMapper.pageItemByApartmentId(page, id);
         // 如果分页返回空，则直接返回
-        List<RoomItemRespVO> records = roomItemVoIPage.getRecords();
+        List<RoomItemDTO> records = roomItemVoIPage.getRecords();
         if (CollUtil.isEmpty(records)) {
             return roomItemVoIPage;
         }
-        // 以下代码都一样，都是组装RoomItemRespVO的其他属性，所以我们可以提取成方法
+        // 以下代码都一样，都是组装RoomItemDTO的其他属性，所以我们可以提取成方法
         // 由于使用到的地方都是在我们这个类里面，所以直接提取成本类的私有方法
         // Java分为值传递和引用传递，我们这里是引用传递，所以直接传records，实际上传的就是roomItemVoIPage里面的，而不是新对象
         setRoomItemVo(records);
@@ -256,9 +250,9 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
      * @author wxy
      * @date 2026/09/04
      */
-    private void setRoomItemVo(List<RoomItemRespVO> records) {
+    private void setRoomItemVo(List<RoomItemDTO> records) {
         // 这里传递进来的参数的地址值就是0x1234
-        List<Long> roomIdList = records.stream().map(RoomItemRespVO::getId).toList();
+        List<Long> roomIdList = records.stream().map(RoomItemDTO::getId).toList();
         Map<Long, List<GraphInfo>> graphMap = graphInfoService.mapByItemIds(2,roomIdList);
 
 
@@ -292,9 +286,9 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
         // 这里通过for循环去对records进行赋值操作，只是遍历了他，所以records还是0x1234
         records.forEach(roomItemVo -> {
             //图片
-            List<GraphRespVO> graphList = graphMap.getOrDefault(roomItemVo.getId(), new ArrayList<>()).stream().map(
+            List<GraphDTO> graphList = graphMap.getOrDefault(roomItemVo.getId(), new ArrayList<>()).stream().map(
                     graphInfo -> {
-                        GraphRespVO graphVo = new GraphRespVO();
+                        GraphDTO graphVo = new GraphDTO();
                         graphVo.setName(graphInfo.getName());
                         graphVo.setUrl(graphInfo.getUrl());
                         return graphVo;
@@ -303,7 +297,7 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
             roomItemVo.setGraphVoList(graphList);
 
             //标签
-            roomItemVo.setLabelInfoList(VOConverter.toList(labelMap.get(roomItemVo.getId()), LabelRespVO.class));
+            roomItemVo.setLabelInfoList(labelMap.get(roomItemVo.getId()));
         });
     }
 }

@@ -2,6 +2,7 @@ package com.wxy.zzarental.web.app.controller.apartment;
 
 import com.wxy.zzarental.common.result.Result;
 import com.wxy.zzarental.web.app.service.ApartmentInfoService;
+import com.wxy.zzarental.web.app.controller.assembler.AppApiAssembler;
 import com.wxy.zzarental.web.app.vo.apartment.ApartmentDetailRespVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,6 +22,6 @@ public class ApartmentController {
     @Operation(summary = "根据id获取公寓信息")
     @GetMapping("getDetailById")
     public Result<ApartmentDetailRespVO> getDetailById(@RequestParam Long id) {
-        return Result.ok(apartmentInfoService.getDetailById(id));
+        return Result.ok(AppApiAssembler.toResponse(apartmentInfoService.getDetailById(id)));
     }
 }

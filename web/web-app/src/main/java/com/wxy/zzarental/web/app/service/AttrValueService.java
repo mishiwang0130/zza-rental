@@ -2,7 +2,7 @@ package com.wxy.zzarental.web.app.service;
 
 import com.wxy.zzarental.model.entity.AttrValue;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.wxy.zzarental.web.app.vo.attr.AttrValueRespVO;
+import com.wxy.zzarental.web.app.service.dto.AttrValueDTO;
 
 import java.util.List;
 
@@ -16,9 +16,9 @@ public interface AttrValueService extends IService<AttrValue> {
      * 按房间id列出
      *
      * @param roomId 房间号
-     * @return {@code List<AttrValueRespVO> }
+     * @return {@code List<AttrValueDTO> }
      * @author wxy
      * @date 2026/09/03
      */
-    List<AttrValueRespVO> listByRoomId(Long roomId);
+    List<AttrValueDTO> listByRoomId(Long roomId);
 }

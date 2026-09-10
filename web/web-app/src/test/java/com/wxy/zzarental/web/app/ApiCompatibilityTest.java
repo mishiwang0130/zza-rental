@@ -9,14 +9,15 @@ import com.wxy.zzarental.web.app.controller.login.LoginController;
 import com.wxy.zzarental.web.app.controller.room.RoomController;
 import com.wxy.zzarental.web.app.service.LoginService;
 import com.wxy.zzarental.web.app.service.RoomInfoService;
-import com.wxy.zzarental.web.app.vo.apartment.ApartmentItemRespVO;
-import com.wxy.zzarental.web.app.vo.appointment.AppointmentDetailRespVO;
+import com.wxy.zzarental.web.app.controller.assembler.AppApiAssembler;
+import com.wxy.zzarental.web.app.service.dto.ApartmentItemDTO;
+import com.wxy.zzarental.web.app.service.dto.AppointmentDetailDTO;
+import com.wxy.zzarental.web.app.service.dto.GraphDTO;
+import com.wxy.zzarental.web.app.service.dto.HistoryItemDTO;
+import com.wxy.zzarental.web.app.service.dto.RoomDetailDTO;
+import com.wxy.zzarental.web.app.service.dto.RoomItemDTO;
+import com.wxy.zzarental.web.app.service.query.RoomQuery;
 import com.wxy.zzarental.web.app.vo.appointment.AppointmentSaveReqVO;
-import com.wxy.zzarental.web.app.vo.graph.GraphRespVO;
-import com.wxy.zzarental.web.app.vo.history.HistoryItemRespVO;
-import com.wxy.zzarental.web.app.vo.room.RoomDetailRespVO;
-import com.wxy.zzarental.web.app.vo.room.RoomItemRespVO;
-import com.wxy.zzarental.web.app.vo.room.RoomPageReqVO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -32,6 +33,7 @@ import java.util.TimeZone;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
@@ -80,7 +82,7 @@ class ApiCompatibilityTest {
 
     @Test
     void phoneAndIdRemainRequiredScalarQueryParameters() throws Exception {
-        RoomDetailRespVO room = new RoomDetailRespVO();
+        RoomDetailDTO room = new RoomDetailDTO();
         room.setId(7L);
         when(roomInfoService.getDetailById(7L)).thenReturn(room);
 
@@ -100,9 +102,9 @@ class ApiCompatibilityTest {
 
     @Test
     void roomPageKeepsOriginalQueryParametersAndCompletePageMetadata() throws Exception {
-        RoomItemRespVO room = new RoomItemRespVO();
+        RoomItemDTO room = new RoomItemDTO();
         room.setId(7L);
-        Page<RoomItemRespVO> result = new Page<>(2, 20, 31);
+        Page<RoomItemDTO> result = new Page<>(2, 20, 31);
         result.setRecords(List.of(room));
         result.addOrder(OrderItem.asc("rent"));
         result.setOptimizeCountSql(false);
@@ -110,8 +112,8 @@ class ApiCompatibilityTest {
         result.setMaxLimit(100L);
         result.setCountId("roomCount");
         when(roomInfoService.pageItem(any(), any())).thenAnswer(invocation -> {
-            Page<RoomItemRespVO> page = invocation.getArgument(0);
-            RoomPageReqVO query = invocation.getArgument(1);
+            Page<RoomItemDTO> page = invocation.getArgument(0);
+            RoomQuery query = invocation.getArgument(1);
             assertEquals(2, page.getCurrent());
             assertEquals(20, page.getSize());
             assertEquals(11L, query.getProvinceId());
@@ -151,34 +153,36 @@ class ApiCompatibilityTest {
     @Test
     void appointmentAndHistoryResponsesKeepOriginalDateFormats() {
         Date date = Date.from(Instant.parse("2026-09-10T02:30:00Z"));
-        AppointmentDetailRespVO appointment = new AppointmentDetailRespVO();
+        AppointmentDetailDTO appointment = new AppointmentDetailDTO();
         appointment.setAppointmentTime(date);
-        HistoryItemRespVO history = new HistoryItemRespVO();
+        HistoryItemDTO history = new HistoryItemDTO();
         history.setBrowseTime(date);
 
-        JsonNode appointmentJson = objectMapper.valueToTree(appointment);
-        JsonNode historyJson = objectMapper.valueToTree(history);
+        JsonNode appointmentJson = objectMapper.valueToTree(AppApiAssembler.toResponse(appointment));
+        JsonNode historyJson = objectMapper.valueToTree(AppApiAssembler.toResponse(history));
         assertEquals("2026-09-10 10:30:00", appointmentJson.get("appointmentTime").asText());
         assertEquals("2026-09-10 02:30:00", historyJson.get("browseTime").asText());
     }
 
     @Test
     void nestedResponsePropertiesKeepTheirExistingNames() {
-        GraphRespVO graph = new GraphRespVO("cover", "https://example.test/cover.jpg");
-        HistoryItemRespVO history = new HistoryItemRespVO();
+        GraphDTO graph = new GraphDTO("cover", "https://example.test/cover.jpg");
+        HistoryItemDTO history = new HistoryItemDTO();
         history.setRoomGraphVoList(List.of(graph));
-        ApartmentItemRespVO apartment = new ApartmentItemRespVO();
+        ApartmentItemDTO apartment = new ApartmentItemDTO();
         apartment.setId(5L);
-        RoomDetailRespVO room = new RoomDetailRespVO();
+        RoomDetailDTO room = new RoomDetailDTO();
         room.setApartmentItemVo(apartment);
         room.setGraphVoList(List.of(graph));
 
-        JsonNode historyJson = objectMapper.valueToTree(history);
-        JsonNode roomJson = objectMapper.valueToTree(room);
+        JsonNode historyJson = objectMapper.valueToTree(AppApiAssembler.toResponse(history));
+        JsonNode roomJson = objectMapper.valueToTree(AppApiAssembler.toResponse(room));
         assertEquals("cover", historyJson.at("/roomGraphVoList/0/name").asText());
         assertEquals(5, roomJson.at("/apartmentItemVo/id").asLong());
         assertEquals("https://example.test/cover.jpg", roomJson.at("/graphVoList/0/url").asText());
         assertFalse(historyJson.has("roomGraphRespVOList"));
         assertFalse(roomJson.has("apartmentItemRespVO"));
+        assertTrue(roomJson.get("labelInfoList").isNull());
+        assertTrue(roomJson.at("/apartmentItemVo/labelInfoList").isNull());
     }
 }

@@ -21,11 +21,14 @@
         <module>web</module>
     </modules>
 
-    <!-- 注意：直接替换pom文件中原有的properties -->
+    <!-- 所有服务共享构建基线；子模块不再重复覆盖 Java / Lombok 版本。 -->
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <java.version>17</java.version>
+        <maven.compiler.release>${java.version}</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <lombok.version>1.18.46</lombok.version>
+        <maven.minimum.version>3.9.11</maven.minimum.version>
+        <maven-enforcer-plugin.version>3.5.0</maven-enforcer-plugin.version>
         <mybatis-plus.version>3.5.3.1</mybatis-plus.version>
         <swagger.version>2.9.2</swagger.version>
         <jwt.version>0.11.2</jwt.version>
@@ -37,9 +40,29 @@
         <rocketmq.version>2.3.6</rocketmq.version>
     </properties>
 
+    <dependencies>
+        <!-- 编译期工具，统一声明，避免依赖其他模块间接引入不同版本。 -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
+
     <!--配置dependencyManagement统一管理依赖版本-->
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>com.wxy</groupId>
+                <artifactId>common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.wxy</groupId>
+                <artifactId>model</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <!--mybatis-plus-->
             <!--官方文档：https://baomidou.com/pages/bab2db/ -->
             <dependency>
@@ -116,5 +139,51 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <release>${java.version}</release>
+                    <parameters>true</parameters>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>${maven-enforcer-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>enforce-build-environment</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireJavaVersion>
+                                    <version>[17,18)</version>
+                                    <message>Build with JDK 17. Check JAVA_HOME and the JDK selected by Maven / your IDE.</message>
+                                </requireJavaVersion>
+                                <requireMavenVersion>
+                                    <version>[${maven.minimum.version},4.0.0)</version>
+                                    <message>Use Maven 3.9.11 or newer Maven 3.x; the project wrapper pins Maven 3.9.11.</message>
+                                </requireMavenVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

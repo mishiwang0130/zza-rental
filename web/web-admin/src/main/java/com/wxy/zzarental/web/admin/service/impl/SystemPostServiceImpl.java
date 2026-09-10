@@ -1,6 +1,6 @@
 package com.wxy.zzarental.web.admin.service.impl;
 
-import com.wxy.zzarental.common.util.VOConverter;
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -9,20 +9,18 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wxy.zzarental.model.entity.BaseEntity;
 import com.wxy.zzarental.model.entity.SystemPost;
 import com.wxy.zzarental.model.entity.SystemUser;
+import com.wxy.zzarental.web.admin.mapper.SystemPostMapper;
 import com.wxy.zzarental.web.admin.mapper.SystemUserMapper;
 import com.wxy.zzarental.web.admin.service.SystemPostService;
-import com.wxy.zzarental.web.admin.mapper.SystemPostMapper;
-import com.wxy.zzarental.web.admin.vo.system.user.SystemPostItemRespVO;
-import com.wxy.zzarental.web.admin.vo.system.user.SystemUserItemRespVO;
+import com.wxy.zzarental.web.admin.service.dto.SystemPostItemDTO;
+import com.wxy.zzarental.web.admin.service.dto.SystemUserItemDTO;
 import jakarta.annotation.Resource;
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
 * @author liubo
@@ -39,7 +37,7 @@ public class SystemPostServiceImpl extends ServiceImpl<SystemPostMapper, SystemP
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public IPage<SystemPostItemRespVO> page1(IPage<SystemPost> systemPostPage, String postName) {
+    public IPage<SystemPostItemDTO> page1(IPage<SystemPost> systemPostPage, String postName) {
         //根据岗位名称（可甜可不填）来翻页
         //查询条件
         LambdaQueryWrapper<SystemPost> systemPostWrapper = new LambdaQueryWrapper<>();
@@ -57,12 +55,13 @@ public class SystemPostServiceImpl extends ServiceImpl<SystemPostMapper, SystemP
         //key是岗位id，value是用户
         Map<Long,List<SystemUser>> userMap = systemUsers.stream().collect(Collectors.groupingBy(SystemUser::getPostId));
         // 将数据库中返回的数据组装成前端所需要的格式
-        Page<SystemPostItemRespVO> page = new Page<>(systemPostIPage.getCurrent(), systemPostIPage.getSize(), systemPostIPage.getTotal());
-        List<SystemPostItemRespVO> voList = postRecords.stream().map(post ->{
-            SystemPostItemRespVO vo = new SystemPostItemRespVO();
+        Page<SystemPostItemDTO> page = new Page<>(systemPostIPage.getCurrent(), systemPostIPage.getSize(), systemPostIPage.getTotal());
+        List<SystemPostItemDTO> voList = postRecords.stream().map(post ->{
+            SystemPostItemDTO vo = new SystemPostItemDTO();
             BeanUtils.copyProperties(post,vo);
-            List<SystemUserItemRespVO> systemUsersList = VOConverter.toList(
-                    userMap.get(post.getId()), SystemUserItemRespVO.class);
+            List<SystemUser> users = userMap.get(post.getId());
+            List<SystemUserItemDTO> systemUsersList = users == null ? null
+                    : BeanUtil.copyToList(users, SystemUserItemDTO.class);
             vo.setSystemUsers(systemUsersList);
             return vo;
         }).collect(Collectors.toList());
@@ -71,7 +70,3 @@ public class SystemPostServiceImpl extends ServiceImpl<SystemPostMapper, SystemP
         return page;
     }
 }
-
-
-
-

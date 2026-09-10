@@ -1,14 +1,16 @@
 package com.wxy.zzarental.web.admin.controller.system;
 
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wxy.zzarental.common.result.Result;
 import com.wxy.zzarental.common.util.VOConverter;
 import com.wxy.zzarental.model.entity.BaseEntity;
 import com.wxy.zzarental.model.entity.SystemPost;
 import com.wxy.zzarental.model.enums.BaseStatus;
-import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.wxy.zzarental.web.admin.controller.assembler.AdminApiAssembler;
 import com.wxy.zzarental.web.admin.service.SystemPostService;
+import com.wxy.zzarental.web.admin.service.dto.SystemPostItemDTO;
 import com.wxy.zzarental.web.admin.vo.system.user.SystemPostItemRespVO;
 import com.wxy.zzarental.web.admin.vo.system.user.SystemPostRespVO;
 import com.wxy.zzarental.web.admin.vo.system.user.SystemPostSaveReqVO;
@@ -16,8 +18,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;
-
-
 
 @RestController
 @Tag(name = "后台用户岗位管理")
@@ -34,7 +34,6 @@ public class SystemPostController {
         IPage<SystemPost> page = systemPostService.page(systemPostPage);
         return Result.ok(page.convert(item -> VOConverter.to(item, SystemPostRespVO.class)));
     }
-
 
     @Operation(summary = "保存或更新岗位信息")
     @PostMapping("saveOrUpdate")
@@ -96,7 +95,7 @@ public class SystemPostController {
     @GetMapping("page1")
     public Result<IPage<SystemPostItemRespVO>> page1(@RequestParam long current, @RequestParam long size, @RequestParam String postName) {
         IPage<SystemPost> systemPostPage = new Page<>(current, size);
-        IPage<SystemPostItemRespVO> page = systemPostService.page1(systemPostPage, postName);
-        return Result.ok(page);
+        IPage<SystemPostItemDTO> page = systemPostService.page1(systemPostPage, postName);
+        return Result.ok(AdminApiAssembler.toPage(page, AdminApiAssembler::toResponse));
     }
 }

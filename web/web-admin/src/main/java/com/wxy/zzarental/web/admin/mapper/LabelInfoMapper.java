@@ -1,9 +1,7 @@
 package com.wxy.zzarental.web.admin.mapper;
 
-import com.wxy.zzarental.model.entity.LabelInfo;
-import com.wxy.zzarental.model.enums.ItemType;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-
+import com.wxy.zzarental.model.entity.LabelInfo;
 import java.util.List;
 
 /**
@@ -16,7 +14,3 @@ public interface LabelInfoMapper extends BaseMapper<LabelInfo> {
 
     List<LabelInfo> selectListByApartmentId(Long id);
 }
-
-
-
-

@@ -4,6 +4,8 @@ package com.wxy.zzarental.web.app.controller.room;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wxy.zzarental.common.result.Result;
 import com.wxy.zzarental.web.app.service.RoomInfoService;
+import com.wxy.zzarental.web.app.service.dto.RoomItemDTO;
+import com.wxy.zzarental.web.app.controller.assembler.AppApiAssembler;
 import com.wxy.zzarental.web.app.vo.room.RoomDetailRespVO;
 import com.wxy.zzarental.web.app.vo.room.RoomItemRespVO;
 import com.wxy.zzarental.web.app.vo.room.RoomPageReqVO;
@@ -26,23 +28,23 @@ public class RoomController {
     @Operation(summary = "分页查询房间列表")
     @GetMapping("pageItem")
     public Result<IPage<RoomItemRespVO>> pageItem(@RequestParam long current, @RequestParam long size, RoomPageReqVO queryVo) {
-        Page<RoomItemRespVO> page = new Page<>(current, size);
-        IPage<RoomItemRespVO> result = roomInfoService.pageItem(page, queryVo);
+        Page<RoomItemDTO> page = new Page<>(current, size);
+        IPage<RoomItemRespVO> result = AppApiAssembler.toRoomPage(roomInfoService.pageItem(page, AppApiAssembler.toQuery(queryVo)));
         return Result.ok(result);
     }
 
     @Operation(summary = "根据id获取房间的详细信息")
     @GetMapping("getDetailById")
     public Result<RoomDetailRespVO> getDetailById(@RequestParam Long id) {
-        RoomDetailRespVO result = roomInfoService.getDetailById(id);
+        RoomDetailRespVO result = AppApiAssembler.toResponse(roomInfoService.getDetailById(id));
         return Result.ok(result);
     }
 
     @Operation(summary = "根据公寓id分页查询房间列表")
     @GetMapping("pageItemByApartmentId")
     public Result<IPage<RoomItemRespVO>> pageItemByApartmentId(@RequestParam long current, @RequestParam long size, @RequestParam Long id) {
-        Page<RoomItemRespVO> page = new Page<>(current, size);
-        IPage<RoomItemRespVO> result = roomInfoService.pageItemByApartmentId(page, id);
+        Page<RoomItemDTO> page = new Page<>(current, size);
+        IPage<RoomItemRespVO> result = AppApiAssembler.toRoomPage(roomInfoService.pageItemByApartmentId(page, id));
         return Result.ok(result);
     }
 

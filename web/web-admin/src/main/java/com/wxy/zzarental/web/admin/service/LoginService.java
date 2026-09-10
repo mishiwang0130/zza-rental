@@ -1,14 +1,14 @@
 package com.wxy.zzarental.web.admin.service;
 
-import com.wxy.zzarental.web.admin.vo.login.CaptchaRespVO;
-import com.wxy.zzarental.web.admin.vo.login.LoginReqVO;
-import com.wxy.zzarental.web.admin.vo.system.user.SystemUserInfoRespVO;
+import com.wxy.zzarental.web.admin.service.command.LoginCommand;
+import com.wxy.zzarental.web.admin.service.dto.CaptchaDTO;
+import com.wxy.zzarental.web.admin.service.dto.SystemUserInfoDTO;
 
 public interface LoginService {
 
-    CaptchaRespVO getCaptcha();
+    CaptchaDTO getCaptcha();
 
-    String login(LoginReqVO loginVo);
+    String login(LoginCommand loginVo);
 
-    SystemUserInfoRespVO getLoginUserInfoById(Long userId);
+    SystemUserInfoDTO getLoginUserInfoById(Long userId);
 }

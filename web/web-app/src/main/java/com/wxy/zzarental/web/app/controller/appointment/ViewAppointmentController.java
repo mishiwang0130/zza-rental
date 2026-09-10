@@ -7,6 +7,7 @@ import com.wxy.zzarental.common.util.VOConverter;
 import com.wxy.zzarental.model.entity.ViewAppointment;
 import com.wxy.zzarental.web.app.service.ApartmentInfoService;
 import com.wxy.zzarental.web.app.service.ViewAppointmentService;
+import com.wxy.zzarental.web.app.controller.assembler.AppApiAssembler;
 import com.wxy.zzarental.web.app.vo.appointment.AppointmentDetailRespVO;
 import com.wxy.zzarental.web.app.vo.appointment.AppointmentItemRespVO;
 import com.wxy.zzarental.web.app.vo.appointment.AppointmentSaveReqVO;
@@ -38,7 +39,7 @@ public class ViewAppointmentController {
     @Operation(summary = "查询个人预约看房列表")
     @GetMapping("listItem")
     public Result<List<AppointmentItemRespVO>> listItem() {
-        List<AppointmentItemRespVO> list = viewAppointmentService.listItem();
+        List<AppointmentItemRespVO> list = AppApiAssembler.toAppointmentList(viewAppointmentService.listItem());
         return Result.ok(list);
     }
 
@@ -46,7 +47,7 @@ public class ViewAppointmentController {
     @Operation(summary = "根据ID查询预约详情信息")
     public Result<AppointmentDetailRespVO> getDetailById(Long id) {
         Long userId = LoginUserHolder.getLoginUser().getUserId();
-        AppointmentDetailRespVO appointmentDetailVo = viewAppointmentService.getDetailById(id, userId);
+        AppointmentDetailRespVO appointmentDetailVo = AppApiAssembler.toResponse(viewAppointmentService.getDetailById(id, userId));
 
         return Result.ok(appointmentDetailVo);
     }

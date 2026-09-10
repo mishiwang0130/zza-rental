@@ -12,7 +12,7 @@ import com.wxy.zzarental.web.app.mapper.AttrKeyMapper;
 import com.wxy.zzarental.web.app.mapper.RoomAttrValueMapper;
 import com.wxy.zzarental.web.app.service.AttrValueService;
 import com.wxy.zzarental.web.app.mapper.AttrValueMapper;
-import com.wxy.zzarental.web.app.vo.attr.AttrValueRespVO;
+import com.wxy.zzarental.web.app.service.dto.AttrValueDTO;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
@@ -39,7 +39,7 @@ public class AttrValueServiceImpl extends ServiceImpl<AttrValueMapper, AttrValue
     private AttrKeyMapper attrKeyMapper;
 
     @Override
-    public List<AttrValueRespVO> listByRoomId(Long roomId) {
+    public List<AttrValueDTO> listByRoomId(Long roomId) {
         LambdaQueryWrapper<RoomAttrValue> attrValueVoLambdaQueryWrapper = new LambdaQueryWrapper<>();
         attrValueVoLambdaQueryWrapper.eq(RoomAttrValue::getRoomId, roomId);
         List<RoomAttrValue> roomAttrValues = roomAttrValueMapper.selectList(attrValueVoLambdaQueryWrapper);
@@ -54,7 +54,7 @@ public class AttrValueServiceImpl extends ServiceImpl<AttrValueMapper, AttrValue
                 .stream().collect(Collectors.toMap(BaseEntity::getId, AttrKey::getName, (key1, key2) -> key1));
         return attrValues.stream().map(
                 attrValue -> {
-                    AttrValueRespVO attrValueVo = new AttrValueRespVO();
+                    AttrValueDTO attrValueVo = new AttrValueDTO();
                     BeanUtil.copyProperties(attrValue, attrValueVo);
                     attrValueVo.setAttrKeyName(attrKeyMap.get(attrValue.getAttrKeyId()));
                     return attrValueVo;

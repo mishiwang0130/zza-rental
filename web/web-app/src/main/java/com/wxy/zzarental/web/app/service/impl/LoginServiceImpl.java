@@ -6,15 +6,15 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.wxy.zzarental.common.constant.RedisKeyConstant;
 import com.wxy.zzarental.common.exception.ZZAException;
 import com.wxy.zzarental.common.result.ResultCodeEnum;
-import com.wxy.zzarental.common.util.JwtUtil;
+import com.wxy.zzarental.common.jwt.JwtTokenService;
 import com.wxy.zzarental.common.util.RedisKeyUtil;
 import com.wxy.zzarental.model.entity.UserInfo;
 import com.wxy.zzarental.model.enums.BaseStatus;
 import com.wxy.zzarental.web.app.mapper.UserInfoMapper;
 import com.wxy.zzarental.web.app.service.LoginService;
 import com.wxy.zzarental.web.app.service.SmsService;
-import com.wxy.zzarental.web.app.vo.user.LoginReqVO;
-import com.wxy.zzarental.web.app.vo.user.UserInfoRespVO;
+import com.wxy.zzarental.web.app.service.command.LoginCommand;
+import com.wxy.zzarental.web.app.service.dto.UserInfoDTO;
 import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -31,10 +31,12 @@ public class LoginServiceImpl implements LoginService {
     private UserInfoMapper userInfoMapper;
     @Resource
     private SmsService smsService;
+    @Resource
+    private JwtTokenService jwtTokenService;
 
 
     @Override
-    public String login(LoginReqVO loginVo) {
+    public String login(LoginCommand loginVo) {
 
         String key = RedisKeyUtil.getPhoneCaptcha(loginVo.getPhone());
         String code = stringRedisTemplate.opsForValue().get(key);
@@ -61,14 +63,14 @@ public class LoginServiceImpl implements LoginService {
                 throw new ZZAException(ResultCodeEnum.APP_ACCOUNT_DISABLED_ERROR);
             }
         }
-        return JwtUtil.createToken(userInfo.getId(),userInfo.getPhone());
+        return jwtTokenService.createToken(userInfo.getId(),userInfo.getPhone());
     }
 
 
     @Override
-    public UserInfoRespVO getLoginUserById(Long userId) {
+    public UserInfoDTO getLoginUserById(Long userId) {
         UserInfo userInfo = userInfoMapper.selectById(userId);
-        return new UserInfoRespVO(userInfo.getNickname(),userInfo.getAvatarUrl());
+        return new UserInfoDTO(userInfo.getNickname(),userInfo.getAvatarUrl());
     }
 
     @Override

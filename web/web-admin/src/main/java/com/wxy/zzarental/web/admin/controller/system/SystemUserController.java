@@ -1,27 +1,27 @@
 package com.wxy.zzarental.web.admin.controller.system;
 
-
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wxy.zzarental.common.result.Result;
 import com.wxy.zzarental.common.util.VOConverter;
 import com.wxy.zzarental.model.entity.BaseEntity;
 import com.wxy.zzarental.model.entity.SystemUser;
 import com.wxy.zzarental.model.enums.BaseStatus;
+import com.wxy.zzarental.web.admin.controller.assembler.AdminApiAssembler;
 import com.wxy.zzarental.web.admin.service.SystemUserService;
+import com.wxy.zzarental.web.admin.service.dto.SystemUserItemDTO;
 import com.wxy.zzarental.web.admin.vo.system.user.SystemUserItemRespVO;
 import com.wxy.zzarental.web.admin.vo.system.user.SystemUserPageReqVO;
 import com.wxy.zzarental.web.admin.vo.system.user.SystemUserSaveReqVO;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
 
 @Tag(name = "后台用户信息管理")
 @RestController
@@ -36,15 +36,15 @@ public class SystemUserController {
     @GetMapping("page")
     public Result<IPage<SystemUserItemRespVO>> page(@RequestParam long current, @RequestParam long size, SystemUserPageReqVO queryVo) {
         Page<SystemUser> systemUserPage = new Page<>(current, size);
-        IPage<SystemUserItemRespVO> result = systemUserService.pageUser(systemUserPage, queryVo);
-        return Result.ok(result);
+        IPage<SystemUserItemDTO> result = systemUserService.pageUser(systemUserPage, AdminApiAssembler.toQuery(queryVo));
+        return Result.ok(AdminApiAssembler.toPage(result, AdminApiAssembler::toResponse));
     }
 
     @Operation(summary = "根据ID查询后台用户信息")
     @GetMapping("getById")
     public Result<SystemUserItemRespVO> getById(@RequestParam Long id) {
-        SystemUserItemRespVO result = systemUserService.getSystemUserById(id);
-        return Result.ok(result);
+        SystemUserItemDTO result = systemUserService.getSystemUserById(id);
+        return Result.ok(AdminApiAssembler.toResponse(result));
     }
 
     @Operation(summary = "保存或更新后台用户信息")
@@ -84,6 +84,5 @@ public class SystemUserController {
         systemUserService.update(systemUserLambdaUpdateWrapper);
         return Result.ok();
     }
-
 
 }

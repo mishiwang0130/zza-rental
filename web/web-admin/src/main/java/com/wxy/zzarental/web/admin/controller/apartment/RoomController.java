@@ -1,25 +1,26 @@
 package com.wxy.zzarental.web.admin.controller.apartment;
 
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.wxy.zzarental.common.result.Result;
 import com.wxy.zzarental.common.util.VOConverter;
 import com.wxy.zzarental.model.entity.RoomInfo;
 import com.wxy.zzarental.model.enums.ReleaseStatus;
+import com.wxy.zzarental.web.admin.controller.assembler.AdminApiAssembler;
 import com.wxy.zzarental.web.admin.service.RoomInfoService;
+import com.wxy.zzarental.web.admin.service.dto.RoomDetailDTO;
+import com.wxy.zzarental.web.admin.service.dto.RoomItemDTO;
+import com.wxy.zzarental.web.admin.vo.room.RoomBasicRespVO;
 import com.wxy.zzarental.web.admin.vo.room.RoomDetailRespVO;
 import com.wxy.zzarental.web.admin.vo.room.RoomItemRespVO;
 import com.wxy.zzarental.web.admin.vo.room.RoomPageReqVO;
 import com.wxy.zzarental.web.admin.vo.room.RoomSaveReqVO;
-import com.wxy.zzarental.web.admin.vo.room.RoomBasicRespVO;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "房间信息管理")
 @RestController
@@ -31,22 +32,22 @@ public class RoomController {
     @Operation(summary = "保存或更新房间信息")
     @PostMapping("saveOrUpdate")
     public Result<Void> saveOrUpdateRoom(@RequestBody RoomSaveReqVO reqVO) {
-        roomInfoService.saveOrUpdateRoom(reqVO);
+        roomInfoService.saveOrUpdateRoom(AdminApiAssembler.toCommand(reqVO));
         return Result.ok();
     }
 
     @Operation(summary = "根据条件分页查询房间列表")
     @GetMapping("pageItem")
     public Result<IPage<RoomItemRespVO>> pageItem(@RequestParam long current, @RequestParam long size, RoomPageReqVO queryVo) {
-        IPage<RoomItemRespVO> page = roomInfoService.pageItem(current, size, queryVo);
-        return Result.ok(page);
+        IPage<RoomItemDTO> page = roomInfoService.pageItem(current, size, AdminApiAssembler.toQuery(queryVo));
+        return Result.ok(AdminApiAssembler.toPage(page, AdminApiAssembler::toResponse));
     }
 
     @Operation(summary = "根据id获取房间详细信息")
     @GetMapping("getDetailById")
     public Result<RoomDetailRespVO> getDetailById(@RequestParam Long id) {
-        RoomDetailRespVO roomDetailVo = roomInfoService.getDetailById(id);
-        return Result.ok(roomDetailVo);
+        RoomDetailDTO roomDetailVo = roomInfoService.getDetailById(id);
+        return Result.ok(AdminApiAssembler.toResponse(roomDetailVo));
     }
 
     @Operation(summary = "根据id删除房间信息")
@@ -76,21 +77,3 @@ public class RoomController {
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

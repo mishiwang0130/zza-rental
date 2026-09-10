@@ -1,12 +1,11 @@
 package com.wxy.zzarental.web.admin.mapper;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.wxy.zzarental.model.entity.LeaseAgreement;
-import com.wxy.zzarental.web.admin.vo.agreement.AgreementPageReqVO;
-import com.wxy.zzarental.web.admin.vo.agreement.AgreementRespVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.wxy.zzarental.model.entity.LeaseAgreement;
+import com.wxy.zzarental.web.admin.service.dto.AgreementDTO;
+import com.wxy.zzarental.web.admin.service.query.AgreementQuery;
 
 /**
 * @author liubo
@@ -16,5 +15,5 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 */
 public interface LeaseAgreementMapper extends BaseMapper<LeaseAgreement> {
 
-    IPage<AgreementRespVO> page(Page<LeaseAgreement> page, AgreementPageReqVO queryVo) ;
+    IPage<AgreementDTO> page(Page<LeaseAgreement> page, AgreementQuery queryVo) ;
 }

@@ -8,9 +8,9 @@
         SELECT min(rent) FROM `room_info` where apartment_id = #{apartmentId};
     </select>
 
-    <resultMap id="roomItemVoMap" type="com.wxy.zzarental.web.app.vo.room.RoomItemRespVO" autoMapping="true">
+    <resultMap id="roomItemVoMap" type="com.wxy.zzarental.web.app.service.dto.RoomItemDTO" autoMapping="true">
         <id column="id" property="id"/>
-        <association property="apartmentInfo" javaType="com.wxy.zzarental.web.app.vo.apartment.ApartmentBasicRespVO" autoMapping="true">
+        <association property="apartmentInfo" javaType="com.wxy.zzarental.model.entity.ApartmentInfo" autoMapping="true">
             <id column="apartment_id" property="id"/>
         </association>
     </resultMap>

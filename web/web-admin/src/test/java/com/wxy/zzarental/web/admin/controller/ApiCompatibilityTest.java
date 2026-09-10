@@ -5,27 +5,35 @@ import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wxy.zzarental.model.entity.ApartmentInfo;
 import com.wxy.zzarental.model.entity.SystemPost;
+import com.wxy.zzarental.web.admin.controller.apartment.ApartmentController;
 import com.wxy.zzarental.web.admin.controller.apartment.FacilityController;
 import com.wxy.zzarental.web.admin.controller.apartment.FileUploadController;
+import com.wxy.zzarental.web.admin.controller.apartment.RoomController;
+import com.wxy.zzarental.web.admin.controller.assembler.AdminApiAssembler;
 import com.wxy.zzarental.web.admin.controller.lease.LeaseAgreementController;
 import com.wxy.zzarental.web.admin.controller.login.LoginController;
 import com.wxy.zzarental.web.admin.controller.system.SystemPostController;
 import com.wxy.zzarental.web.admin.service.FacilityInfoService;
+import com.wxy.zzarental.web.admin.service.ApartmentInfoService;
 import com.wxy.zzarental.web.admin.service.FileService;
 import com.wxy.zzarental.web.admin.service.LeaseAgreementService;
 import com.wxy.zzarental.web.admin.service.LoginService;
+import com.wxy.zzarental.web.admin.service.RoomInfoService;
 import com.wxy.zzarental.web.admin.service.SystemPostService;
-import com.wxy.zzarental.web.admin.vo.agreement.AgreementRespVO;
+import com.wxy.zzarental.web.admin.service.command.LoginCommand;
+import com.wxy.zzarental.web.admin.service.dto.AgreementDTO;
+import com.wxy.zzarental.web.admin.service.dto.AppointmentDTO;
+import com.wxy.zzarental.web.admin.service.dto.AttrKeyDTO;
+import com.wxy.zzarental.web.admin.service.dto.AttrValueDTO;
+import com.wxy.zzarental.web.admin.service.dto.FeeKeyDTO;
+import com.wxy.zzarental.web.admin.service.dto.FeeValueDTO;
+import com.wxy.zzarental.web.admin.service.dto.RoomItemDTO;
+import com.wxy.zzarental.web.admin.service.dto.SystemPostItemDTO;
+import com.wxy.zzarental.web.admin.service.dto.SystemUserItemDTO;
+import com.wxy.zzarental.web.admin.service.query.RoomQuery;
 import com.wxy.zzarental.web.admin.vo.agreement.AgreementSaveReqVO;
-import com.wxy.zzarental.web.admin.vo.appointment.AppointmentRespVO;
-import com.wxy.zzarental.web.admin.vo.attr.AttrKeyRespVO;
-import com.wxy.zzarental.web.admin.vo.attr.AttrValueRespVO;
-import com.wxy.zzarental.web.admin.vo.fee.FeeKeyRespVO;
-import com.wxy.zzarental.web.admin.vo.fee.FeeValueRespVO;
-import com.wxy.zzarental.web.admin.vo.login.LoginReqVO;
-import com.wxy.zzarental.web.admin.vo.system.user.SystemPostItemRespVO;
-import com.wxy.zzarental.web.admin.vo.system.user.SystemUserItemRespVO;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -43,6 +51,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -77,7 +86,7 @@ class ApiCompatibilityTest {
     @Test
     void agreementDetailKeepsTheOriginalRouteAlongsideGetById() throws Exception {
         LeaseAgreementService service = mock(LeaseAgreementService.class);
-        AgreementRespVO agreement = new AgreementRespVO();
+        AgreementDTO agreement = new AgreementDTO();
         agreement.setId(7L);
         when(service.getLeaseInfoById(7L)).thenReturn(agreement);
         MockMvc mockMvc = mvc(new LeaseAgreementController(), "leaseAgreementService", service);
@@ -106,7 +115,7 @@ class ApiCompatibilityTest {
     @Test
     void loginKeepsTheExistingBodyFieldsAndStringData() throws Exception {
         LoginService service = mock(LoginService.class);
-        when(service.login(any(LoginReqVO.class))).thenReturn("existing-token");
+        when(service.login(any(LoginCommand.class))).thenReturn("existing-token");
 
         mvc(new LoginController(), "loginService", service)
                 .perform(post("/admin/login")
@@ -178,45 +187,107 @@ class ApiCompatibilityTest {
         assertEquals("existing-id-number", request.getIdentificationNumber());
         assertEquals("existing-note", request.getAdditionalInfo());
 
-        AgreementRespVO agreement = new AgreementRespVO();
+        AgreementDTO agreement = new AgreementDTO();
         agreement.setLeaseStartDate(request.getLeaseStartDate());
         agreement.setLeaseEndDate(request.getLeaseEndDate());
-        JsonNode agreementJson = objectMapper.valueToTree(agreement);
+        JsonNode agreementJson = objectMapper.valueToTree(AdminApiAssembler.toResponse(agreement));
         assertEquals("2026-09-10", agreementJson.get("leaseStartDate").asText());
         assertEquals("2027-09-09", agreementJson.get("leaseEndDate").asText());
 
-        AppointmentRespVO appointment = new AppointmentRespVO();
+        AppointmentDTO appointment = new AppointmentDTO();
         appointment.setAppointmentTime(Date.from(Instant.parse("2026-09-10T01:02:03Z")));
-        JsonNode appointmentJson = objectMapper.valueToTree(appointment);
+        JsonNode appointmentJson = objectMapper.valueToTree(AdminApiAssembler.toResponse(appointment));
         assertEquals("2026-09-10 09:02:03", appointmentJson.get("appointmentTime").asText());
     }
 
     @Test
     void nestedListsDoNotIntroduceFieldsAbsentFromTheOriginalEntities() {
-        AttrValueRespVO attributeValue = new AttrValueRespVO();
+        AttrValueDTO attributeValue = new AttrValueDTO();
         attributeValue.setId(11L);
         attributeValue.setName("South");
         attributeValue.setAttrKeyName("Orientation");
-        AttrKeyRespVO attribute = new AttrKeyRespVO();
+        AttrKeyDTO attribute = new AttrKeyDTO();
         attribute.setAttrValueList(List.of(attributeValue));
-        JsonNode nestedAttribute = objectMapper.valueToTree(attribute).get("attrValueList").get(0);
+        JsonNode nestedAttribute = objectMapper.valueToTree(AdminApiAssembler.toResponse(attribute))
+                .get("attrValueList").get(0);
         assertEquals("South", nestedAttribute.get("name").asText());
         assertFalse(nestedAttribute.has("attrKeyName"));
-        assertTrue(objectMapper.valueToTree(attributeValue).has("attrKeyName"));
+        assertTrue(objectMapper.valueToTree(AdminApiAssembler.toResponse(attributeValue)).has("attrKeyName"));
 
-        FeeValueRespVO feeValue = new FeeValueRespVO();
+        FeeValueDTO feeValue = new FeeValueDTO();
         feeValue.setFeeKeyName("Water");
-        FeeKeyRespVO fee = new FeeKeyRespVO();
+        FeeKeyDTO fee = new FeeKeyDTO();
         fee.setFeeValueList(List.of(feeValue));
-        assertFalse(objectMapper.valueToTree(fee).get("feeValueList").get(0).has("feeKeyName"));
-        assertTrue(objectMapper.valueToTree(feeValue).has("feeKeyName"));
+        assertFalse(objectMapper.valueToTree(AdminApiAssembler.toResponse(fee)).get("feeValueList").get(0).has("feeKeyName"));
+        assertTrue(objectMapper.valueToTree(AdminApiAssembler.toResponse(feeValue)).has("feeKeyName"));
 
-        SystemUserItemRespVO user = new SystemUserItemRespVO();
+        SystemUserItemDTO user = new SystemUserItemDTO();
         user.setPostName("Manager");
-        SystemPostItemRespVO post = new SystemPostItemRespVO();
+        SystemPostItemDTO post = new SystemPostItemDTO();
         post.setSystemUsers(List.of(user));
-        assertFalse(objectMapper.valueToTree(post).get("systemUsers").get(0).has("postName"));
-        assertTrue(objectMapper.valueToTree(user).has("postName"));
+        assertFalse(objectMapper.valueToTree(AdminApiAssembler.toResponse(post)).get("systemUsers").get(0).has("postName"));
+        assertTrue(objectMapper.valueToTree(AdminApiAssembler.toResponse(user)).has("postName"));
+
+        attribute.setAttrValueList(null);
+        post.setSystemUsers(null);
+        assertTrue(objectMapper.valueToTree(AdminApiAssembler.toResponse(attribute)).get("attrValueList").isNull());
+        assertTrue(objectMapper.valueToTree(AdminApiAssembler.toResponse(post)).get("systemUsers").isNull());
+    }
+
+    @Test
+    void apartmentSaveKeepsTheExistingGraphAndAssociationFields() throws Exception {
+        ApartmentInfoService service = mock(ApartmentInfoService.class);
+
+        mvc(new ApartmentController(), "apartmentInfoService", service)
+                .perform(post("/admin/apartment/saveOrUpdate")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"id":7,"name":"Apartment","facilityInfoIds":[11],
+                                 "labelIds":[12],"feeValueIds":[13],
+                                 "graphVoList":[{"name":"cover","url":"https://example.test/cover.png"}]}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200));
+
+        verify(service).saveOrUpdateApart(argThat(command -> command.getId() == 7L
+                && "Apartment".equals(command.getName())
+                && List.of(11L).equals(command.getFacilityInfoIds())
+                && List.of(12L).equals(command.getLabelIds())
+                && List.of(13L).equals(command.getFeeValueIds())
+                && command.getGraphVoList().size() == 1
+                && "cover".equals(command.getGraphVoList().get(0).getName())
+                && "https://example.test/cover.png".equals(command.getGraphVoList().get(0).getUrl())));
+    }
+
+    @Test
+    void servicePageKeepsTheQueryNestedFieldsAndPaginationMetadata() throws Exception {
+        RoomInfoService service = mock(RoomInfoService.class);
+        ApartmentInfo apartment = new ApartmentInfo();
+        apartment.setId(7L);
+        apartment.setName("Apartment");
+        RoomItemDTO room = new RoomItemDTO();
+        room.setId(8L);
+        room.setRoomNumber("101");
+        room.setApartmentInfo(apartment);
+        room.setLeaseEndDate(Date.from(Instant.parse("2027-09-09T00:00:00Z")));
+        Page<RoomItemDTO> page = new Page<>(2, 5, 12);
+        page.setRecords(List.of(room));
+        page.addOrder(OrderItem.asc("id"));
+        page.setOptimizeCountSql(false);
+        JsonNode originalPageJson = objectMapper.readTree(objectMapper.writeValueAsString(page));
+        when(service.pageItem(eq(2L), eq(5L), any(RoomQuery.class))).thenReturn(page);
+
+        String response = mvc(new RoomController(), "roomInfoService", service)
+                .perform(get("/admin/room/pageItem").param("current", "2").param("size", "5")
+                        .param("apartmentId", "7").param("districtId", "9"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.records[0].roomNumber").value("101"))
+                .andExpect(jsonPath("$.data.records[0].apartmentInfo.name").value("Apartment"))
+                .andReturn().getResponse().getContentAsString();
+
+        assertEquals(originalPageJson, objectMapper.readTree(response).get("data"));
+        verify(service).pageItem(eq(2L), eq(5L), argThat(query ->
+                query.getApartmentId() == 7L && query.getDistrictId() == 9L));
     }
 
     private MockMvc mvc(Object controller, String serviceField, Object service) {

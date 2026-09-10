@@ -2,7 +2,7 @@ package com.wxy.zzarental.common.login;
 
 public class LoginUserHolder {
 
-    public static ThreadLocal<LoginUser> threadLocal = new ThreadLocal<>();
+    private static final ThreadLocal<LoginUser> threadLocal = new ThreadLocal<>();
     public static void setThreadLocal(LoginUser loginUser){
         threadLocal.set(loginUser);
     }

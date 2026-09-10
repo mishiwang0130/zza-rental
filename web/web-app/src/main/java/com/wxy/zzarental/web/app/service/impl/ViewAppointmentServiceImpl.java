@@ -17,10 +17,10 @@ import com.wxy.zzarental.web.app.service.ApartmentInfoService;
 import com.wxy.zzarental.web.app.service.GraphInfoService;
 import com.wxy.zzarental.web.app.service.ViewAppointmentService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.wxy.zzarental.web.app.vo.apartment.ApartmentItemRespVO;
-import com.wxy.zzarental.web.app.vo.appointment.AppointmentDetailRespVO;
-import com.wxy.zzarental.web.app.vo.appointment.AppointmentItemRespVO;
-import com.wxy.zzarental.web.app.vo.graph.GraphRespVO;
+import com.wxy.zzarental.web.app.service.dto.ApartmentItemDTO;
+import com.wxy.zzarental.web.app.service.dto.AppointmentDetailDTO;
+import com.wxy.zzarental.web.app.service.dto.AppointmentItemDTO;
+import com.wxy.zzarental.web.app.service.dto.GraphDTO;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,7 +49,7 @@ public class ViewAppointmentServiceImpl extends ServiceImpl<ViewAppointmentMappe
     @Resource
     private GraphInfoService graphInfoService;
     @Override
-    public List<AppointmentItemRespVO> listItem() {
+    public List<AppointmentItemDTO> listItem() {
         LambdaQueryWrapper<ViewAppointment> viewAppointmentLambdaQueryWrapper = new LambdaQueryWrapper<>();
         viewAppointmentLambdaQueryWrapper.eq(ViewAppointment::getUserId, LoginUserHolder.getLoginUser().getUserId());
         viewAppointmentLambdaQueryWrapper.eq(ViewAppointment::getAppointmentStatus,1);
@@ -68,7 +68,7 @@ public class ViewAppointmentServiceImpl extends ServiceImpl<ViewAppointmentMappe
         return viewAppointments.stream().map(
                 viewAppointment -> {
 
-                    AppointmentItemRespVO appointmentItemVo = new AppointmentItemRespVO();
+                    AppointmentItemDTO appointmentItemVo = new AppointmentItemDTO();
                     BeanUtil.copyProperties(viewAppointment,appointmentItemVo);
                     //公寓id
                     Long apartmentId = viewAppointment.getApartmentId();
@@ -78,9 +78,9 @@ public class ViewAppointmentServiceImpl extends ServiceImpl<ViewAppointmentMappe
                         appointmentItemVo.setApartmentName(apartmentNameMap.get(apartmentId));
                         //公寓图片
                         List<GraphInfo> graphInfos = graphMap.getOrDefault(apartmentId,new ArrayList<>());
-                        List<GraphRespVO> graphVos = graphInfos.stream().map(
+                        List<GraphDTO> graphVos = graphInfos.stream().map(
                                 graphInfo -> {
-                                    return new GraphRespVO(graphInfo.getName(), graphInfo.getUrl());
+                                    return new GraphDTO(graphInfo.getName(), graphInfo.getUrl());
                                 }
                         ).toList();
                         appointmentItemVo.setGraphVoList(graphVos);
@@ -116,9 +116,9 @@ public class ViewAppointmentServiceImpl extends ServiceImpl<ViewAppointmentMappe
     }
 
     @Override
-    public AppointmentDetailRespVO getDetailById(Long id,Long userId) {
+    public AppointmentDetailDTO getDetailById(Long id,Long userId) {
         ViewAppointment viewAppointment = viewAppointmentMapper.selectById(id);
-        AppointmentDetailRespVO appointmentDetailVo = new AppointmentDetailRespVO();
+        AppointmentDetailDTO appointmentDetailVo = new AppointmentDetailDTO();
         if(viewAppointment == null){
             throw new ZZAException(ResultCodeEnum.VIEW_APPOINTMENT_NOT_EXIST);
         }
@@ -129,7 +129,7 @@ public class ViewAppointmentServiceImpl extends ServiceImpl<ViewAppointmentMappe
 
         BeanUtil.copyProperties(viewAppointment,appointmentDetailVo);
         //公寓基本信息
-        ApartmentItemRespVO apartmentItemVo = apartmentInfoService.getInfoById(viewAppointment.getApartmentId());
+        ApartmentItemDTO apartmentItemVo = apartmentInfoService.getInfoById(viewAppointment.getApartmentId());
 //        BeanUtil.copyProperties(apartmentItemVo,appointmentDetailVo);
         appointmentDetailVo.setApartmentItemVo(apartmentItemVo);
         return appointmentDetailVo;

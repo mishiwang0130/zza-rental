@@ -1,9 +1,9 @@
 package com.wxy.zzarental.web.admin.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.wxy.zzarental.model.entity.SystemPost;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.wxy.zzarental.web.admin.vo.system.user.SystemPostItemRespVO;
+import com.wxy.zzarental.model.entity.SystemPost;
+import com.wxy.zzarental.web.admin.service.dto.SystemPostItemDTO;
 
 /**
 * @author liubo
@@ -12,5 +12,5 @@ import com.wxy.zzarental.web.admin.vo.system.user.SystemPostItemRespVO;
 */
 public interface SystemPostService extends IService<SystemPost> {
 
-    IPage<SystemPostItemRespVO> page1(IPage<SystemPost> systemPostPage, String postName);
+    IPage<SystemPostItemDTO> page1(IPage<SystemPost> systemPostPage, String postName);
 }

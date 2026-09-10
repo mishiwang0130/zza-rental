@@ -1,10 +1,10 @@
 package com.wxy.zzarental.web.app.service.dto;
 
-import com.wxy.zzarental.model.entity.FacilityInfo;
-import com.wxy.zzarental.model.entity.LabelInfo;
-import com.wxy.zzarental.model.entity.LeaseTerm;
-import com.wxy.zzarental.model.entity.PaymentType;
-import com.wxy.zzarental.model.enums.ReleaseStatus;
+import com.wxy.zzarental.web.app.entity.FacilityInfo;
+import com.wxy.zzarental.web.app.entity.LabelInfo;
+import com.wxy.zzarental.web.app.entity.LeaseTerm;
+import com.wxy.zzarental.web.app.entity.PaymentType;
+import com.wxy.zzarental.web.app.enums.ReleaseStatus;
 import lombok.Data;
 
 import java.util.List;

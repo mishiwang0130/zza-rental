@@ -4,7 +4,7 @@ package com.wxy.zzarental.web.app.controller.history;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wxy.zzarental.common.login.LoginUserHolder;
 import com.wxy.zzarental.common.result.Result;
-import com.wxy.zzarental.model.entity.BrowsingHistory;
+import com.wxy.zzarental.web.app.entity.BrowsingHistory;
 import com.wxy.zzarental.web.app.service.BrowsingHistoryService;
 import com.wxy.zzarental.web.app.controller.assembler.AppApiAssembler;
 import com.wxy.zzarental.web.app.vo.history.HistoryItemRespVO;

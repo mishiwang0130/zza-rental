@@ -1,73 +1,31 @@
-# 运行环境配置
+# 运行配置
 
-`web-admin` 和 `web-app` 是两个独立 Spring Boot 进程。管理端读取 `ADMIN_` 前缀变量，APP 端读取 `APP_` 前缀变量；部署时可配置为相同或不同的数据库、Redis、对象存储及 JWT 密钥。当前未引入 Spring Cloud，`common` 只共享代码，不共享运行中的配置或登录状态。
+管理端与 APP 端分别使用各自的 `application.yml`。数据库、Redis、MinIO、RocketMQ、应用名称、端口和 JWT 配置均为普通 YAML 配置，不要求额外注入环境变量。两端配置文件独立，可按实际部署环境分别修改。
 
-两端 `application.yml` 不再保存环境地址、账号或密钥。启动前必须通过操作系统、IDE Run Configuration、容器或部署平台向对应进程注入下列变量。项目不会自动读取 `.env` 文件。没有提供默认值的配置缺失时，应用无法正常启动；构建和纯单元测试不需要真实服务凭据。
+## 短信访问凭据
 
-## 两端都需要的变量
+只有 APP 短信访问凭据使用环境变量，变量名保持现有约定：
 
-下表的 `<PREFIX>` 在管理端替换为 `ADMIN`，在 APP 端替换为 `APP`。
-
-| 环境变量 | 用途 |
+| 必需环境变量 | 对应配置键 |
 | --- | --- |
-| `<PREFIX>_DB_URL` | 完整 JDBC URL；保留原环境所需连接参数 |
-| `<PREFIX>_DB_USERNAME` | 数据库用户名 |
-| `<PREFIX>_DB_PASSWORD` | 数据库密码 |
-| `<PREFIX>_REDIS_HOST` | Redis 主机名 |
-| `<PREFIX>_REDIS_PASSWORD` | Redis 密码；无认证环境应显式配置空值 |
-| `<PREFIX>_MINIO_ENDPOINT` | MinIO 服务地址 |
-| `<PREFIX>_MINIO_ACCESS_KEY` | MinIO 访问标识 |
-| `<PREFIX>_MINIO_SECRET_KEY` | MinIO 访问密钥 |
-| `<PREFIX>_MINIO_BUCKET_NAME` | 已有业务桶名称 |
-| `<PREFIX>_JWT_SECRET` | HS256 签名原始密钥文本，UTF-8 编码后至少 32 字节 |
+| `APP_SMS_ACCESS_KEY_ID` | `integration.sms.access-key-id` |
+| `APP_SMS_ACCESS_KEY_SECRET` | `integration.sms.access-key-secret` |
 
-当前保留了 `common` 的 MinIO 配置能力，两端均需配置相应变量。不要为生产密钥设置代码默认值，也不要把真实配置提交到仓库。
+启动 APP 服务前，通过操作系统、IDE Run Configuration、容器或部署平台向进程注入这两个变量。项目不会自动读取 `.env` 文件。管理端不使用短信客户端，因此不需要这两个变量。构建和纯单元测试无需真实短信访问凭据。
 
-JWT 仍使用 `access-token` 请求头、`User_Login` subject、`userId`/`userName` claims 和 24 小时有效期。密钥按原始 UTF-8 文本使用，不做 Base64 解码。需要保留现有 token 有效性时，部署侧应先注入与原环境一致的密钥。两端环境变量相互独立；如当前部署需要相同密钥，可由部署平台给两者设置相同值，本次没有增加 issuer/audience 或跨服务认证协议。
-
-## APP 端额外需要的变量
-
-| 环境变量 | 用途 |
-| --- | --- |
-| `APP_SMS_ACCESS_KEY_ID` | 短信服务访问标识 |
-| `APP_SMS_ACCESS_KEY_SECRET` | 短信服务访问密钥 |
-| `APP_SMS_ENDPOINT` | 当前短信 SDK 使用的 endpoint |
-| `APP_SMS_SIGN_NAME` | 当前已配置的短信签名 |
-| `APP_SMS_TEMPLATE_CODE` | 当前已配置的短信模板标识 |
-| `APP_ROCKETMQ_NAME_SERVER` | RocketMQ NameServer 地址配置 |
-| `APP_ROCKETMQ_PRODUCER_GROUP` | 当前生产者组名 |
-
-迁移时使用原环境的短信签名、模板、endpoint 和生产者组名，避免配置变化影响现有发送行为。短信模板参数仍为 `code` 和 `min`；短信 SDK 客户端改为复用 Bean。消息 topic、消费者组、消息字段及 `convertAndSend` 调用方式保持原样。
-
-## 可选调优变量
-
-| 环境变量 | 默认值 / 行为 |
-| --- | --- |
-| `ADMIN_APPLICATION_NAME` / `APP_APPLICATION_NAME` | `zza-rental-admin` / `zza-rental-app` |
-| `ADMIN_SERVER_PORT` / `APP_SERVER_PORT` | `8080` / `8081` |
-| `<PREFIX>_REDIS_PORT` | `6379` |
-| `<PREFIX>_REDIS_DATABASE` | `0` |
-| `<PREFIX>_DB_CONNECTION_TIMEOUT_MS` | `60000` |
-| `<PREFIX>_DB_MAX_POOL_SIZE` | `12` |
-| `<PREFIX>_DB_MIN_IDLE` | `10` |
-| `APP_SMS_CONNECT_TIMEOUT_MS` | 未配置时沿用 SDK 默认连接超时；配置时为正整数毫秒 |
-| `APP_SMS_READ_TIMEOUT_MS` | 未配置时沿用 SDK 默认读取超时；配置时为正整数毫秒 |
-
-## 注入示例
-
-以下只有占位值，不能直接用于启动；需在受控部署环境中替换，并补齐对应应用的所有必填变量。
+PowerShell 示例仅含占位值，启动前应替换为对应环境的有效凭据：
 
 ```powershell
-$env:ADMIN_DB_URL = '<JDBC_URL>'
-$env:ADMIN_DB_USERNAME = '<DATABASE_USERNAME>'
-$env:ADMIN_DB_PASSWORD = '<DATABASE_PASSWORD>'
-$env:ADMIN_JWT_SECRET = '<SIGNING_SECRET_AT_LEAST_32_UTF8_BYTES>'
-
 $env:APP_SMS_ACCESS_KEY_ID = '<SMS_ACCESS_KEY_ID>'
 $env:APP_SMS_ACCESS_KEY_SECRET = '<SMS_ACCESS_KEY_SECRET>'
-$env:APP_SMS_ENDPOINT = '<SMS_ENDPOINT>'
 ```
 
-也可使用 Spring Boot 支持的外部配置文件或部署平台 Secret 注入。两端入口均接收命令行参数，可按部署需要传入 `--spring.profiles.active` 或 `--spring.config.additional-location`。真实凭据不应直接出现在命令行参数中，以免进入命令历史或进程列表。
+短信 endpoint、签名和模板标识保留在 APP 的 `integration.sms` 普通 YAML 配置中。可按需要增加 `connect-timeout-ms`、`read-timeout-ms` 两个正整数毫秒配置；省略时使用 SDK 原有超时默认值。短信客户端由 Spring 复用，模板参数仍为 `code` 和 `min`。
 
-本次只清理当前源文件，已有 Git 历史和旧构建产物不会因此自动去除旧凭据。若旧凭据仍有效，应由部署负责人安排轮换；JWT 轮换会使旧密钥签发的 token 失效，需安排相应登录切换。
+## JWT 与其他普通配置
+
+两端 JWT 密钥分别位于各自 YAML 的 `security.jwt.secret`，不再写在 Java 类中，也不依赖环境变量。当前值沿用原签名配置，以保持现有 token 兼容。密钥按原始 UTF-8 文本使用，不做 Base64 解码；HS256 要求至少 32 字节。
+
+请求头仍为 `access-token`，subject 为 `User_Login`，claims 为 `userId`、`userName`，有效期保持 24 小时。两端可以使用相同或不同的普通配置值，本次没有增加 issuer/audience 或跨服务认证协议。轮换 JWT 密钥会使旧密钥签发的 token 失效，应安排相应登录切换。
+
+修改部署地址、账号、短信签名/模板或消息组名时，请核对对应服务配置；消息 topic、消费者组、消息结构与发送方式未在本次改造中调整。共享配置或日志时应隐藏真实账号、密钥和连接信息，本文不提供这些实际值。

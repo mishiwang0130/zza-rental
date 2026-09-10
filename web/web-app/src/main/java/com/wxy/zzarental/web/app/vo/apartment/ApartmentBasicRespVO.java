@@ -1,6 +1,6 @@
 package com.wxy.zzarental.web.app.vo.apartment;
 
-import com.wxy.zzarental.model.enums.ReleaseStatus;
+import com.wxy.zzarental.web.app.enums.ReleaseStatus;
 import lombok.Data;
 
 @Data

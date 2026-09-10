@@ -1,6 +1,6 @@
 package com.wxy.zzarental.web.admin.vo.apartment;
 
-import com.wxy.zzarental.model.enums.ItemType;
+import com.wxy.zzarental.web.admin.enums.ItemType;
 import lombok.Data;
 
 @Data

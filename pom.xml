@@ -16,7 +16,6 @@
     <description>zza-rental</description>
 
     <modules>
-        <module>model</module>
         <module>common</module>
         <module>web</module>
     </modules>
@@ -56,11 +55,6 @@
             <dependency>
                 <groupId>com.wxy</groupId>
                 <artifactId>common</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.wxy</groupId>
-                <artifactId>model</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <!--mybatis-plus-->

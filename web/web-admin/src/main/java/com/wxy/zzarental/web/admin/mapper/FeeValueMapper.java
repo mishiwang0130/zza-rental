@@ -1,7 +1,7 @@
 package com.wxy.zzarental.web.admin.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.wxy.zzarental.model.entity.FeeValue;
+import com.wxy.zzarental.web.admin.entity.FeeValue;
 import com.wxy.zzarental.web.admin.service.dto.FeeValueDTO;
 import java.util.List;
 
@@ -9,7 +9,7 @@ import java.util.List;
 * @author liubo
 * @description 针对表【fee_value(杂项费用值表)】的数据库操作Mapper
 * @createDate 2023-07-24 15:48:00
-* @Entity com.wxy.zzarental.model.FeeValue
+* @Entity com.wxy.zzarental.web.admin.entity.FeeValue
 */
 public interface FeeValueMapper extends BaseMapper<FeeValue> {
 

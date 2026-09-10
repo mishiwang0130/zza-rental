@@ -1,7 +1,7 @@
 package com.wxy.zzarental.web.app.service.dto;
 
-import com.wxy.zzarental.model.enums.LeaseSourceType;
-import com.wxy.zzarental.model.enums.LeaseStatus;
+import com.wxy.zzarental.web.app.enums.LeaseSourceType;
+import com.wxy.zzarental.web.app.enums.LeaseStatus;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -20,5 +20,5 @@ public class AgreementItemDTO {
     private Date leaseEndDate;
     private LeaseSourceType sourceType;
     private BigDecimal rent;
-    
+
 }

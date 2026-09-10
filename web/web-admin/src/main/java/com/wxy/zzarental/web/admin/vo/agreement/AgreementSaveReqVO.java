@@ -2,8 +2,8 @@ package com.wxy.zzarental.web.admin.vo.agreement;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
-import com.wxy.zzarental.model.enums.LeaseSourceType;
-import com.wxy.zzarental.model.enums.LeaseStatus;
+import com.wxy.zzarental.web.admin.enums.LeaseSourceType;
+import com.wxy.zzarental.web.admin.enums.LeaseStatus;
 import lombok.Data;
 
 import java.math.BigDecimal;

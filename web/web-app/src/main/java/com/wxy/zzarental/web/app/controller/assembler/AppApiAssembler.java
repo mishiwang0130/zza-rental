@@ -1,7 +1,7 @@
 package com.wxy.zzarental.web.app.controller.assembler;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.wxy.zzarental.model.entity.*;
+import com.wxy.zzarental.web.app.entity.*;
 import com.wxy.zzarental.web.app.service.command.LoginCommand;
 import com.wxy.zzarental.web.app.service.dto.*;
 import com.wxy.zzarental.web.app.service.query.RoomQuery;

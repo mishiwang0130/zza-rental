@@ -1,6 +1,6 @@
 package com.wxy.zzarental.web.admin.vo.user;
 
-import com.wxy.zzarental.model.enums.BaseStatus;
+import com.wxy.zzarental.web.admin.enums.BaseStatus;
 import lombok.Data;
 
 @Data

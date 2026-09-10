@@ -1,6 +1,6 @@
 package com.wxy.zzarental.web.app.service;
 
-import com.wxy.zzarental.model.entity.FeeValue;
+import com.wxy.zzarental.web.app.entity.FeeValue;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.wxy.zzarental.web.app.service.dto.FeeValueDTO;
 

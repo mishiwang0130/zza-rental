@@ -1,7 +1,7 @@
 package com.wxy.zzarental.web.app.vo.agreement;
 
-import com.wxy.zzarental.model.enums.LeaseSourceType;
-import com.wxy.zzarental.model.enums.LeaseStatus;
+import com.wxy.zzarental.web.app.enums.LeaseSourceType;
+import com.wxy.zzarental.web.app.enums.LeaseStatus;
 import com.wxy.zzarental.web.app.vo.graph.GraphRespVO;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;

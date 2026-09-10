@@ -1,8 +1,8 @@
 package com.wxy.zzarental.web.admin.schedule;
 
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.wxy.zzarental.model.entity.LeaseAgreement;
-import com.wxy.zzarental.model.enums.LeaseStatus;
+import com.wxy.zzarental.web.admin.entity.LeaseAgreement;
+import com.wxy.zzarental.web.admin.enums.LeaseStatus;
 import com.wxy.zzarental.web.admin.mapper.LeaseAgreementMapper;
 import com.wxy.zzarental.web.admin.service.LeaseAgreementService;
 import jakarta.annotation.Resource;

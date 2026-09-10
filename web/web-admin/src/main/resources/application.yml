@@ -1,48 +1,51 @@
 server:
-  port: ${ADMIN_SERVER_PORT:8080}
+  port: 8080
+
 spring:
   application:
-    name: ${ADMIN_APPLICATION_NAME:zza-rental-admin}
+    name: zza-rental-admin
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: ${ADMIN_DB_URL}
-    username: ${ADMIN_DB_USERNAME}
-    password: ${ADMIN_DB_PASSWORD}
+    url: jdbc:mysql://localhost:3306/zza_rental?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=GMT%2b8
+    username: root
+    password: root
     hikari:
-      connection-test-query: SELECT 1
-      connection-timeout: ${ADMIN_DB_CONNECTION_TIMEOUT_MS:60000}
-      idle-timeout: 500000
-      max-lifetime: 540000
-      maximum-pool-size: ${ADMIN_DB_MAX_POOL_SIZE:12}
-      minimum-idle: ${ADMIN_DB_MIN_IDLE:10}
-      pool-name: SPHHikariPool
+      connection-test-query: SELECT 1 # 自动检测连接
+      connection-timeout: 60000 #数据库连接超时时间,默认30秒
+      idle-timeout: 500000 #空闲连接存活最大时间，默认600000（10分钟）
+      max-lifetime: 540000 #此属性控制池中连接的最长生命周期，值0表示无限生命周期，默认1800000即30分钟
+      maximum-pool-size: 12 #连接池最大连接数，默认是10
+      minimum-idle: 10 #最小空闲连接数量
+      pool-name: SPHHikariPool # 连接池名称
   jackson:
     time-zone: GMT+8
   data:
     redis:
-      host: ${ADMIN_REDIS_HOST}
-      port: ${ADMIN_REDIS_PORT:6379}
-      database: ${ADMIN_REDIS_DATABASE:0}
-      password: ${ADMIN_REDIS_PASSWORD}
+      host: 192.168.205.128
+      port: 6379
+      database: 0
+      password: 123456
 
+#用于打印框架生成的sql语句，便于调试
 mybatis-plus:
   global-config:
-    db-config:
-      logic-delete-field: isDeleted
-      logic-delete-value: 1
-      logic-not-delete-value: 0
+      db-config:
+        logic-delete-field: isDeleted      # 实体类字段名
+        logic-delete-value: 1             # 已删除的值
+        logic-not-delete-value: 0         # 未删除的值
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
-minio:
-  endpoint: ${ADMIN_MINIO_ENDPOINT}
-  access-key: ${ADMIN_MINIO_ACCESS_KEY}
-  secret-key: ${ADMIN_MINIO_SECRET_KEY}
-  bucket-name: ${ADMIN_MINIO_BUCKET_NAME}
 
-security:
-  jwt:
-    secret: ${ADMIN_JWT_SECRET}
+minio:
+  endpoint: http://192.168.205.128:9000
+  access-key: minio
+  secret-key: minio123
+  bucket-name: zza
 
 springdoc:
   default-flat-param-object: true
+
+security:
+  jwt:
+    secret: 'a99c28Ed65114571aa1e4aa9e2c8c813'

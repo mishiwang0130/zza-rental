@@ -1,6 +1,6 @@
 package com.wxy.zzarental.web.admin.service;
 
-import com.wxy.zzarental.model.entity.BrowsingHistory;
+import com.wxy.zzarental.web.admin.entity.BrowsingHistory;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

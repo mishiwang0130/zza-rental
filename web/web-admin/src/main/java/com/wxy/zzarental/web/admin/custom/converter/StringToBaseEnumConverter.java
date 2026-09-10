@@ -1,6 +1,6 @@
 package com.wxy.zzarental.web.admin.custom.converter;
 
-import com.wxy.zzarental.model.enums.BaseEnum;
+import com.wxy.zzarental.web.admin.enums.BaseEnum;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.converter.ConverterFactory;
 import org.springframework.stereotype.Component;

@@ -1,6 +1,6 @@
 package com.wxy.zzarental.web.admin.vo.room;
 
-import com.wxy.zzarental.model.enums.ReleaseStatus;
+import com.wxy.zzarental.web.admin.enums.ReleaseStatus;
 import com.wxy.zzarental.web.admin.vo.apartment.ApartmentBasicRespVO;
 import com.wxy.zzarental.web.admin.vo.apartment.FacilityRespVO;
 import com.wxy.zzarental.web.admin.vo.apartment.LabelRespVO;

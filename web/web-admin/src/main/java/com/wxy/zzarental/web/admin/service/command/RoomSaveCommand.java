@@ -1,6 +1,6 @@
 package com.wxy.zzarental.web.admin.service.command;
 
-import com.wxy.zzarental.model.enums.ReleaseStatus;
+import com.wxy.zzarental.web.admin.enums.ReleaseStatus;
 import com.wxy.zzarental.web.admin.service.dto.GraphDTO;
 import java.util.List;
 import lombok.Data;

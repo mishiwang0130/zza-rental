@@ -2,7 +2,7 @@ package com.wxy.zzarental.web.app.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.wxy.zzarental.model.entity.GraphInfo;
+import com.wxy.zzarental.web.app.entity.GraphInfo;
 import com.wxy.zzarental.web.app.service.GraphInfoService;
 import com.wxy.zzarental.web.app.mapper.GraphInfoMapper;
 import jakarta.annotation.Resource;

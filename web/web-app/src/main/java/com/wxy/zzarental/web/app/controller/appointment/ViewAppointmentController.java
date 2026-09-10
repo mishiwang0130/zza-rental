@@ -4,7 +4,7 @@ package com.wxy.zzarental.web.app.controller.appointment;
 import com.wxy.zzarental.common.login.LoginUserHolder;
 import com.wxy.zzarental.common.result.Result;
 import com.wxy.zzarental.common.util.VOConverter;
-import com.wxy.zzarental.model.entity.ViewAppointment;
+import com.wxy.zzarental.web.app.entity.ViewAppointment;
 import com.wxy.zzarental.web.app.service.ApartmentInfoService;
 import com.wxy.zzarental.web.app.service.ViewAppointmentService;
 import com.wxy.zzarental.web.app.controller.assembler.AppApiAssembler;

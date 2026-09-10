@@ -3,9 +3,9 @@ package com.wxy.zzarental.web.admin.controller.apartment;
 
 import com.wxy.zzarental.common.result.Result;
 import com.wxy.zzarental.common.util.VOConverter;
-import com.wxy.zzarental.model.entity.CityInfo;
-import com.wxy.zzarental.model.entity.DistrictInfo;
-import com.wxy.zzarental.model.entity.ProvinceInfo;
+import com.wxy.zzarental.web.admin.entity.CityInfo;
+import com.wxy.zzarental.web.admin.entity.DistrictInfo;
+import com.wxy.zzarental.web.admin.entity.ProvinceInfo;
 import com.wxy.zzarental.web.admin.service.CityInfoService;
 import com.wxy.zzarental.web.admin.service.DistrictInfoService;
 import com.wxy.zzarental.web.admin.service.ProvinceInfoService;

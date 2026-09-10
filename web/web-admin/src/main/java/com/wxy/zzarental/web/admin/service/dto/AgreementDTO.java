@@ -1,11 +1,11 @@
 package com.wxy.zzarental.web.admin.service.dto;
 
-import com.wxy.zzarental.model.entity.ApartmentInfo;
-import com.wxy.zzarental.model.entity.LeaseTerm;
-import com.wxy.zzarental.model.entity.PaymentType;
-import com.wxy.zzarental.model.entity.RoomInfo;
-import com.wxy.zzarental.model.enums.LeaseSourceType;
-import com.wxy.zzarental.model.enums.LeaseStatus;
+import com.wxy.zzarental.web.admin.entity.ApartmentInfo;
+import com.wxy.zzarental.web.admin.entity.LeaseTerm;
+import com.wxy.zzarental.web.admin.entity.PaymentType;
+import com.wxy.zzarental.web.admin.entity.RoomInfo;
+import com.wxy.zzarental.web.admin.enums.LeaseSourceType;
+import com.wxy.zzarental.web.admin.enums.LeaseStatus;
 import java.math.BigDecimal;
 import java.util.Date;
 import lombok.Data;

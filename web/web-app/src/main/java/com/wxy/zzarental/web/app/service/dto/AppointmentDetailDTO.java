@@ -1,6 +1,6 @@
 package com.wxy.zzarental.web.app.service.dto;
 
-import com.wxy.zzarental.model.enums.AppointmentStatus;
+import com.wxy.zzarental.web.app.enums.AppointmentStatus;
 import lombok.Data;
 
 import java.util.Date;

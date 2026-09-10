@@ -1,7 +1,7 @@
 package com.wxy.zzarental.web.admin.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.wxy.zzarental.model.entity.FeeKey;
+import com.wxy.zzarental.web.admin.entity.FeeKey;
 import com.wxy.zzarental.web.admin.service.dto.FeeKeyDTO;
 import java.util.List;
 

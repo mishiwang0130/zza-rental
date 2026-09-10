@@ -7,7 +7,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.gson.Gson;
 import com.wxy.zzarental.common.util.RedisKeyUtil;
 import com.wxy.zzarental.common.util.RedisUtil;
-import com.wxy.zzarental.model.entity.*;
+import com.wxy.zzarental.web.app.entity.*;
 import com.wxy.zzarental.web.app.mapper.*;
 import com.wxy.zzarental.web.app.service.ApartmentInfoService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;

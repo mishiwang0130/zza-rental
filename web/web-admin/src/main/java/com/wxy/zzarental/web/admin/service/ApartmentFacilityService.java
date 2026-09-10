@@ -1,6 +1,6 @@
 package com.wxy.zzarental.web.admin.service;
 
-import com.wxy.zzarental.model.entity.ApartmentFacility;
+import com.wxy.zzarental.web.admin.entity.ApartmentFacility;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

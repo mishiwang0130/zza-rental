@@ -1,6 +1,6 @@
 package com.wxy.zzarental.web.app.vo.common;
 
-import com.wxy.zzarental.model.enums.ItemType;
+import com.wxy.zzarental.web.app.enums.ItemType;
 import lombok.Data;
 
 @Data

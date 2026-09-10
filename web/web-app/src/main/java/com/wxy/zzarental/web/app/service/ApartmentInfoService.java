@@ -1,6 +1,6 @@
 package com.wxy.zzarental.web.app.service;
 
-import com.wxy.zzarental.model.entity.ApartmentInfo;
+import com.wxy.zzarental.web.app.entity.ApartmentInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.wxy.zzarental.web.app.service.dto.ApartmentDetailDTO;
 import com.wxy.zzarental.web.app.service.dto.ApartmentItemDTO;

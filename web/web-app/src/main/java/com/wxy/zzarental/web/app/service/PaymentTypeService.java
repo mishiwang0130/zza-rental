@@ -1,6 +1,6 @@
 package com.wxy.zzarental.web.app.service;
 
-import com.wxy.zzarental.model.entity.PaymentType;
+import com.wxy.zzarental.web.app.entity.PaymentType;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;

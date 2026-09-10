@@ -1,8 +1,8 @@
 package com.wxy.zzarental.web.admin.service.dto;
 
-import com.wxy.zzarental.model.entity.FacilityInfo;
-import com.wxy.zzarental.model.entity.LabelInfo;
-import com.wxy.zzarental.model.enums.ReleaseStatus;
+import com.wxy.zzarental.web.admin.entity.FacilityInfo;
+import com.wxy.zzarental.web.admin.entity.LabelInfo;
+import com.wxy.zzarental.web.admin.enums.ReleaseStatus;
 import java.util.List;
 import lombok.Data;
 

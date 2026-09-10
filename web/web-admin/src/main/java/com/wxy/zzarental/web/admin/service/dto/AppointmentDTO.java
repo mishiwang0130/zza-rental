@@ -1,7 +1,7 @@
 package com.wxy.zzarental.web.admin.service.dto;
 
-import com.wxy.zzarental.model.entity.ApartmentInfo;
-import com.wxy.zzarental.model.enums.AppointmentStatus;
+import com.wxy.zzarental.web.admin.entity.ApartmentInfo;
+import com.wxy.zzarental.web.admin.enums.AppointmentStatus;
 import java.util.Date;
 import lombok.Data;
 

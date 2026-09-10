@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wxy.zzarental.common.login.LoginUserHolder;
-import com.wxy.zzarental.model.entity.*;
+import com.wxy.zzarental.web.app.entity.*;
 import com.wxy.zzarental.web.app.mapper.ApartmentInfoMapper;
 import com.wxy.zzarental.web.app.mapper.BrowsingHistoryMapper;
 import com.wxy.zzarental.web.app.mapper.GraphInfoMapper;

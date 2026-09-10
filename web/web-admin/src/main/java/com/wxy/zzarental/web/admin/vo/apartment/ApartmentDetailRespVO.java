@@ -1,7 +1,7 @@
 package com.wxy.zzarental.web.admin.vo.apartment;
 
 
-import com.wxy.zzarental.model.enums.ReleaseStatus;
+import com.wxy.zzarental.web.admin.enums.ReleaseStatus;
 import com.wxy.zzarental.web.admin.vo.graph.GraphRespVO;
 import com.wxy.zzarental.web.admin.vo.fee.FeeValueRespVO;
 import io.swagger.v3.oas.annotations.media.Schema;

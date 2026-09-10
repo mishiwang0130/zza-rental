@@ -1,7 +1,7 @@
 package com.wxy.zzarental.web.app.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.wxy.zzarental.model.entity.RoomLabel;
+import com.wxy.zzarental.web.app.entity.RoomLabel;
 import com.wxy.zzarental.web.app.service.RoomLabelService;
 import com.wxy.zzarental.web.app.mapper.RoomLabelMapper;
 import org.springframework.stereotype.Service;

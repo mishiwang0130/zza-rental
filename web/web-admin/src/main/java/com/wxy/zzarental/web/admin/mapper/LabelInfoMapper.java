@@ -1,14 +1,14 @@
 package com.wxy.zzarental.web.admin.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.wxy.zzarental.model.entity.LabelInfo;
+import com.wxy.zzarental.web.admin.entity.LabelInfo;
 import java.util.List;
 
 /**
 * @author liubo
 * @description 针对表【label_info(标签信息表)】的数据库操作Mapper
 * @createDate 2023-07-24 15:48:00
-* @Entity com.wxy.zzarental.model.LabelInfo
+* @Entity com.wxy.zzarental.web.admin.entity.LabelInfo
 */
 public interface LabelInfoMapper extends BaseMapper<LabelInfo> {
 

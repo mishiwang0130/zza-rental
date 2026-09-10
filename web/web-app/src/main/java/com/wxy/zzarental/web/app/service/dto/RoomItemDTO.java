@@ -1,7 +1,7 @@
 package com.wxy.zzarental.web.app.service.dto;
 
-import com.wxy.zzarental.model.entity.ApartmentInfo;
-import com.wxy.zzarental.model.entity.LabelInfo;
+import com.wxy.zzarental.web.app.entity.ApartmentInfo;
+import com.wxy.zzarental.web.app.entity.LabelInfo;
 import lombok.Data;
 
 import java.math.BigDecimal;

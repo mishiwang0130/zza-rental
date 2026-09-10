@@ -21,10 +21,6 @@
             <groupId>com.wxy</groupId>
             <artifactId>common</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.wxy</groupId>
-            <artifactId>model</artifactId>
-        </dependency>
         <!--包含spring web相关依赖-->
         <dependency>
             <groupId>org.springframework.boot</groupId>

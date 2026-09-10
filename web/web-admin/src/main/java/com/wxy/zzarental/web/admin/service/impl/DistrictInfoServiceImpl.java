@@ -2,7 +2,7 @@ package com.wxy.zzarental.web.admin.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.wxy.zzarental.model.entity.DistrictInfo;
+import com.wxy.zzarental.web.admin.entity.DistrictInfo;
 import com.wxy.zzarental.web.admin.service.DistrictInfoService;
 import com.wxy.zzarental.web.admin.mapper.DistrictInfoMapper;
 import org.springframework.stereotype.Service;

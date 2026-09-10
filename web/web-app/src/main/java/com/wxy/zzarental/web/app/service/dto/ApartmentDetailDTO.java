@@ -1,8 +1,8 @@
 package com.wxy.zzarental.web.app.service.dto;
 
-import com.wxy.zzarental.model.enums.ReleaseStatus;
-import com.wxy.zzarental.model.entity.FacilityInfo;
-import com.wxy.zzarental.model.entity.LabelInfo;
+import com.wxy.zzarental.web.app.enums.ReleaseStatus;
+import com.wxy.zzarental.web.app.entity.FacilityInfo;
+import com.wxy.zzarental.web.app.entity.LabelInfo;
 import lombok.Data;
 
 import java.math.BigDecimal;

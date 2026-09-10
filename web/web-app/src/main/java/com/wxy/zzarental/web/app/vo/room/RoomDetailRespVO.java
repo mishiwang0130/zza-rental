@@ -8,7 +8,7 @@ import com.wxy.zzarental.web.app.vo.fee.FeeValueRespVO;
 import com.wxy.zzarental.web.app.vo.graph.GraphRespVO;
 import com.wxy.zzarental.web.app.vo.leaseterm.LeaseTermRespVO;
 import com.wxy.zzarental.web.app.vo.payment.PaymentTypeRespVO;
-import com.wxy.zzarental.model.enums.ReleaseStatus;
+import com.wxy.zzarental.web.app.enums.ReleaseStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 

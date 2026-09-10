@@ -1,6 +1,6 @@
 package com.wxy.zzarental.web.admin.service.dto;
 
-import com.wxy.zzarental.model.enums.BaseStatus;
+import com.wxy.zzarental.web.admin.enums.BaseStatus;
 import java.util.List;
 import lombok.Data;
 

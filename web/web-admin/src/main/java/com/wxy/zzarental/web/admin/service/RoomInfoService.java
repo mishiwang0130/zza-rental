@@ -2,7 +2,7 @@ package com.wxy.zzarental.web.admin.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.wxy.zzarental.model.entity.RoomInfo;
+import com.wxy.zzarental.web.admin.entity.RoomInfo;
 import com.wxy.zzarental.web.admin.service.command.RoomSaveCommand;
 import com.wxy.zzarental.web.admin.service.dto.RoomDetailDTO;
 import com.wxy.zzarental.web.admin.service.dto.RoomItemDTO;

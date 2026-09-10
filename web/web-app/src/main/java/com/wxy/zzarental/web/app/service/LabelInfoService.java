@@ -1,6 +1,6 @@
 package com.wxy.zzarental.web.app.service;
 
-import com.wxy.zzarental.model.entity.LabelInfo;
+import com.wxy.zzarental.web.app.entity.LabelInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;

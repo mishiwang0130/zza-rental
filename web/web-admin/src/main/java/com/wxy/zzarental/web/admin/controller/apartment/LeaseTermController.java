@@ -3,7 +3,7 @@ package com.wxy.zzarental.web.admin.controller.apartment;
 
 import com.wxy.zzarental.common.result.Result;
 import com.wxy.zzarental.common.util.VOConverter;
-import com.wxy.zzarental.model.entity.LeaseTerm;
+import com.wxy.zzarental.web.admin.entity.LeaseTerm;
 import com.wxy.zzarental.web.admin.service.LeaseTermService;
 import com.wxy.zzarental.web.admin.vo.apartment.LeaseTermRespVO;
 import com.wxy.zzarental.web.admin.vo.apartment.LeaseTermSaveReqVO;

@@ -3,7 +3,7 @@ package com.wxy.zzarental.web.app.vo.appointment;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import com.wxy.zzarental.web.app.vo.apartment.ApartmentItemRespVO;
-import com.wxy.zzarental.model.enums.AppointmentStatus;
+import com.wxy.zzarental.web.app.enums.AppointmentStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 

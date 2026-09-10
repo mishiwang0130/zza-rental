@@ -1,6 +1,6 @@
 package com.wxy.zzarental.web.app.service;
 
-import com.wxy.zzarental.model.entity.RoomAttrValue;
+import com.wxy.zzarental.web.app.entity.RoomAttrValue;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

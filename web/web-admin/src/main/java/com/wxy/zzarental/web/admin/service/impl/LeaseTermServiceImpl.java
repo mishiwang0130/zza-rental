@@ -1,7 +1,7 @@
 package com.wxy.zzarental.web.admin.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.wxy.zzarental.model.entity.LeaseTerm;
+import com.wxy.zzarental.web.admin.entity.LeaseTerm;
 import com.wxy.zzarental.web.admin.service.LeaseTermService;
 import com.wxy.zzarental.web.admin.mapper.LeaseTermMapper;
 import org.springframework.stereotype.Service;

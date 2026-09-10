@@ -1,7 +1,7 @@
 package com.wxy.zzarental.web.admin.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.wxy.zzarental.model.entity.LabelInfo;
+import com.wxy.zzarental.web.admin.entity.LabelInfo;
 import com.wxy.zzarental.web.admin.service.LabelInfoService;
 import com.wxy.zzarental.web.admin.mapper.LabelInfoMapper;
 import org.springframework.stereotype.Service;

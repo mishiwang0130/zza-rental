@@ -2,8 +2,8 @@ package com.wxy.zzarental.web.app.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.wxy.zzarental.model.entity.LeaseTerm;
-import com.wxy.zzarental.model.entity.RoomLeaseTerm;
+import com.wxy.zzarental.web.app.entity.LeaseTerm;
+import com.wxy.zzarental.web.app.entity.RoomLeaseTerm;
 import com.wxy.zzarental.web.app.mapper.LeaseTermMapper;
 import com.wxy.zzarental.web.app.mapper.RoomLeaseTermMapper;
 import com.wxy.zzarental.web.app.service.LeaseTermService;

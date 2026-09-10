@@ -1,7 +1,7 @@
 package com.wxy.zzarental.web.app.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.wxy.zzarental.model.entity.ProvinceInfo;
+import com.wxy.zzarental.web.app.entity.ProvinceInfo;
 import com.wxy.zzarental.web.app.service.ProvinceInfoService;
 import com.wxy.zzarental.web.app.mapper.ProvinceInfoMapper;
 import org.springframework.stereotype.Service;

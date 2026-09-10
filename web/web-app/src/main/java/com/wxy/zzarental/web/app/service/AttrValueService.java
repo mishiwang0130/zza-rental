@@ -1,6 +1,6 @@
 package com.wxy.zzarental.web.app.service;
 
-import com.wxy.zzarental.model.entity.AttrValue;
+import com.wxy.zzarental.web.app.entity.AttrValue;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.wxy.zzarental.web.app.service.dto.AttrValueDTO;
 

@@ -1,6 +1,6 @@
 package com.wxy.zzarental.web.app.service;
 
-import com.wxy.zzarental.model.entity.ProvinceInfo;
+import com.wxy.zzarental.web.app.entity.ProvinceInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

@@ -13,8 +13,8 @@ import com.wxy.zzarental.web.app.infrastructure.messaging.BrowsingHistoryMessage
 import com.wxy.zzarental.common.login.LoginUserHolder;
 import com.wxy.zzarental.common.util.RedisKeyUtil;
 import com.wxy.zzarental.common.util.RedisUtil;
-import com.wxy.zzarental.model.entity.*;
-import com.wxy.zzarental.model.enums.ReleaseStatus;
+import com.wxy.zzarental.web.app.entity.*;
+import com.wxy.zzarental.web.app.enums.ReleaseStatus;
 import com.wxy.zzarental.web.app.mapper.*;
 import com.wxy.zzarental.web.app.mq.message.SaveBrowsHistoryMQMsg;
 import com.wxy.zzarental.web.app.service.*;

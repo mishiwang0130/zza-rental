@@ -2,8 +2,8 @@ package com.wxy.zzarental.web.admin.controller.apartment;
 
 import com.wxy.zzarental.common.result.Result;
 import com.wxy.zzarental.common.util.VOConverter;
-import com.wxy.zzarental.model.entity.FeeKey;
-import com.wxy.zzarental.model.entity.FeeValue;
+import com.wxy.zzarental.web.admin.entity.FeeKey;
+import com.wxy.zzarental.web.admin.entity.FeeValue;
 import com.wxy.zzarental.web.admin.controller.assembler.AdminApiAssembler;
 import com.wxy.zzarental.web.admin.service.FeeKeyService;
 import com.wxy.zzarental.web.admin.service.FeeValueService;

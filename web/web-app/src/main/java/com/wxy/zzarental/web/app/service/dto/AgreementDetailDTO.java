@@ -1,7 +1,7 @@
 package com.wxy.zzarental.web.app.service.dto;
 
-import com.wxy.zzarental.model.enums.LeaseSourceType;
-import com.wxy.zzarental.model.enums.LeaseStatus;
+import com.wxy.zzarental.web.app.enums.LeaseSourceType;
+import com.wxy.zzarental.web.app.enums.LeaseStatus;
 import lombok.Data;
 
 import java.util.List;

@@ -1,7 +1,7 @@
 package com.wxy.zzarental.web.admin.service.dto;
 
-import com.wxy.zzarental.model.enums.BaseStatus;
-import com.wxy.zzarental.model.enums.SystemUserType;
+import com.wxy.zzarental.web.admin.enums.BaseStatus;
+import com.wxy.zzarental.web.admin.enums.SystemUserType;
 import lombok.Data;
 
 @Data

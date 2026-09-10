@@ -1,6 +1,6 @@
 package com.wxy.zzarental.web.app.service;
 
-import com.wxy.zzarental.model.entity.ViewAppointment;
+import com.wxy.zzarental.web.app.entity.ViewAppointment;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.wxy.zzarental.web.app.service.dto.AppointmentDetailDTO;
 import com.wxy.zzarental.web.app.service.dto.AppointmentItemDTO;

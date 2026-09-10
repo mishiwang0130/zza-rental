@@ -2,8 +2,8 @@ package com.wxy.zzarental.web.admin.controller.apartment;
 
 import com.wxy.zzarental.common.result.Result;
 import com.wxy.zzarental.common.util.VOConverter;
-import com.wxy.zzarental.model.entity.AttrKey;
-import com.wxy.zzarental.model.entity.AttrValue;
+import com.wxy.zzarental.web.admin.entity.AttrKey;
+import com.wxy.zzarental.web.admin.entity.AttrValue;
 import com.wxy.zzarental.web.admin.controller.assembler.AdminApiAssembler;
 import com.wxy.zzarental.web.admin.service.AttrKeyService;
 import com.wxy.zzarental.web.admin.service.AttrValueService;

@@ -1,6 +1,6 @@
 package com.wxy.zzarental.web.app.vo.appointment;
 
-import com.wxy.zzarental.model.enums.AppointmentStatus;
+import com.wxy.zzarental.web.app.enums.AppointmentStatus;
 import com.wxy.zzarental.web.app.vo.graph.GraphRespVO;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;

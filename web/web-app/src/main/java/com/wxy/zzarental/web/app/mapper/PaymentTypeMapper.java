@@ -1,6 +1,6 @@
 package com.wxy.zzarental.web.app.mapper;
 
-import com.wxy.zzarental.model.entity.PaymentType;
+import com.wxy.zzarental.web.app.entity.PaymentType;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 import java.util.List;
@@ -9,7 +9,7 @@ import java.util.List;
 * @author liubo
 * @description 针对表【payment_type(支付方式表)】的数据库操作Mapper
 * @createDate 2023-07-26 11:12:39
-* @Entity com.wxy.zzarental.model.entity.PaymentType
+* @Entity com.wxy.zzarental.web.app.entity.PaymentType
 */
 public interface PaymentTypeMapper extends BaseMapper<PaymentType> {
 

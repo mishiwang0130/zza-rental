@@ -1,7 +1,7 @@
 package com.wxy.zzarental.web.admin.vo.system.user;
 
-import com.wxy.zzarental.model.enums.BaseStatus;
-import com.wxy.zzarental.model.enums.SystemUserType;
+import com.wxy.zzarental.web.admin.enums.BaseStatus;
+import com.wxy.zzarental.web.admin.enums.SystemUserType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;

@@ -2,7 +2,7 @@ package com.wxy.zzarental.web.admin.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.wxy.zzarental.model.entity.CityInfo;
+import com.wxy.zzarental.web.admin.entity.CityInfo;
 import com.wxy.zzarental.web.admin.mapper.CityInfoMapper;
 import com.wxy.zzarental.web.admin.service.CityInfoService;
 import jakarta.annotation.Resource;

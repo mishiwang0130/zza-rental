@@ -3,7 +3,7 @@ package com.wxy.zzarental.web.admin.controller.apartment;
 
 import com.wxy.zzarental.common.result.Result;
 import com.wxy.zzarental.common.util.VOConverter;
-import com.wxy.zzarental.model.entity.PaymentType;
+import com.wxy.zzarental.web.admin.entity.PaymentType;
 import com.wxy.zzarental.web.admin.service.PaymentTypeService;
 import com.wxy.zzarental.web.admin.vo.apartment.PaymentTypeRespVO;
 import com.wxy.zzarental.web.admin.vo.apartment.PaymentTypeSaveReqVO;

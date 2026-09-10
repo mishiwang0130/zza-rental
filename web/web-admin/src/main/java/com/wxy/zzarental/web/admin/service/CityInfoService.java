@@ -1,6 +1,6 @@
 package com.wxy.zzarental.web.admin.service;
 
-import com.wxy.zzarental.model.entity.CityInfo;
+import com.wxy.zzarental.web.admin.entity.CityInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;

@@ -1,7 +1,7 @@
 package com.wxy.zzarental.web.admin.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.wxy.zzarental.model.entity.FeeValue;
+import com.wxy.zzarental.web.admin.entity.FeeValue;
 import com.wxy.zzarental.web.admin.service.FeeValueService;
 import com.wxy.zzarental.web.admin.mapper.FeeValueMapper;
 import org.springframework.stereotype.Service;

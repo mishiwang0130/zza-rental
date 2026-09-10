@@ -2,8 +2,8 @@ package com.wxy.zzarental.web.admin.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.wxy.zzarental.model.entity.FeeKey;
-import com.wxy.zzarental.model.entity.FeeValue;
+import com.wxy.zzarental.web.admin.entity.FeeKey;
+import com.wxy.zzarental.web.admin.entity.FeeValue;
 import com.wxy.zzarental.web.admin.mapper.FeeKeyMapper;
 import com.wxy.zzarental.web.admin.mapper.FeeValueMapper;
 import com.wxy.zzarental.web.admin.service.FeeKeyService;

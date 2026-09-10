@@ -16,7 +16,7 @@ import com.wxy.zzarental.web.app.mapper.ViewAppointmentMapper;
 import com.wxy.zzarental.web.app.service.ApartmentInfoService;
 import com.wxy.zzarental.web.app.service.GraphInfoService;
 import com.wxy.zzarental.web.app.service.ViewAppointmentService;
-import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wxy.zzarental.web.app.vo.apartment.ApartmentItemVo;
 import com.wxy.zzarental.web.app.vo.appointment.AppointmentDetailVo;
 import com.wxy.zzarental.web.app.vo.appointment.AppointmentItemVo;

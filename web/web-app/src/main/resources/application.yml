@@ -22,16 +22,6 @@ spring:
       port: 6379
       database: 0
       password: 123456
-  # ======================= Spring AI (DeepSeek 原生接口) =======================
-  ai:
-    deepseek:
-      api-key: ${OPENAI_API_KEY:your-api-key-here}
-      # 默认就是 https://api.deepseek.com，一般无需配置
-      # base-url: https://api.deepseek.com
-      chat:
-        options:
-          model: deepseek-v4-flash
-          temperature: 0.5
 
 #用于打印框架生成的sql语句，便于调试
 mybatis-plus:
@@ -52,10 +42,6 @@ minio:
 
 springdoc:
   default-flat-param-object: true
-
-# knife4j 4.5.0 + springdoc 2.8 + Spring Boot 3.5：需关闭文档增强，否则 doc.html 加载失败
-knife4j:
-  enable: false
 
 rocketmq:
   name-server: 192.168.205.128:9876

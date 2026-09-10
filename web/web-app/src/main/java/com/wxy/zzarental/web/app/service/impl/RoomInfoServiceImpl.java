@@ -18,7 +18,7 @@ import com.wxy.zzarental.model.enums.ReleaseStatus;
 import com.wxy.zzarental.web.app.mapper.*;
 import com.wxy.zzarental.web.app.mq.message.SaveBrowsHistoryMQMsg;
 import com.wxy.zzarental.web.app.service.*;
-import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wxy.zzarental.web.app.vo.apartment.ApartmentItemVo;
 import com.wxy.zzarental.web.app.vo.graph.GraphVo;
 import com.wxy.zzarental.web.app.vo.room.RoomDetailVo;

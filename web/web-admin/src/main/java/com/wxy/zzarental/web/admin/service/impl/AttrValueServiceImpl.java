@@ -1,6 +1,6 @@
 package com.wxy.zzarental.web.admin.service.impl;
 
-import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wxy.zzarental.model.entity.AttrValue;
 import com.wxy.zzarental.web.admin.service.AttrValueService;
 import com.wxy.zzarental.web.admin.mapper.AttrValueMapper;

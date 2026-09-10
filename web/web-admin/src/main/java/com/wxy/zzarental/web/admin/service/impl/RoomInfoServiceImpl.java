@@ -10,7 +10,7 @@ import com.wxy.zzarental.model.enums.ItemType;
 import com.wxy.zzarental.model.enums.LeaseStatus;
 import com.wxy.zzarental.web.admin.mapper.*;
 import com.wxy.zzarental.web.admin.service.*;
-import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wxy.zzarental.web.admin.vo.attr.AttrValueVo;
 import com.wxy.zzarental.web.admin.vo.graph.GraphVo;
 import com.wxy.zzarental.web.admin.vo.room.RoomDetailVo;

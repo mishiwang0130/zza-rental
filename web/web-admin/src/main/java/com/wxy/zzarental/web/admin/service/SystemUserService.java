@@ -5,7 +5,7 @@ import com.wxy.zzarental.model.entity.SystemUser;
 import com.wxy.zzarental.web.admin.vo.system.user.SystemUserItemVo;
 import com.wxy.zzarental.web.admin.vo.system.user.SystemUserQueryVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.spring.service.IService;
+import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
 * @author liubo

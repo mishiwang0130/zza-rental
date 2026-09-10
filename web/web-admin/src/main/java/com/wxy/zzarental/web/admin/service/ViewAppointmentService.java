@@ -5,7 +5,7 @@ import com.wxy.zzarental.model.entity.ViewAppointment;
 import com.wxy.zzarental.web.admin.vo.appointment.AppointmentQueryVo;
 import com.wxy.zzarental.web.admin.vo.appointment.AppointmentVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.spring.service.IService;
+import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
 * @author liubo

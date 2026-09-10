@@ -1,7 +1,7 @@
 package com.wxy.zzarental.web.admin.service;
 
 import com.wxy.zzarental.model.entity.AttrValue;
-import com.baomidou.mybatisplus.spring.service.IService;
+import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
 * @author liubo

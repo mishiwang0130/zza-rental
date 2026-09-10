@@ -13,7 +13,7 @@ import com.wxy.zzarental.web.app.mapper.GraphInfoMapper;
 import com.wxy.zzarental.web.app.mapper.RoomInfoMapper;
 import com.wxy.zzarental.web.app.service.ApartmentInfoService;
 import com.wxy.zzarental.web.app.service.BrowsingHistoryService;
-import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wxy.zzarental.web.app.service.GraphInfoService;
 import com.wxy.zzarental.web.app.vo.graph.GraphVo;
 import com.wxy.zzarental.web.app.vo.history.HistoryItemVo;

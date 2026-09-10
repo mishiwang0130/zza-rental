@@ -11,7 +11,7 @@ import com.wxy.zzarental.model.enums.ItemType;
 import com.wxy.zzarental.model.enums.LeaseStatus;
 import com.wxy.zzarental.web.app.mapper.*;
 import com.wxy.zzarental.web.app.service.*;
-import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wxy.zzarental.web.app.vo.agreement.AgreementDetailVo;
 import com.wxy.zzarental.web.app.vo.agreement.AgreementItemVo;
 import com.wxy.zzarental.web.app.vo.apartment.ApartmentDetailVo;

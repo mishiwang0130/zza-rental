@@ -10,7 +10,7 @@ import com.wxy.zzarental.common.util.RedisUtil;
 import com.wxy.zzarental.model.entity.*;
 import com.wxy.zzarental.web.app.mapper.*;
 import com.wxy.zzarental.web.app.service.ApartmentInfoService;
-import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wxy.zzarental.web.app.vo.apartment.ApartmentDetailVo;
 import com.wxy.zzarental.web.app.vo.apartment.ApartmentItemVo;
 import com.wxy.zzarental.web.app.vo.graph.GraphVo;

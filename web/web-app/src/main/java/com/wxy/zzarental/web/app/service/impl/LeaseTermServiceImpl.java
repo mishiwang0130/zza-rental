@@ -7,7 +7,7 @@ import com.wxy.zzarental.model.entity.RoomLeaseTerm;
 import com.wxy.zzarental.web.app.mapper.LeaseTermMapper;
 import com.wxy.zzarental.web.app.mapper.RoomLeaseTermMapper;
 import com.wxy.zzarental.web.app.service.LeaseTermService;
-import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 

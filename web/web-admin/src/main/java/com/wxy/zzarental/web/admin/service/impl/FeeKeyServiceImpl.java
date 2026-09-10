@@ -6,7 +6,7 @@ import com.wxy.zzarental.model.entity.FeeValue;
 import com.wxy.zzarental.web.admin.mapper.FeeKeyMapper;
 import com.wxy.zzarental.web.admin.mapper.FeeValueMapper;
 import com.wxy.zzarental.web.admin.service.FeeKeyService;
-import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wxy.zzarental.web.admin.vo.fee.FeeKeyVo;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;

@@ -4,12 +4,17 @@ import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.wxy.zzarental.common.util.VOConverter;
 import com.wxy.zzarental.model.entity.*;
 import com.wxy.zzarental.web.admin.mapper.*;
 import com.wxy.zzarental.web.admin.service.LeaseAgreementService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.wxy.zzarental.web.admin.vo.agreement.AgreementQueryVo;
-import com.wxy.zzarental.web.admin.vo.agreement.AgreementVo;
+import com.wxy.zzarental.web.admin.vo.agreement.AgreementPageReqVO;
+import com.wxy.zzarental.web.admin.vo.agreement.AgreementRespVO;
+import com.wxy.zzarental.web.admin.vo.apartment.ApartmentBasicRespVO;
+import com.wxy.zzarental.web.admin.vo.apartment.LeaseTermRespVO;
+import com.wxy.zzarental.web.admin.vo.apartment.PaymentTypeRespVO;
+import com.wxy.zzarental.web.admin.vo.room.RoomBasicRespVO;
 import jakarta.annotation.Resource;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -41,20 +46,20 @@ public class LeaseAgreementServiceImpl extends ServiceImpl<LeaseAgreementMapper,
     private LeaseTermMapper leaseTermMapper;
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public IPage<AgreementVo> selectPage(Page<LeaseAgreement> page, AgreementQueryVo queryVo) {
+    public IPage<AgreementRespVO> selectPage(Page<LeaseAgreement> page, AgreementPageReqVO queryVo) {
         // 查询租约信息分页，得到一个IPage<LeaseAgreement>对象，对象中包含了租约信息列表，如查询十条记录
-        IPage<AgreementVo> agreementIPage = leaseAgreementMapper.page(page, queryVo);
-        List<AgreementVo> records = agreementIPage.getRecords();
+        IPage<AgreementRespVO> agreementIPage = leaseAgreementMapper.page(page, queryVo);
+        List<AgreementRespVO> records = agreementIPage.getRecords();
         if(CollUtil.isEmpty(records)){
             return agreementIPage;
         }
         Set<Long> apartmentIdSet = records.stream()
-                .map(LeaseAgreement::getApartmentId).collect(Collectors.toSet());
+                .map(AgreementRespVO::getApartmentId).collect(Collectors.toSet());
         Set<Long> roomIdSet = records.stream()
-                .map(LeaseAgreement::getRoomId).collect(Collectors.toSet());
+                .map(AgreementRespVO::getRoomId).collect(Collectors.toSet());
         List<Long> paymentTypeIdList = records.stream()
-                .map(AgreementVo::getPaymentTypeId).distinct().toList();
-        List<Long> leaseTermIdList = records.stream().map(LeaseAgreement::getLeaseTermId).distinct().toList();
+                .map(AgreementRespVO::getPaymentTypeId).distinct().toList();
+        List<Long> leaseTermIdList = records.stream().map(AgreementRespVO::getLeaseTermId).distinct().toList();
 
         // 通过租约列表，查询出签约公寓信息、签约房间信息、支付方式、租期等信息，得到四个列表，每个列表也是十条记录
         List<ApartmentInfo> apartmentInfoList = apartmentInfoMapper.selectBatchIds(apartmentIdSet);
@@ -69,17 +74,17 @@ public class LeaseAgreementServiceImpl extends ServiceImpl<LeaseAgreementMapper,
         Map<Long, PaymentType> paymentTypeMap = paymentTypeList.stream().collect(Collectors.toMap(PaymentType::getId, Function.identity()));
         Map<Long, LeaseTerm> leaseTermMap = leaseTermList.stream().collect(Collectors.toMap(LeaseTerm::getId, Function.identity()));
 
-        // 转换为AgreementVo列表
-        // 给租约列表的每一个AgreementVo添加签约公寓信息、签约房间信息、支付方式、租期等信息
+        // 转换为AgreementRespVO列表
+        // 给租约列表的每一个AgreementRespVO添加签约公寓信息、签约房间信息、支付方式、租期等信息
         records.forEach(agreementVo -> {
             ApartmentInfo apartmentInfo = apartmentInfoMap.get(agreementVo.getApartmentId());
-            agreementVo.setApartmentInfo(apartmentInfo);
+            agreementVo.setApartmentInfo(VOConverter.to(apartmentInfo, ApartmentBasicRespVO.class));
             RoomInfo roomInfo = roomInfoMap.get(agreementVo.getRoomId());
-            agreementVo.setRoomInfo(roomInfo);
+            agreementVo.setRoomInfo(VOConverter.to(roomInfo, RoomBasicRespVO.class));
             PaymentType paymentType = paymentTypeMap.get(agreementVo.getPaymentTypeId());
-            agreementVo.setPaymentType(paymentType);
+            agreementVo.setPaymentType(VOConverter.to(paymentType, PaymentTypeRespVO.class));
             LeaseTerm leaseTerm = leaseTermMap.get(agreementVo.getLeaseTermId());
-            agreementVo.setLeaseTerm(leaseTerm);
+            agreementVo.setLeaseTerm(VOConverter.to(leaseTerm, LeaseTermRespVO.class));
 
         });
 
@@ -89,23 +94,23 @@ public class LeaseAgreementServiceImpl extends ServiceImpl<LeaseAgreementMapper,
     }
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public AgreementVo getLeaseInfoById(Long id) {
-        AgreementVo agreementVo = new AgreementVo();
+    public AgreementRespVO getLeaseInfoById(Long id) {
+        AgreementRespVO agreementVo = new AgreementRespVO();
         LeaseAgreement leaseAgreement = leaseAgreementMapper.selectById(id);
         // 这里没错
         BeanUtils.copyProperties(leaseAgreement,agreementVo);
         //公寓
         ApartmentInfo apartmentInfo = apartmentInfoMapper.selectById(leaseAgreement.getApartmentId());
-        agreementVo.setApartmentInfo(apartmentInfo);
+        agreementVo.setApartmentInfo(VOConverter.to(apartmentInfo, ApartmentBasicRespVO.class));
         //房间
         RoomInfo roomInfo = roomInfoMapper.selectById(leaseAgreement.getRoomId());
-        agreementVo.setRoomInfo(roomInfo);
+        agreementVo.setRoomInfo(VOConverter.to(roomInfo, RoomBasicRespVO.class));
         //支付方式
         PaymentType paymentType = paymentTypeMapper.selectById(leaseAgreement.getPaymentTypeId());
-        agreementVo.setPaymentType(paymentType);
+        agreementVo.setPaymentType(VOConverter.to(paymentType, PaymentTypeRespVO.class));
         //租期
         LeaseTerm leaseTerm = leaseTermMapper.selectById(leaseAgreement.getLeaseTermId());
-        agreementVo.setLeaseTerm(leaseTerm);
+        agreementVo.setLeaseTerm(VOConverter.to(leaseTerm, LeaseTermRespVO.class));
 
         return agreementVo;
     }

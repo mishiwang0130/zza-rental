@@ -1,7 +1,7 @@
 package com.wxy.zzarental.web.admin.service;
 
 import com.wxy.zzarental.model.entity.FeeKey;
-import com.wxy.zzarental.web.admin.vo.fee.FeeKeyVo;
+import com.wxy.zzarental.web.admin.vo.fee.FeeKeyRespVO;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
@@ -13,7 +13,7 @@ import java.util.List;
 */
 public interface FeeKeyService extends IService<FeeKey> {
 
-    List<FeeKeyVo> feeInfoList();
+    List<FeeKeyRespVO> feeInfoList();
 
     void deleteFeeKeyById(Long feeKeyId);
 }

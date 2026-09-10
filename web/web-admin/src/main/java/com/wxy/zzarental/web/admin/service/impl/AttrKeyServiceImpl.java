@@ -7,7 +7,7 @@ import com.wxy.zzarental.web.admin.mapper.AttrKeyMapper;
 import com.wxy.zzarental.web.admin.mapper.AttrValueMapper;
 import com.wxy.zzarental.web.admin.service.AttrKeyService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.wxy.zzarental.web.admin.vo.attr.AttrKeyVo;
+import com.wxy.zzarental.web.admin.vo.attr.AttrKeyRespVO;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
@@ -29,7 +29,7 @@ public class AttrKeyServiceImpl extends ServiceImpl<AttrKeyMapper, AttrKey>
     private AttrValueMapper attrValueMapper;
 
     @Override
-    public List<AttrKeyVo> listAttrInfo() {
+    public List<AttrKeyRespVO> listAttrInfo() {
         return attrKeyMapper.selectAttrInfo();
     }
 

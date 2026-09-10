@@ -4,7 +4,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.wxy.zzarental.web.admin.mapper.RoomInfoMapper">
 
-    <select id="pageItem" resultType="com.wxy.zzarental.web.admin.vo.room.RoomItemVo">
+    <select id="pageItem" resultType="com.wxy.zzarental.web.admin.vo.room.RoomItemRespVO">
         select r.* from room_info r
         <where>
             r.is_deleted = 0

@@ -1,7 +1,7 @@
 package com.wxy.zzarental.web.admin.mapper;
 
 import com.wxy.zzarental.model.entity.AttrKey;
-import com.wxy.zzarental.web.admin.vo.attr.AttrKeyVo;
+import com.wxy.zzarental.web.admin.vo.attr.AttrKeyRespVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 import java.util.List;
@@ -14,7 +14,7 @@ import java.util.List;
 */
 public interface AttrKeyMapper extends BaseMapper<AttrKey> {
 
-    List<AttrKeyVo> selectAttrInfo();
+    List<AttrKeyRespVO> selectAttrInfo();
 }
 
 

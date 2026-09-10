@@ -1,7 +1,7 @@
 package com.wxy.zzarental.web.admin.mapper;
 
 import com.wxy.zzarental.model.entity.AttrValue;
-import com.wxy.zzarental.web.admin.vo.attr.AttrValueVo;
+import com.wxy.zzarental.web.admin.vo.attr.AttrValueRespVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 import java.util.List;

@@ -1,13 +1,11 @@
 package com.wxy.zzarental.web.app.controller.payment;
 
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.wxy.zzarental.common.result.Result;
-import com.wxy.zzarental.model.entity.BaseEntity;
-import com.wxy.zzarental.model.entity.PaymentType;
-import com.wxy.zzarental.model.entity.RoomPaymentType;
+import com.wxy.zzarental.common.util.VOConverter;
 import com.wxy.zzarental.web.app.service.PaymentTypeService;
 import com.wxy.zzarental.web.app.service.RoomPaymentTypeService;
+import com.wxy.zzarental.web.app.vo.payment.PaymentTypeRespVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
@@ -29,13 +27,13 @@ public class PaymentTypeController {
 
     @Operation(summary = "根据房间id获取可选支付方式列表")
     @GetMapping("listByRoomId")
-    public Result<List<PaymentType>> list(@RequestParam Long id) {
-        return Result.ok(paymentTypeService.getPaymentTypeByRoomId(id));
+    public Result<List<PaymentTypeRespVO>> list(@RequestParam Long id) {
+        return Result.ok(VOConverter.toList(paymentTypeService.getPaymentTypeByRoomId(id), PaymentTypeRespVO.class));
     }
 
     @Operation(summary = "获取全部支付方式列表")
     @GetMapping("list")
-    public Result<List<PaymentType>> list() {
-        return Result.ok(paymentTypeService.list());
+    public Result<List<PaymentTypeRespVO>> list() {
+        return Result.ok(VOConverter.toList(paymentTypeService.list(), PaymentTypeRespVO.class));
     }
 }

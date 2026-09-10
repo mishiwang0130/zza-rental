@@ -1,10 +1,10 @@
 package com.wxy.zzarental.web.admin.service;
 
 import com.wxy.zzarental.model.entity.RoomInfo;
-import com.wxy.zzarental.web.admin.vo.room.RoomDetailVo;
-import com.wxy.zzarental.web.admin.vo.room.RoomItemVo;
-import com.wxy.zzarental.web.admin.vo.room.RoomQueryVo;
-import com.wxy.zzarental.web.admin.vo.room.RoomSubmitVo;
+import com.wxy.zzarental.web.admin.vo.room.RoomDetailRespVO;
+import com.wxy.zzarental.web.admin.vo.room.RoomItemRespVO;
+import com.wxy.zzarental.web.admin.vo.room.RoomPageReqVO;
+import com.wxy.zzarental.web.admin.vo.room.RoomSaveReqVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -15,11 +15,11 @@ import com.baomidou.mybatisplus.extension.service.IService;
 */
 public interface RoomInfoService extends IService<RoomInfo> {
 
-    void saveOrUpdateRoom(RoomSubmitVo roomSubmitVo);
+    void saveOrUpdateRoom(RoomSaveReqVO roomSubmitVo);
 
-    IPage<RoomItemVo> pageItem(long current, long size, RoomQueryVo queryVo);
+    IPage<RoomItemRespVO> pageItem(long current, long size, RoomPageReqVO queryVo);
 
-    RoomDetailVo getDetailById(Long id);
+    RoomDetailRespVO getDetailById(Long id);
 
     void removeRoomById(Long id);
 }

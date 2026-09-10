@@ -4,8 +4,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wxy.zzarental.model.entity.RoomInfo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.wxy.zzarental.web.app.vo.room.RoomItemVo;
-import com.wxy.zzarental.web.app.vo.room.RoomQueryVo;
+import com.wxy.zzarental.web.app.vo.room.RoomItemRespVO;
+import com.wxy.zzarental.web.app.vo.room.RoomPageReqVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.math.BigDecimal;
@@ -29,9 +29,9 @@ public interface RoomInfoMapper extends BaseMapper<RoomInfo> {
      */
     BigDecimal selectMinRent(@Param("apartmentId") Long apartmentId);
 
-    IPage<RoomItemVo> pageItem(@Param("page") Page<RoomItemVo> page,
-                               @Param("queryVo") RoomQueryVo queryVo,
+    IPage<RoomItemRespVO> pageItem(@Param("page") Page<RoomItemRespVO> page,
+                               @Param("queryVo") RoomPageReqVO queryVo,
                                @Param("payRoomIds") List<Long> payRoomIds);
 
-    IPage<RoomItemVo> pageItemByApartmentId(Page<RoomItemVo> page, Long id);
+    IPage<RoomItemRespVO> pageItemByApartmentId(Page<RoomItemRespVO> page, Long id);
 }

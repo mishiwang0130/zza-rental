@@ -1,8 +1,8 @@
 package com.wxy.zzarental.web.admin.mapper;
 
 import com.wxy.zzarental.model.entity.SystemUser;
-import com.wxy.zzarental.web.admin.vo.system.user.SystemUserItemVo;
-import com.wxy.zzarental.web.admin.vo.system.user.SystemUserQueryVo;
+import com.wxy.zzarental.web.admin.vo.system.user.SystemUserItemRespVO;
+import com.wxy.zzarental.web.admin.vo.system.user.SystemUserPageReqVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 

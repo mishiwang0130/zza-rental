@@ -15,21 +15,21 @@ import java.io.FileNotFoundException;
 public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     @ResponseBody
-    public Result handleException(Exception e) {
+    public Result<Void> handleException(Exception e) {
         log.error("Exception, 错误信息: {}", e.getMessage(), e);
         return Result.fail();
     }
 
     @ExceptionHandler(ZZAException.class)
     @ResponseBody
-    public Result handleException(ZZAException e) {
+    public Result<Void> handleException(ZZAException e) {
         log.error("ZZAException, 错误信息: {}", e.getMessage(), e);
         return Result.fail(e.getCode(),e.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseBody
-    public Result handleException(MethodArgumentNotValidException e) {
+    public Result<Void> handleException(MethodArgumentNotValidException e) {
         log.error("参数校验出错, 错误信息: {}", e.getMessage(), e);
         return Result.fail(999, "参数校验出错, 错误信息: " + e.getMessage());
     }

@@ -3,15 +3,15 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.wxy.zzarental.web.admin.mapper.ViewAppointmentMapper">
-    <resultMap id="AppointmentVoMap" type="com.wxy.zzarental.web.admin.vo.appointment.AppointmentVo" autoMapping="true">
+    <resultMap id="AppointmentRespVOMap" type="com.wxy.zzarental.web.admin.vo.appointment.AppointmentRespVO" autoMapping="true">
         <id property="id" column="id"/>
-        <association property="apartmentInfo" javaType="com.wxy.zzarental.model.entity.ApartmentInfo" autoMapping="true">
+        <association property="apartmentInfo" javaType="com.wxy.zzarental.web.admin.vo.apartment.ApartmentBasicRespVO" autoMapping="true">
             <id property="id" column="apartment_id"/>
             <result property="name" column="apartment_name"/>
         </association>
     </resultMap>
 
-    <select id="selectPageAppointment" resultMap="AppointmentVoMap" parameterType="com.wxy.zzarental.web.admin.vo.appointment.AppointmentQueryVo">
+    <select id="selectPageAppointment" resultMap="AppointmentRespVOMap" parameterType="com.wxy.zzarental.web.admin.vo.appointment.AppointmentPageReqVO">
         select va.id,
         va.user_id,
         va.name,

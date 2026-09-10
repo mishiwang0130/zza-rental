@@ -7,8 +7,8 @@ import com.wxy.zzarental.common.result.Result;
 import com.wxy.zzarental.model.entity.ViewAppointment;
 import com.wxy.zzarental.model.enums.AppointmentStatus;
 import com.wxy.zzarental.web.admin.service.ViewAppointmentService;
-import com.wxy.zzarental.web.admin.vo.appointment.AppointmentQueryVo;
-import com.wxy.zzarental.web.admin.vo.appointment.AppointmentVo;
+import com.wxy.zzarental.web.admin.vo.appointment.AppointmentPageReqVO;
+import com.wxy.zzarental.web.admin.vo.appointment.AppointmentRespVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,15 +25,15 @@ public class ViewAppointmentController {
 
     @Operation(summary = "分页查询预约信息")
     @GetMapping("page")
-    public Result<IPage<AppointmentVo>> page(@RequestParam long current, @RequestParam long size, AppointmentQueryVo queryVo) {
-        Page<AppointmentVo> page = new Page<>(current, size);
-        IPage<AppointmentVo> iPage = viewAppointmentService.pageAppointment(page, queryVo);
+    public Result<IPage<AppointmentRespVO>> page(@RequestParam long current, @RequestParam long size, AppointmentPageReqVO queryVo) {
+        Page<AppointmentRespVO> page = new Page<>(current, size);
+        IPage<AppointmentRespVO> iPage = viewAppointmentService.pageAppointment(page, queryVo);
         return Result.ok(iPage);
     }
 
     @Operation(summary = "根据id更新预约状态")
     @PostMapping("updateStatusById")
-    public Result updateStatusById(@RequestParam Long id, @RequestParam AppointmentStatus status) {
+    public Result<Void> updateStatusById(@RequestParam Long id, @RequestParam AppointmentStatus status) {
         LambdaUpdateWrapper<ViewAppointment> appointmentLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
         appointmentLambdaUpdateWrapper.eq(ViewAppointment::getId, id);
         appointmentLambdaUpdateWrapper.set(ViewAppointment::getAppointmentStatus, status);

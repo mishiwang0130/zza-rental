@@ -1,8 +1,8 @@
 package com.wxy.zzarental.web.admin.mapper;
 
 import com.wxy.zzarental.model.entity.RoomInfo;
-import com.wxy.zzarental.web.admin.vo.room.RoomItemVo;
-import com.wxy.zzarental.web.admin.vo.room.RoomQueryVo;
+import com.wxy.zzarental.web.admin.vo.room.RoomItemRespVO;
+import com.wxy.zzarental.web.admin.vo.room.RoomPageReqVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -15,5 +15,5 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 */
 public interface RoomInfoMapper extends BaseMapper<RoomInfo> {
 
-    IPage<RoomItemVo> pageItem(Page<RoomItemVo> page, RoomQueryVo queryVo);
+    IPage<RoomItemRespVO> pageItem(Page<RoomItemRespVO> page, RoomPageReqVO queryVo);
 }

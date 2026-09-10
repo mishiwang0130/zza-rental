@@ -1,8 +1,9 @@
 package com.wxy.zzarental.web.app.controller.leasaterm;
 
 import com.wxy.zzarental.common.result.Result;
-import com.wxy.zzarental.model.entity.LeaseTerm;
+import com.wxy.zzarental.common.util.VOConverter;
 import com.wxy.zzarental.web.app.service.LeaseTermService;
+import com.wxy.zzarental.web.app.vo.leaseterm.LeaseTermRespVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
@@ -23,7 +24,7 @@ public class LeaseTermController {
 
     @GetMapping("listByRoomId")
     @Operation(summary = "根据房间id获取可选获取租期列表")
-    public Result<List<LeaseTerm>> list(@RequestParam Long id) {
-        return Result.ok(leaseTermService.listByRoomId(id));
+    public Result<List<LeaseTermRespVO>> list(@RequestParam Long id) {
+        return Result.ok(VOConverter.toList(leaseTermService.listByRoomId(id), LeaseTermRespVO.class));
     }
 }

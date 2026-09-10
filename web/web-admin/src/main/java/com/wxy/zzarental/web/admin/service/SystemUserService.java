@@ -2,8 +2,8 @@ package com.wxy.zzarental.web.admin.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wxy.zzarental.model.entity.SystemUser;
-import com.wxy.zzarental.web.admin.vo.system.user.SystemUserItemVo;
-import com.wxy.zzarental.web.admin.vo.system.user.SystemUserQueryVo;
+import com.wxy.zzarental.web.admin.vo.system.user.SystemUserItemRespVO;
+import com.wxy.zzarental.web.admin.vo.system.user.SystemUserPageReqVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -14,7 +14,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 */
 public interface SystemUserService extends IService<SystemUser> {
 
-    IPage<SystemUserItemVo> pageUser(Page<SystemUser> systemUserPage, SystemUserQueryVo queryVo);
+    IPage<SystemUserItemRespVO> pageUser(Page<SystemUser> systemUserPage, SystemUserPageReqVO queryVo);
 
-    SystemUserItemVo getSystemUserById(Long id);
+    SystemUserItemRespVO getSystemUserById(Long id);
 }

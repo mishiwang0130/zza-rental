@@ -2,8 +2,11 @@ package com.wxy.zzarental.web.admin.controller.apartment;
 
 
 import com.wxy.zzarental.common.result.Result;
+import com.wxy.zzarental.common.util.VOConverter;
 import com.wxy.zzarental.model.entity.LeaseTerm;
 import com.wxy.zzarental.web.admin.service.LeaseTermService;
+import com.wxy.zzarental.web.admin.vo.apartment.LeaseTermRespVO;
+import com.wxy.zzarental.web.admin.vo.apartment.LeaseTermSaveReqVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
@@ -21,24 +24,24 @@ public class LeaseTermController {
 
     @GetMapping("list")
     @Operation(summary = "查询全部租期列表")
-    public Result<List<LeaseTerm>> listLeaseTerm() {
+    public Result<List<LeaseTermRespVO>> listLeaseTerm() {
         List<LeaseTerm> list = leaseTermService.list();
         if (list.isEmpty()) {
             return Result.fail();
         }
-        return Result.ok(list);
+        return Result.ok(VOConverter.toList(list, LeaseTermRespVO.class));
     }
 
     @PostMapping("saveOrUpdate")
     @Operation(summary = "保存或更新租期信息")
-    public Result saveOrUpdate(@RequestBody LeaseTerm leaseTerm) {
-        leaseTermService.saveOrUpdate(leaseTerm);
+    public Result<Void> saveOrUpdate(@RequestBody LeaseTermSaveReqVO reqVO) {
+        leaseTermService.saveOrUpdate(VOConverter.to(reqVO, LeaseTerm.class));
         return Result.ok();
     }
 
     @DeleteMapping("deleteById")
     @Operation(summary = "根据ID删除租期")
-    public Result deleteLeaseTermById(@RequestParam Long id) {
+    public Result<Void> deleteLeaseTermById(@RequestParam Long id) {
         leaseTermService.removeById(id);
         return Result.ok();
     }

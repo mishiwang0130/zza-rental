@@ -2,8 +2,8 @@ package com.wxy.zzarental.web.app.service;
 
 import com.wxy.zzarental.model.entity.ViewAppointment;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.wxy.zzarental.web.app.vo.appointment.AppointmentDetailVo;
-import com.wxy.zzarental.web.app.vo.appointment.AppointmentItemVo;
+import com.wxy.zzarental.web.app.vo.appointment.AppointmentDetailRespVO;
+import com.wxy.zzarental.web.app.vo.appointment.AppointmentItemRespVO;
 
 import java.util.List;
 
@@ -13,9 +13,9 @@ import java.util.List;
 * @createDate 2023-07-26 11:12:39
 */
 public interface ViewAppointmentService extends IService<ViewAppointment> {
-    List<AppointmentItemVo> listItem();
+    List<AppointmentItemRespVO> listItem();
 
     void saveOrUpdateViewAppointment(ViewAppointment viewAppointment);
 
-    AppointmentDetailVo getDetailById(Long id,Long userId);
+    AppointmentDetailRespVO getDetailById(Long id,Long userId);
 }

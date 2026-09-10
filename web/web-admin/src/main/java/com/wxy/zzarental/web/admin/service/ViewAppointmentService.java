@@ -2,8 +2,8 @@ package com.wxy.zzarental.web.admin.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.wxy.zzarental.model.entity.ViewAppointment;
-import com.wxy.zzarental.web.admin.vo.appointment.AppointmentQueryVo;
-import com.wxy.zzarental.web.admin.vo.appointment.AppointmentVo;
+import com.wxy.zzarental.web.admin.vo.appointment.AppointmentPageReqVO;
+import com.wxy.zzarental.web.admin.vo.appointment.AppointmentRespVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -14,5 +14,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
 */
 public interface ViewAppointmentService extends IService<ViewAppointment> {
 
-    IPage<AppointmentVo> pageAppointment(Page<AppointmentVo> page, AppointmentQueryVo queryVo);
+    IPage<AppointmentRespVO> pageAppointment(Page<AppointmentRespVO> page, AppointmentPageReqVO queryVo);
 }

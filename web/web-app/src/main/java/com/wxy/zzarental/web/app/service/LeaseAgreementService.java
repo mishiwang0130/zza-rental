@@ -2,8 +2,8 @@ package com.wxy.zzarental.web.app.service;
 
 import com.wxy.zzarental.model.entity.LeaseAgreement;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.wxy.zzarental.web.app.vo.agreement.AgreementDetailVo;
-import com.wxy.zzarental.web.app.vo.agreement.AgreementItemVo;
+import com.wxy.zzarental.web.app.vo.agreement.AgreementDetailRespVO;
+import com.wxy.zzarental.web.app.vo.agreement.AgreementItemRespVO;
 
 import java.util.List;
 
@@ -13,7 +13,7 @@ import java.util.List;
 * @createDate 2023-07-26 11:12:39
 */
 public interface LeaseAgreementService extends IService<LeaseAgreement> {
-    List<AgreementItemVo> listItemByPhone(String phone);
+    List<AgreementItemRespVO> listItemByPhone(String phone);
 
     void saveOrUpdateLeaseAgreement(LeaseAgreement leaseAgreement);
 
@@ -21,9 +21,9 @@ public interface LeaseAgreementService extends IService<LeaseAgreement> {
      * 按id获取租约详细信息
      *
      * @param id ID
-     * @return {@code AgreementDetailVo }
+     * @return {@code AgreementDetailRespVO }
      * @author wxy
      * @date 2026/09/05
      */
-    AgreementDetailVo getDetailById(Long id);
+    AgreementDetailRespVO getDetailById(Long id);
 }

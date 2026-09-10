@@ -13,8 +13,8 @@ import com.wxy.zzarental.model.enums.BaseStatus;
 import com.wxy.zzarental.web.app.mapper.UserInfoMapper;
 import com.wxy.zzarental.web.app.service.LoginService;
 import com.wxy.zzarental.web.app.service.SmsService;
-import com.wxy.zzarental.web.app.vo.user.LoginVo;
-import com.wxy.zzarental.web.app.vo.user.UserInfoVo;
+import com.wxy.zzarental.web.app.vo.user.LoginReqVO;
+import com.wxy.zzarental.web.app.vo.user.UserInfoRespVO;
 import jakarta.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -34,7 +34,7 @@ public class LoginServiceImpl implements LoginService {
 
 
     @Override
-    public String login(LoginVo loginVo) {
+    public String login(LoginReqVO loginVo) {
 
         String key = RedisKeyUtil.getPhoneCaptcha(loginVo.getPhone());
         String code = stringRedisTemplate.opsForValue().get(key);
@@ -66,9 +66,9 @@ public class LoginServiceImpl implements LoginService {
 
 
     @Override
-    public UserInfoVo getLoginUserById(Long userId) {
+    public UserInfoRespVO getLoginUserById(Long userId) {
         UserInfo userInfo = userInfoMapper.selectById(userId);
-        return new UserInfoVo(userInfo.getNickname(),userInfo.getAvatarUrl());
+        return new UserInfoRespVO(userInfo.getNickname(),userInfo.getAvatarUrl());
     }
 
     @Override

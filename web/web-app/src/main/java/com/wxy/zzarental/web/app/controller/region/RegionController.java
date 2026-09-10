@@ -3,12 +3,15 @@ package com.wxy.zzarental.web.app.controller.region;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.wxy.zzarental.common.result.Result;
+import com.wxy.zzarental.common.util.VOConverter;
 import com.wxy.zzarental.model.entity.CityInfo;
 import com.wxy.zzarental.model.entity.DistrictInfo;
-import com.wxy.zzarental.model.entity.ProvinceInfo;
 import com.wxy.zzarental.web.app.service.CityInfoService;
 import com.wxy.zzarental.web.app.service.DistrictInfoService;
 import com.wxy.zzarental.web.app.service.ProvinceInfoService;
+import com.wxy.zzarental.web.app.vo.region.CityRespVO;
+import com.wxy.zzarental.web.app.vo.region.DistrictRespVO;
+import com.wxy.zzarental.web.app.vo.region.ProvinceRespVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
@@ -33,24 +36,23 @@ public class RegionController {
 
     @Operation(summary = "查询省份信息列表")
     @GetMapping("province/list")
-    public Result<List<ProvinceInfo>> listProvince() {
-
-        return Result.ok(provinceInfoService.list());
+    public Result<List<ProvinceRespVO>> listProvince() {
+        return Result.ok(VOConverter.toList(provinceInfoService.list(), ProvinceRespVO.class));
     }
 
     @Operation(summary = "根据省份id查询城市信息列表")
     @GetMapping("city/listByProvinceId")
-    public Result<List<CityInfo>> listCityInfoByProvinceId(@RequestParam Long id) {
+    public Result<List<CityRespVO>> listCityInfoByProvinceId(@RequestParam Long id) {
         LambdaQueryWrapper<CityInfo> cityInfoLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        cityInfoLambdaQueryWrapper.eq(CityInfo::getProvinceId,id);
-        return Result.ok(cityInfoService.list(cityInfoLambdaQueryWrapper));
+        cityInfoLambdaQueryWrapper.eq(CityInfo::getProvinceId, id);
+        return Result.ok(VOConverter.toList(cityInfoService.list(cityInfoLambdaQueryWrapper), CityRespVO.class));
     }
 
     @GetMapping("district/listByCityId")
     @Operation(summary = "根据城市id查询区县信息")
-    public Result<List<DistrictInfo>> listDistrictInfoByCityId(@RequestParam Long id) {
+    public Result<List<DistrictRespVO>> listDistrictInfoByCityId(@RequestParam Long id) {
         LambdaQueryWrapper<DistrictInfo> districtInfoLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        districtInfoLambdaQueryWrapper.eq(DistrictInfo::getCityId,id);
-        return Result.ok(districtInfoService.list(districtInfoLambdaQueryWrapper));
+        districtInfoLambdaQueryWrapper.eq(DistrictInfo::getCityId, id);
+        return Result.ok(VOConverter.toList(districtInfoService.list(districtInfoLambdaQueryWrapper), DistrictRespVO.class));
     }
 }

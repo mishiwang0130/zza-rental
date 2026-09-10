@@ -1,7 +1,7 @@
 package com.wxy.zzarental.web.app.service;
 
-import com.wxy.zzarental.web.app.vo.user.LoginVo;
-import com.wxy.zzarental.web.app.vo.user.UserInfoVo;
+import com.wxy.zzarental.web.app.vo.user.LoginReqVO;
+import com.wxy.zzarental.web.app.vo.user.UserInfoRespVO;
 
 public interface LoginService {
 
@@ -13,16 +13,16 @@ public interface LoginService {
      * @author wxy
      * @date 2026/09/02
      */
-    String login(LoginVo loginVo);
+    String login(LoginReqVO loginVo);
     /**
      * 获取用户信息
      *
      * @param userId 用户ID
-     * @return {@code UserInfoVo }
+     * @return {@code UserInfoRespVO }
      * @author wxy
      * @date 2026/09/02
      */
-    UserInfoVo getLoginUserById(Long userId);
+    UserInfoRespVO getLoginUserById(Long userId);
 
     /**
      * 获取验证码

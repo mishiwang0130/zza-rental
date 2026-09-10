@@ -15,8 +15,8 @@ import com.wxy.zzarental.web.app.service.ApartmentInfoService;
 import com.wxy.zzarental.web.app.service.BrowsingHistoryService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wxy.zzarental.web.app.service.GraphInfoService;
-import com.wxy.zzarental.web.app.vo.graph.GraphVo;
-import com.wxy.zzarental.web.app.vo.history.HistoryItemVo;
+import com.wxy.zzarental.web.app.vo.graph.GraphRespVO;
+import com.wxy.zzarental.web.app.vo.history.HistoryItemRespVO;
 import jakarta.annotation.Resource;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -45,7 +45,7 @@ public class BrowsingHistoryServiceImpl extends ServiceImpl<BrowsingHistoryMappe
     @Resource
     private GraphInfoService graphInfoService;
     @Override
-    public IPage<HistoryItemVo> pageItemByUserId(Page<BrowsingHistory> page, Long userId) {
+    public IPage<HistoryItemRespVO> pageItemByUserId(Page<BrowsingHistory> page, Long userId) {
         LambdaQueryWrapper<BrowsingHistory> browsingHistoryLambdaQueryWrapper = new LambdaQueryWrapper<>();
         browsingHistoryLambdaQueryWrapper.eq(BrowsingHistory::getUserId,userId);
         // 对浏览记录分页，需要传两个参数，浏览记录的page和浏览记录的wrapper
@@ -66,16 +66,16 @@ public class BrowsingHistoryServiceImpl extends ServiceImpl<BrowsingHistoryMappe
         List<ApartmentInfo> apartmentInfos = apartmentInfoMapper.selectBatchIds(apartmentIds);
         Map<Long, ApartmentInfo> apartmentInfoMap = apartmentInfos.stream().collect(Collectors.toMap(BaseEntity::getId, Function.identity(), (key1, key2) -> key1));
 
-        List<HistoryItemVo> historyItemVos = records.stream().map(
+        List<HistoryItemRespVO> historyItemVos = records.stream().map(
                 browsingHistory -> {
-                    HistoryItemVo historyItemVo = new HistoryItemVo();
+                    HistoryItemRespVO historyItemVo = new HistoryItemRespVO();
                     BeanUtil.copyProperties(browsingHistory, historyItemVo);
                     Long roomId = browsingHistory.getRoomId();
 
                     List<GraphInfo> graphInfos = graphMap.get(roomId);
                     if (CollUtil.isNotEmpty(graphInfos)) {
-                        List<GraphVo> graphVos = graphInfos.stream()
-                                .map(item -> new GraphVo(item.getName(), item.getUrl())).toList();
+                        List<GraphRespVO> graphVos = graphInfos.stream()
+                                .map(item -> new GraphRespVO(item.getName(), item.getUrl())).toList();
                         historyItemVo.setRoomGraphVoList(graphVos);
                     }
 
@@ -95,7 +95,7 @@ public class BrowsingHistoryServiceImpl extends ServiceImpl<BrowsingHistoryMappe
                 }
         ).toList();
 
-        Page<HistoryItemVo> voPage = new Page<>(resultPage.getCurrent(), resultPage.getSize(), resultPage.getTotal());
+        Page<HistoryItemRespVO> voPage = new Page<>(resultPage.getCurrent(), resultPage.getSize(), resultPage.getTotal());
         voPage.setRecords(historyItemVos);
         return voPage;
     }

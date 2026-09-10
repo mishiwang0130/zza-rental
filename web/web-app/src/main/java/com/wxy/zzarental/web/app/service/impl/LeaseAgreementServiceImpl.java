@@ -12,10 +12,10 @@ import com.wxy.zzarental.model.enums.LeaseStatus;
 import com.wxy.zzarental.web.app.mapper.*;
 import com.wxy.zzarental.web.app.service.*;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.wxy.zzarental.web.app.vo.agreement.AgreementDetailVo;
-import com.wxy.zzarental.web.app.vo.agreement.AgreementItemVo;
-import com.wxy.zzarental.web.app.vo.apartment.ApartmentDetailVo;
-import com.wxy.zzarental.web.app.vo.graph.GraphVo;
+import com.wxy.zzarental.web.app.vo.agreement.AgreementDetailRespVO;
+import com.wxy.zzarental.web.app.vo.agreement.AgreementItemRespVO;
+import com.wxy.zzarental.web.app.vo.apartment.ApartmentDetailRespVO;
+import com.wxy.zzarental.web.app.vo.graph.GraphRespVO;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,7 +57,7 @@ public class LeaseAgreementServiceImpl extends ServiceImpl<LeaseAgreementMapper,
 
 
     @Override
-    public List<AgreementItemVo> listItemByPhone(String phone) {
+    public List<AgreementItemRespVO> listItemByPhone(String phone) {
         LambdaQueryWrapper<LeaseAgreement> leaseAgreementLambdaQueryWrapper = new LambdaQueryWrapper<>();
         leaseAgreementLambdaQueryWrapper.eq(LeaseAgreement::getPhone,phone);
         List<LeaseAgreement> leaseAgreements = leaseAgreementMapper.selectList(leaseAgreementLambdaQueryWrapper);
@@ -76,7 +76,7 @@ public class LeaseAgreementServiceImpl extends ServiceImpl<LeaseAgreementMapper,
         return leaseAgreements.stream().map(
                 leaseAgreement -> {
                     Long roomId = leaseAgreement.getRoomId();
-                    AgreementItemVo agreementItemVo = new AgreementItemVo();
+                    AgreementItemRespVO agreementItemVo = new AgreementItemRespVO();
                     BeanUtil.copyProperties(leaseAgreement, agreementItemVo);
                     agreementItemVo.setLeaseStatus(leaseAgreement.getStatus());
 
@@ -86,9 +86,9 @@ public class LeaseAgreementServiceImpl extends ServiceImpl<LeaseAgreementMapper,
                         agreementItemVo.setRoomNumber(roomInfo.getRoomNumber());
                     }
                     List<GraphInfo> graphInfos = graphMap.get(roomId);
-                    List<GraphVo> graphVos = graphInfos.stream().map(
+                    List<GraphRespVO> graphVos = graphInfos.stream().map(
                             graphInfo -> {
-                                return new GraphVo(graphInfo.getName(), graphInfo.getUrl());
+                                return new GraphRespVO(graphInfo.getName(), graphInfo.getUrl());
                             }
                     ).toList();
                     agreementItemVo.setRoomGraphVoList(graphVos);
@@ -145,7 +145,7 @@ public class LeaseAgreementServiceImpl extends ServiceImpl<LeaseAgreementMapper,
     }
 
     @Override
-    public AgreementDetailVo getDetailById(Long id) {
+    public AgreementDetailRespVO getDetailById(Long id) {
         LeaseAgreement leaseAgreement = leaseAgreementMapper.selectById(id);
         if (leaseAgreement == null){
             throw  new ZZAException(ResultCodeEnum.LEASEAGREEMENT_NOT_EXIST);
@@ -154,7 +154,7 @@ public class LeaseAgreementServiceImpl extends ServiceImpl<LeaseAgreementMapper,
         if (!leaseAgreement.getPhone().equals(phone)){
             throw new ZZAException(ResultCodeEnum.LEASE_AGREEMENT_ERROR);
         }
-        AgreementDetailVo agreementDetailVo = new AgreementDetailVo();
+        AgreementDetailRespVO agreementDetailVo = new AgreementDetailRespVO();
         BeanUtil.copyProperties(leaseAgreement,agreementDetailVo);
         //公寓id
         Long apartmentId = leaseAgreement.getApartmentId();
@@ -164,14 +164,14 @@ public class LeaseAgreementServiceImpl extends ServiceImpl<LeaseAgreementMapper,
             agreementDetailVo.setApartmentName(apartmentInfo.getName());
         }
         //公寓图片列表
-        List<GraphVo> apartmentGraphVoList = graphInfoMapper.selectListByIdAndType(apartmentId, ItemType.APARTMENT);
+        List<GraphRespVO> apartmentGraphVoList = graphInfoMapper.selectListByIdAndType(apartmentId, ItemType.APARTMENT);
         agreementDetailVo.setApartmentGraphVoList(apartmentGraphVoList);
         //房间id
         Long roomId = leaseAgreement.getRoomId();
         //房间号
         agreementDetailVo.setRoomNumber(roomInfoMapper.selectById(roomId).getRoomNumber());
         //房间图片
-        List<GraphVo> roomGraphVoList = graphInfoMapper.selectListByIdAndType(roomId, ItemType.ROOM);
+        List<GraphRespVO> roomGraphVoList = graphInfoMapper.selectListByIdAndType(roomId, ItemType.ROOM);
         agreementDetailVo.setRoomGraphVoList(roomGraphVoList);
         //支付id
         Long paymentTypeId = leaseAgreement.getPaymentTypeId();

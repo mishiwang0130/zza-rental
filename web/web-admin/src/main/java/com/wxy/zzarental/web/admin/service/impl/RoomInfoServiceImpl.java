@@ -5,18 +5,25 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.wxy.zzarental.common.util.VOConverter;
 import com.wxy.zzarental.model.entity.*;
 import com.wxy.zzarental.model.enums.ItemType;
 import com.wxy.zzarental.model.enums.LeaseStatus;
 import com.wxy.zzarental.web.admin.mapper.*;
 import com.wxy.zzarental.web.admin.service.*;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.wxy.zzarental.web.admin.vo.attr.AttrValueVo;
-import com.wxy.zzarental.web.admin.vo.graph.GraphVo;
-import com.wxy.zzarental.web.admin.vo.room.RoomDetailVo;
-import com.wxy.zzarental.web.admin.vo.room.RoomItemVo;
-import com.wxy.zzarental.web.admin.vo.room.RoomQueryVo;
-import com.wxy.zzarental.web.admin.vo.room.RoomSubmitVo;
+import com.wxy.zzarental.web.admin.vo.attr.AttrValueRespVO;
+import com.wxy.zzarental.web.admin.vo.apartment.ApartmentBasicRespVO;
+import com.wxy.zzarental.web.admin.vo.apartment.FacilityRespVO;
+import com.wxy.zzarental.web.admin.vo.apartment.LabelRespVO;
+import com.wxy.zzarental.web.admin.vo.apartment.LeaseTermRespVO;
+import com.wxy.zzarental.web.admin.vo.apartment.PaymentTypeRespVO;
+import com.wxy.zzarental.web.admin.vo.graph.GraphRespVO;
+import com.wxy.zzarental.web.admin.vo.graph.GraphReqVO;
+import com.wxy.zzarental.web.admin.vo.room.RoomDetailRespVO;
+import com.wxy.zzarental.web.admin.vo.room.RoomItemRespVO;
+import com.wxy.zzarental.web.admin.vo.room.RoomPageReqVO;
+import com.wxy.zzarental.web.admin.vo.room.RoomSaveReqVO;
 import jakarta.annotation.Resource;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -68,7 +75,7 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void saveOrUpdateRoom(RoomSubmitVo roomSubmitVo) {
+    public void saveOrUpdateRoom(RoomSaveReqVO roomSubmitVo) {
         RoomInfo roomInfo = new RoomInfo();
         BeanUtils.copyProperties(roomSubmitVo, roomInfo);
         saveOrUpdate(roomInfo);
@@ -98,7 +105,7 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
             leaseTermInfoLambdaQueryWrapper.eq(RoomLeaseTerm::getRoomId, roomSubmitVo.getId());
             roomLeaseTermService.remove(leaseTermInfoLambdaQueryWrapper);
         }
-        List<GraphVo> graphVoList = roomSubmitVo.getGraphVoList();
+        List<GraphReqVO> graphVoList = roomSubmitVo.getGraphVoList();
         if(CollUtil.isNotEmpty(graphVoList)){
             List<GraphInfo> graphInfoList = graphVoList.stream().map(item -> {
                 GraphInfo graphInfo = new GraphInfo();
@@ -161,12 +168,12 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
     }
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public IPage<RoomItemVo> pageItem(long current, long size, RoomQueryVo queryVo) {
-        Page<RoomItemVo> page = new Page<>(current, size);
-        IPage<RoomItemVo> result = roomInfoMapper.pageItem(page, queryVo);
-        List<RoomItemVo> records = result.getRecords();
+    public IPage<RoomItemRespVO> pageItem(long current, long size, RoomPageReqVO queryVo) {
+        Page<RoomItemRespVO> page = new Page<>(current, size);
+        IPage<RoomItemRespVO> result = roomInfoMapper.pageItem(page, queryVo);
+        List<RoomItemRespVO> records = result.getRecords();
 
-        List<Long> roomIds = records.stream().map(RoomInfo::getId).toList();
+        List<Long> roomIds = records.stream().map(RoomItemRespVO::getId).toList();
 
         if (CollUtil.isNotEmpty(roomIds)) {
             LambdaQueryWrapper<LeaseAgreement> leaseAgreementQueryWrapper = new LambdaQueryWrapper<>();
@@ -177,7 +184,7 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
             Map<Long, LeaseAgreement> leaseAgreementMap = leaseAgreementList.stream()
                     .collect(Collectors.toMap(LeaseAgreement::getRoomId, a -> a, (a, b) -> a));
 
-            List<Long> apartmentIds = records.stream().map(RoomInfo::getApartmentId).distinct().toList();
+            List<Long> apartmentIds = records.stream().map(RoomItemRespVO::getApartmentId).distinct().toList();
             Map<Long, ApartmentInfo> apartmentInfoMap = apartmentInfoMapper.selectBatchIds(apartmentIds).stream()
                     .collect(Collectors.toMap(ApartmentInfo::getId, a -> a));
 
@@ -189,7 +196,7 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
                 } else {
                     item.setIsCheckIn(false);
                 }
-                item.setApartmentInfo(apartmentInfoMap.get(item.getApartmentId()));
+                item.setApartmentInfo(VOConverter.to(apartmentInfoMap.get(item.getApartmentId()), ApartmentBasicRespVO.class));
             });
         }
 
@@ -197,23 +204,23 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
     }
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public RoomDetailVo getDetailById(Long id) {
+    public RoomDetailRespVO getDetailById(Long id) {
         RoomInfo roomInfo = roomInfoMapper.selectById(id);
         if (roomInfo == null) {
             return null;
         }
-        RoomDetailVo roomDetailVo = new RoomDetailVo();
+        RoomDetailRespVO roomDetailVo = new RoomDetailRespVO();
         BeanUtils.copyProperties(roomInfo, roomDetailVo);
         // 设置公寓信息
         ApartmentInfo apartmentInfo = apartmentInfoMapper.selectById(roomDetailVo.getApartmentId());
-        roomDetailVo.setApartmentInfo(apartmentInfo);
+        roomDetailVo.setApartmentInfo(VOConverter.to(apartmentInfo, ApartmentBasicRespVO.class));
         // 设置图片列表
         LambdaQueryWrapper<GraphInfo> graphInfoLambdaQueryWrapper = Wrappers.<GraphInfo>lambdaQuery()
                 .eq(GraphInfo::getItemType, ItemType.ROOM)
                 .eq(GraphInfo::getItemId, roomInfo.getId());
         List<GraphInfo> graphInfoList = graphInfoService.list(graphInfoLambdaQueryWrapper);
-        List<GraphVo> graphVoList = graphInfoList.stream()
-                .map(item -> GraphVo.builder().name(item.getName()).url(item.getUrl()).build())
+        List<GraphRespVO> graphVoList = graphInfoList.stream()
+                .map(item -> GraphRespVO.builder().name(item.getName()).url(item.getUrl()).build())
                 .collect(Collectors.toList());
         roomDetailVo.setGraphVoList(graphVoList);
         // 设置属性信息列表
@@ -224,7 +231,7 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
         Map<Long, String> attrKeyMap = attrKeyList.stream().collect(Collectors.toMap(AttrKey::getId, AttrKey::getName, (a, b) -> a));
         roomDetailVo.setAttrValueVoList(attrValueList.stream()
                 .map(item -> {
-                    AttrValueVo attrValueVo = new AttrValueVo();
+                    AttrValueRespVO attrValueVo = new AttrValueRespVO();
                     BeanUtils.copyProperties(item, attrValueVo);
                     attrValueVo.setAttrKeyName(attrKeyMap.get(item.getAttrKeyId()));
                     return attrValueVo;
@@ -234,24 +241,24 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
         List<RoomFacility> roomFacilityList = roomFacilityService.list(new LambdaQueryWrapper<RoomFacility>()
                 .eq(RoomFacility::getRoomId, roomInfo.getId()));
         List<FacilityInfo> facilityInfoList = facilityInfoMapper.selectBatchIds(roomFacilityList.stream().map(RoomFacility::getFacilityId).toList());
-        roomDetailVo.setFacilityInfoList(facilityInfoList);
+        roomDetailVo.setFacilityInfoList(VOConverter.toList(facilityInfoList, FacilityRespVO.class));
         // 设置标签信息列表
 
         List<RoomLabel> roomLabelList = roomLabelService.list(new LambdaQueryWrapper<RoomLabel>()
                 .eq(RoomLabel::getRoomId, roomInfo.getId()));
         List<LabelInfo> labelInfoList = labelInfoMapper.selectBatchIds(roomLabelList.stream().map(RoomLabel::getLabelId).toList());
-        roomDetailVo.setLabelInfoList(labelInfoList);
+        roomDetailVo.setLabelInfoList(VOConverter.toList(labelInfoList, LabelRespVO.class));
 
         // 设置支付方式列表
         List<RoomPaymentType> roomPaymentTypeList = roomPaymentTypeService.list(new LambdaQueryWrapper<RoomPaymentType>()
                 .eq(RoomPaymentType::getRoomId, id));
         List<PaymentType> paymentTypeList = paymentTypeMapper.selectBatchIds(roomPaymentTypeList.stream().map(RoomPaymentType::getPaymentTypeId).toList());
-        roomDetailVo.setPaymentTypeList(paymentTypeList);
+        roomDetailVo.setPaymentTypeList(VOConverter.toList(paymentTypeList, PaymentTypeRespVO.class));
         // 设置可选租期列表
         List<RoomLeaseTerm> roomLeaseTermList = roomLeaseTermService.list(new LambdaQueryWrapper<RoomLeaseTerm>()
                 .eq(RoomLeaseTerm::getRoomId, roomInfo.getId()));
         List<LeaseTerm> leaseTermList = leaseTermMapper.selectBatchIds(roomLeaseTermList.stream().map(RoomLeaseTerm::getLeaseTermId).toList());
-        roomDetailVo.setLeaseTermList(leaseTermList);
+        roomDetailVo.setLeaseTermList(VOConverter.toList(leaseTermList, LeaseTermRespVO.class));
         return roomDetailVo;
     }
     @Transactional(rollbackFor = Exception.class)

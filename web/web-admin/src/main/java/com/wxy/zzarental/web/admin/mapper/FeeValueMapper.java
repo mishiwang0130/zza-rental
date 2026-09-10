@@ -1,7 +1,7 @@
 package com.wxy.zzarental.web.admin.mapper;
 
 import com.wxy.zzarental.model.entity.FeeValue;
-import com.wxy.zzarental.web.admin.vo.fee.FeeValueVo;
+import com.wxy.zzarental.web.admin.vo.fee.FeeValueRespVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 import java.util.List;
@@ -14,7 +14,7 @@ import java.util.List;
 */
 public interface FeeValueMapper extends BaseMapper<FeeValue> {
 
-    List<FeeValueVo> selectListByApartmentId(Long id);
+    List<FeeValueRespVO> selectListByApartmentId(Long id);
 }
 
 

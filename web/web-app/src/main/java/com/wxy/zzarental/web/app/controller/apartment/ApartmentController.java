@@ -1,10 +1,8 @@
 package com.wxy.zzarental.web.app.controller.apartment;
 
-import cn.hutool.core.bean.BeanUtil;
 import com.wxy.zzarental.common.result.Result;
 import com.wxy.zzarental.web.app.service.ApartmentInfoService;
-import com.wxy.zzarental.web.app.vo.apartment.ApartmentDetailVo;
-import com.wxy.zzarental.web.app.vo.apartment.ApartmentItemVo;
+import com.wxy.zzarental.web.app.vo.apartment.ApartmentDetailRespVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
@@ -22,8 +20,7 @@ public class ApartmentController {
 
     @Operation(summary = "根据id获取公寓信息")
     @GetMapping("getDetailById")
-    public Result<ApartmentDetailVo> getDetailById(@RequestParam Long id) {
-
+    public Result<ApartmentDetailRespVO> getDetailById(@RequestParam Long id) {
         return Result.ok(apartmentInfoService.getDetailById(id));
     }
 }

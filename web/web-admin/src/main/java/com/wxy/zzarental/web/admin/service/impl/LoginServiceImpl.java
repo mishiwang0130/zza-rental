@@ -14,9 +14,9 @@ import com.wxy.zzarental.model.enums.BaseStatus;
 import com.wxy.zzarental.web.admin.mapper.SystemUserMapper;
 import com.wxy.zzarental.web.admin.service.LoginService;
 import com.wxy.zzarental.common.util.RedisKeyUtil;
-import com.wxy.zzarental.web.admin.vo.login.CaptchaVo;
-import com.wxy.zzarental.web.admin.vo.login.LoginVo;
-import com.wxy.zzarental.web.admin.vo.system.user.SystemUserInfoVo;
+import com.wxy.zzarental.web.admin.vo.login.CaptchaRespVO;
+import com.wxy.zzarental.web.admin.vo.login.LoginReqVO;
+import com.wxy.zzarental.web.admin.vo.system.user.SystemUserInfoRespVO;
 import jakarta.annotation.Resource;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -39,18 +39,18 @@ public class LoginServiceImpl implements LoginService {
     private SystemUserMapper systemUserMapper;
 
     @Override
-    public CaptchaVo getCaptcha() {
+    public CaptchaRespVO getCaptcha() {
         SpecCaptcha specCaptcha = new SpecCaptcha(130, 48, 5);
         String code = specCaptcha.text().toLowerCase();
         String key = UUID.randomUUID().toString(true);
         String redisKey = RedisKeyUtil.getCaptcha(key);
         // 将code保存到redis中，并设置60*5秒的过期时间
         stringRedisTemplate.opsForValue().set(redisKey,code,60*5, TimeUnit.SECONDS);
-        return new CaptchaVo(specCaptcha.toBase64(),key);
+        return new CaptchaRespVO(specCaptcha.toBase64(),key);
     }
     @Transactional(rollbackFor = ZZAException.class)
     @Override
-    public String login(LoginVo loginVo) {
+    public String login(LoginReqVO loginVo) {
 
         //根据key去redis查code，为空说明过期
         String key = loginVo.getCaptchaKey();
@@ -94,9 +94,9 @@ public class LoginServiceImpl implements LoginService {
     }
 
     @Override
-    public SystemUserInfoVo getLoginUserInfoById(Long userId) {
+    public SystemUserInfoRespVO getLoginUserInfoById(Long userId) {
         SystemUser systemUser = systemUserMapper.selectById(userId);
-        SystemUserInfoVo systemUserInfoVo = new SystemUserInfoVo();
+        SystemUserInfoRespVO systemUserInfoVo = new SystemUserInfoRespVO();
         systemUserInfoVo.setName(systemUser.getName());
         systemUserInfoVo.setAvatarUrl(systemUser.getAvatarUrl());
         return systemUserInfoVo;

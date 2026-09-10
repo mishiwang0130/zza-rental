@@ -2,8 +2,8 @@ package com.wxy.zzarental.web.app.service;
 
 import com.wxy.zzarental.model.entity.ApartmentInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.wxy.zzarental.web.app.vo.apartment.ApartmentDetailVo;
-import com.wxy.zzarental.web.app.vo.apartment.ApartmentItemVo;
+import com.wxy.zzarental.web.app.vo.apartment.ApartmentDetailRespVO;
+import com.wxy.zzarental.web.app.vo.apartment.ApartmentItemRespVO;
 
 /**
  * @author liubo
@@ -15,11 +15,11 @@ public interface ApartmentInfoService extends IService<ApartmentInfo> {
      * 按id获取信息
      *
      * @param apartmentId 公寓id
-     * @return {@code ApartmentItemVo }
+     * @return {@code ApartmentItemRespVO }
      * @author wxy
      * @date 2026/09/03
      */
-    ApartmentItemVo getInfoById(Long apartmentId);
+    ApartmentItemRespVO getInfoById(Long apartmentId);
 
-    ApartmentDetailVo getDetailById(Long id);
+    ApartmentDetailRespVO getDetailById(Long id);
 }

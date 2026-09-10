@@ -13,7 +13,7 @@ import com.wxy.zzarental.web.app.mapper.FeeKeyMapper;
 import com.wxy.zzarental.web.app.mapper.RoomInfoMapper;
 import com.wxy.zzarental.web.app.service.FeeValueService;
 import com.wxy.zzarental.web.app.mapper.FeeValueMapper;
-import com.wxy.zzarental.web.app.vo.fee.FeeValueVo;
+import com.wxy.zzarental.web.app.vo.fee.FeeValueRespVO;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
@@ -38,7 +38,7 @@ public class FeeValueServiceImpl extends ServiceImpl<FeeValueMapper, FeeValue>
     private FeeKeyMapper feeKeyMapper;
 
     @Override
-    public List<FeeValueVo> listByApartmentId(Long id) {
+    public List<FeeValueRespVO> listByApartmentId(Long id) {
 
         LambdaQueryWrapper<ApartmentFeeValue> apartmentFeeValueLambdaQueryWrapper = new LambdaQueryWrapper<>();
         apartmentFeeValueLambdaQueryWrapper.eq(ApartmentFeeValue::getApartmentId, id);
@@ -55,7 +55,7 @@ public class FeeValueServiceImpl extends ServiceImpl<FeeValueMapper, FeeValue>
         Map<Long, String> feeNameMap = feeKeyMapper.selectBatchIds(feekeyIds).stream().collect(Collectors.toMap(BaseEntity::getId, FeeKey::getName,(key1, key2)->key1));
         return feeValues.stream().map(
                 feeValue -> {
-                    FeeValueVo feeValueVo = new FeeValueVo();
+                    FeeValueRespVO feeValueVo = new FeeValueRespVO();
                     BeanUtil.copyProperties(feeValue, feeValueVo);
                     feeValueVo.setFeeKeyName(feeNameMap.get(feeValue.getFeeKeyId()));
                     return feeValueVo;

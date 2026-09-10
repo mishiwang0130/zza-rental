@@ -2,11 +2,14 @@ package com.wxy.zzarental.web.admin.controller.apartment;
 
 
 import com.wxy.zzarental.common.result.Result;
+import com.wxy.zzarental.common.util.VOConverter;
 import com.wxy.zzarental.model.entity.AttrKey;
 import com.wxy.zzarental.model.entity.AttrValue;
 import com.wxy.zzarental.web.admin.service.AttrKeyService;
 import com.wxy.zzarental.web.admin.service.AttrValueService;
-import com.wxy.zzarental.web.admin.vo.attr.AttrKeyVo;
+import com.wxy.zzarental.web.admin.vo.attr.AttrKeyRespVO;
+import com.wxy.zzarental.web.admin.vo.attr.AttrKeySaveReqVO;
+import com.wxy.zzarental.web.admin.vo.attr.AttrValueSaveReqVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
@@ -26,37 +29,36 @@ public class AttrController {
 
     @Operation(summary = "新增或更新属性名称")
     @PostMapping("key/saveOrUpdate")
-    public Result saveOrUpdateAttrKey(@RequestBody AttrKey attrKey) {
-        attrKeyService.saveOrUpdate(attrKey);
+    public Result<Void> saveOrUpdateAttrKey(@RequestBody AttrKeySaveReqVO reqVO) {
+        attrKeyService.saveOrUpdate(VOConverter.to(reqVO, AttrKey.class));
         return Result.ok();
     }
 
     @Operation(summary = "新增或更新属性值")
     @PostMapping("value/saveOrUpdate")
-    public Result saveOrUpdateAttrValue(@RequestBody List<AttrValue> attrValueList) {
-
-        attrValueService.saveOrUpdateBatch(attrValueList);
+    public Result<Void> saveOrUpdateAttrValue(@RequestBody List<AttrValueSaveReqVO> reqVOList) {
+        attrValueService.saveOrUpdateBatch(VOConverter.toList(reqVOList, AttrValue.class));
         return Result.ok();
     }
 
 
     @Operation(summary = "查询全部属性名称和属性值列表")
     @GetMapping("list")
-    public Result<List<AttrKeyVo>> listAttrInfo() {
-        List<AttrKeyVo> attrKeyVoList = attrKeyService.listAttrInfo();
+    public Result<List<AttrKeyRespVO>> listAttrInfo() {
+        List<AttrKeyRespVO> attrKeyVoList = attrKeyService.listAttrInfo();
         return Result.ok(attrKeyVoList);
     }
 
     @Operation(summary = "根据id删除属性名称")
     @DeleteMapping("key/deleteById")
-    public Result removeAttrKeyById(@RequestParam Long attrKeyId) {
+    public Result<Void> removeAttrKeyById(@RequestParam Long attrKeyId) {
         attrKeyService.removeAttrKeyById(attrKeyId);
         return Result.ok();
     }
 
     @Operation(summary = "根据id删除属性值")
     @DeleteMapping("value/deleteById")
-    public Result removeAttrValueById(@RequestParam Long id) {
+    public Result<Void> removeAttrValueById(@RequestParam Long id) {
         attrValueService.removeById(id);
         return Result.ok();
     }

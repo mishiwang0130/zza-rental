@@ -4,9 +4,9 @@ package com.wxy.zzarental.web.admin.controller.login;
 import com.wxy.zzarental.common.login.LoginUserHolder;
 import com.wxy.zzarental.common.result.Result;
 import com.wxy.zzarental.web.admin.service.LoginService;
-import com.wxy.zzarental.web.admin.vo.login.CaptchaVo;
-import com.wxy.zzarental.web.admin.vo.login.LoginVo;
-import com.wxy.zzarental.web.admin.vo.system.user.SystemUserInfoVo;
+import com.wxy.zzarental.web.admin.vo.login.CaptchaRespVO;
+import com.wxy.zzarental.web.admin.vo.login.LoginReqVO;
+import com.wxy.zzarental.web.admin.vo.system.user.SystemUserInfoRespVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
@@ -23,19 +23,19 @@ public class LoginController {
 
     @Operation(summary = "获取图形验证码")
     @GetMapping("login/captcha")
-    public Result<CaptchaVo> getCaptcha() {
+    public Result<CaptchaRespVO> getCaptcha() {
         return Result.ok(loginService.getCaptcha());
     }
 
     @Operation(summary = "登录")
     @PostMapping("login")
-    public Result<String> login(@RequestBody @Validated LoginVo loginVo) {
-        return Result.ok(loginService.login(loginVo));
+    public Result<String> login(@RequestBody @Validated LoginReqVO reqVO) {
+        return Result.ok(loginService.login(reqVO));
     }
 
     @Operation(summary = "获取登陆用户个人信息")
     @GetMapping("info")
-    public Result<SystemUserInfoVo> info() {
+    public Result<SystemUserInfoRespVO> info() {
         Long userId = LoginUserHolder.getLoginUser().getUserId();
 
         return Result.ok(loginService.getLoginUserInfoById(userId));

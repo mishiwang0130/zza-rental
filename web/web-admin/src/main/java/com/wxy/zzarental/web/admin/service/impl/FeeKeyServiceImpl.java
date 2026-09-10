@@ -7,7 +7,7 @@ import com.wxy.zzarental.web.admin.mapper.FeeKeyMapper;
 import com.wxy.zzarental.web.admin.mapper.FeeValueMapper;
 import com.wxy.zzarental.web.admin.service.FeeKeyService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.wxy.zzarental.web.admin.vo.fee.FeeKeyVo;
+import com.wxy.zzarental.web.admin.vo.fee.FeeKeyRespVO;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +27,7 @@ public class FeeKeyServiceImpl extends ServiceImpl<FeeKeyMapper, FeeKey>
     @Resource
     private FeeValueMapper feeValueMapper;
     @Override
-    public List<FeeKeyVo> feeInfoList() {
+    public List<FeeKeyRespVO> feeInfoList() {
         return feeKeyMapper.selectList();
     }
 

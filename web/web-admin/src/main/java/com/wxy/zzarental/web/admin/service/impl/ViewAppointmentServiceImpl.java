@@ -6,8 +6,8 @@ import com.wxy.zzarental.model.entity.ViewAppointment;
 import com.wxy.zzarental.web.admin.mapper.ViewAppointmentMapper;
 import com.wxy.zzarental.web.admin.service.ViewAppointmentService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.wxy.zzarental.web.admin.vo.appointment.AppointmentQueryVo;
-import com.wxy.zzarental.web.admin.vo.appointment.AppointmentVo;
+import com.wxy.zzarental.web.admin.vo.appointment.AppointmentPageReqVO;
+import com.wxy.zzarental.web.admin.vo.appointment.AppointmentRespVO;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,8 +25,8 @@ public class ViewAppointmentServiceImpl extends ServiceImpl<ViewAppointmentMappe
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public IPage<AppointmentVo> pageAppointment(Page<AppointmentVo> page, AppointmentQueryVo queryVo) {
-        IPage<AppointmentVo> iPage = viewAppointmentMapper.selectPageAppointment(page, queryVo);
+    public IPage<AppointmentRespVO> pageAppointment(Page<AppointmentRespVO> page, AppointmentPageReqVO queryVo) {
+        IPage<AppointmentRespVO> iPage = viewAppointmentMapper.selectPageAppointment(page, queryVo);
         return iPage;
     }
 }

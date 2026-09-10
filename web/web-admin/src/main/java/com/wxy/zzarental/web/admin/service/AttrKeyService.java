@@ -1,7 +1,7 @@
 package com.wxy.zzarental.web.admin.service;
 
 import com.wxy.zzarental.model.entity.AttrKey;
-import com.wxy.zzarental.web.admin.vo.attr.AttrKeyVo;
+import com.wxy.zzarental.web.admin.vo.attr.AttrKeyRespVO;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
@@ -13,7 +13,7 @@ import java.util.List;
 */
 public interface AttrKeyService extends IService<AttrKey> {
 
-    List<AttrKeyVo> listAttrInfo();
+    List<AttrKeyRespVO> listAttrInfo();
 
     void removeAttrKeyById(Long attrKeyId);
 }

@@ -1,0 +1,35 @@
+# 本地开发组合：不依赖 Redis / Qdrant / 大模型 API Key 也能把前后端链路跑通。
+# 需要真实能力时改用 --spring.profiles.active=prod（或去掉 dev）并准备好中间件与 API Key。
+spring:
+  ai:
+    model:
+      chat: none          # 关闭 OpenAI ChatModel，使用下方 Mock 模型
+    vectorstore:
+      qdrant:
+        initialize-schema: false   # 没有 Qdrant 时不尝试建表
+
+app:
+  chat:
+    provider: mock
+  memory:
+    type: memory
+  knowledge:
+    repository: memory
+  storage:
+    type: local
+  apartment:
+    enabled: false
+  rag:
+    # 本地没有 Qdrant / Embedding 服务，直接关闭检索，避免每次聊天都发起注定失败的调用
+    enabled: false
+    fail-fast: false
+
+logging:
+  level:
+    com.wxy.aicustomer: debug
+
+management:
+  health:
+    # 本地没起 Redis，健康检查不因它变成 DOWN
+    redis:
+      enabled: false

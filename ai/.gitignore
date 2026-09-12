@@ -1,0 +1,5 @@
+# 知识库原始文件默认落本地磁盘
+backend/data/
+# 前端构建与依赖
+frontend/node_modules/
+frontend/dist/

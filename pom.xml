@@ -18,6 +18,7 @@
     <modules>
         <module>common</module>
         <module>web</module>
+        <module>ai/backend</module>
     </modules>
 
     <!-- 所有服务共享构建基线；子模块不再重复覆盖 Java / Lombok 版本。 -->

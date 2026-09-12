@@ -25,6 +25,7 @@ sh mvnw clean install
 ```powershell
 .\mvnw.cmd -pl web/web-admin -am clean package
 .\mvnw.cmd -pl web/web-app -am clean package
+.\mvnw.cmd -pl ai/backend -am clean package
 ```
 
 `common` 产出普通依赖 JAR，只有两个启动服务需要 Spring Boot 可执行 JAR。两端不能互相依赖对方的可执行 JAR，不再依赖公共 `model` 模块。
@@ -41,6 +42,17 @@ java -jar web/web-app/target/web-app-0.0.1-SNAPSHOT.jar
 短信访问密钥不提供源码默认值。之前已写入 Git 历史的短信凭据仍需由部署方安排轮换，移出当前源码不等于清除了历史记录。
 
 ## 服务边界
+
+### 公寓智能客服（ai/backend）
+
+`ai/` 是与 `web` 同级的第二个业务方向，由 `ai/backend`（Spring Boot + Spring AI 的 AI 客服服务）
+和 `ai/frontend`（Vue 3 访客聊天页）组成，已纳入本仓库的 Maven 聚合工程。它复用 `common` 的
+`Result`、`ZZAException`、`GlobalExceptionHandler`、`RedisUtil`、MinIO 配置，但不访问公寓数据库，
+只通过 `/internal/ai/**` 白名单 HTTP 接口获取房源等业务数据。
+
+`ai/backend` 的 parent 是 `spring-boot-starter-parent 3.5.16`：聚合与继承相互独立，Spring AI 1.1.x
+需要 3.5.x 基线，而 `web-admin` / `web-app` 仍停留在 3.0.5，两者没有运行期依赖。启动方式、接口清单
+与配置说明见 [ai/README.md](ai/README.md)。
 
 - `web-admin`、`web-app` 各自拥有 HTTP ReqVO/RespVO、内部 Command/Query/DTO 和接口装配器。内部模型不放入 `common`，也不成为另一服务的编译依赖。
 - 持久化实体和业务枚举分别位于 `com.wxy.zzarental.web.admin.entity` / `enums` 与 `com.wxy.zzarental.web.app.entity` / `enums`，由各服务独立维护；管理端专用的 `SystemUser`、`SystemPost`、`SystemUserType` 只保留在管理端。

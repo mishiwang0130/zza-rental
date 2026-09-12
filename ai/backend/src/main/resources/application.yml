@@ -1,0 +1,116 @@
+server:
+  port: 8083
+  shutdown: graceful
+
+spring:
+  application:
+    name: ai-customer
+  profiles:
+    default: dev
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: ${REDIS_DATABASE:0}
+      timeout: 3s
+  ai:
+    model:
+      chat: openai
+      embedding: openai
+    openai:
+      api-key: ${AI_API_KEY:sk-placeholder}
+      base-url: ${AI_BASE_URL:https://api.deepseek.com}
+      chat:
+        options:
+          model: ${AI_CHAT_MODEL:deepseek-chat}
+          temperature: 0.3
+      embedding:
+        # 向量化可以和对话走不同厂商，这里默认指向通义千问的 OpenAI 兼容端点
+        base-url: ${AI_EMBEDDING_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode}
+        api-key: ${AI_EMBEDDING_API_KEY:${AI_API_KEY:sk-placeholder}}
+        options:
+          model: ${AI_EMBEDDING_MODEL:text-embedding-v3}
+    vectorstore:
+      qdrant:
+        host: ${QDRANT_HOST:localhost}
+        port: ${QDRANT_PORT:6334}
+        api-key: ${QDRANT_API_KEY:}
+        collection-name: ai_knowledge
+        initialize-schema: true
+
+# 业务配置：代码中的 AppProperties
+app:
+  chat:
+    provider: openai
+    system-prompt-location: classpath:prompts/system-prompt.st
+    memory-window-size: 20
+    max-message-length: 2000
+  rag:
+    enabled: true
+    top-k: 5
+    similarity-threshold: 0.5
+    fail-fast: false
+    max-context-chars: 4000
+  memory:
+    # redis：多实例共享会话；memory：进程内，仅本地调试
+    type: redis
+    ttl: 7d
+  knowledge:
+    repository: redis
+    max-file-size-mb: 20
+    chunk-size: 800
+    min-chunk-size-chars: 350
+    min-chunk-length-to-embed: 5
+    max-num-chunks: 10000
+    keep-separator: true
+  storage:
+    type: local
+    local-path: ./data/knowledge
+    minio:
+      # 连接参数与 bucket 复用 common 的 MinioProperties，见文件末尾 minio.*
+      prefix: documents/
+  apartment:
+    # 公寓系统 /internal/ai/** 接口就绪前可置为 false，Tool 会返回友好提示而不是报错
+    enabled: ${APARTMENT_ENABLED:true}
+    base-url: ${APARTMENT_BASE_URL:http://localhost:8080}
+    service-token: ${APARTMENT_SERVICE_TOKEN:change-me-service-token}
+    internal-path-prefix: /internal/ai
+    connect-timeout: 2s
+    read-timeout: 5s
+  web:
+    allowed-origins:
+      - ${FRONTEND_ORIGIN:http://localhost:5173}
+
+# common 模块的 MinIO 配置（app.storage.type=minio 时生效）
+minio:
+  endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+  access-key: ${MINIO_ACCESS_KEY:minioadmin}
+  secret-key: ${MINIO_SECRET_KEY:minioadmin}
+  bucket-name: ${MINIO_BUCKET:ai-knowledge}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.wxy.aicustomer: info
+    org.springframework.ai: info

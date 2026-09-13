@@ -39,6 +39,12 @@ app:
     similarity-threshold: 0.5
     # 拼进提示词的参考资料最大字符数，防止上下文过长导致超模型上限
     max-context-chars: 4000
+    # 城市标签在向量库 metadata 中的字段名；上传文档时写、检索时按它过滤
+    city-metadata-key: city
+    # 平台级通用文档的城市标签值：选了城市时，"选中城市 + 通用"一起召回
+    common-city: 通用
+    # 按城市过滤后没有命中时是否自动回退为不带过滤的检索；false=宁可返回空也不放宽范围
+    fallback-to-unfiltered-when-empty: true
   memory:
     # 会话记忆在 Redis 里的过期时间：7d = 7 天，到期自动清理匿名会话
     ttl: 7d
@@ -64,6 +70,8 @@ app:
     internal-path-prefix: /internal/ai
 
 springdoc:
+  # 查询参数是对象时按字段平铺展示，与 web-admin / web-app 的配置一致
+  default-flat-param-object: true
   api-docs:
     # OpenAPI JSON 地址：http://localhost:8083/v3/api-docs
     path: /v3/api-docs

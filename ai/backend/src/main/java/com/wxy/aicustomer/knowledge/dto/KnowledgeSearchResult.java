@@ -10,6 +10,7 @@ public record KnowledgeSearchResult(
         String documentId,
         String fileName,
         String category,
+        String city,
         Integer chunkIndex,
         Double score,
         String content

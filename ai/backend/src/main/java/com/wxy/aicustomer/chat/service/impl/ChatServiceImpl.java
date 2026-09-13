@@ -46,11 +46,11 @@ public class ChatServiceImpl implements ChatService {
         String question = normalize(request.message());
         return Flux.defer(() -> {
                     long startedAt = System.nanoTime();
-                    RetrievalResult retrieval = ragService.retrieve(question);
+                    RetrievalResult retrieval = ragService.retrieve(question, request.city());
                     return Flux.concat(
                             Flux.just(ChatEvent.of(ChatEvent.EVENT_META,
                                     new ChatStreamPayload.Meta(conversationId, request.visitorId()))),
-                            streamAnswer(conversationId, question, retrieval),
+                            streamAnswer(conversationId, question, request.city(), retrieval),
                             Flux.just(
                                     ChatEvent.of(ChatEvent.EVENT_SOURCES,
                                             new ChatStreamPayload.Sources(retrieval.sources())),
@@ -70,9 +70,9 @@ public class ChatServiceImpl implements ChatService {
     public ChatAnswer ask(ChatRequest request) {
         String conversationId = resolveConversationId(request.conversationId());
         String question = normalize(request.message());
-        RetrievalResult retrieval = ragService.retrieve(question);
+        RetrievalResult retrieval = ragService.retrieve(question, request.city());
         String answer = chatClient.prompt()
-                .user(ragService.buildUserPrompt(question, retrieval))
+                .user(ragService.buildUserPrompt(question, request.city(), retrieval))
                 .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, conversationId))
                 .call()
                 .content();
@@ -98,9 +98,10 @@ public class ChatServiceImpl implements ChatService {
         log.info("已清空会话 {}", conversationId);
     }
 
-    private Flux<ChatEvent> streamAnswer(String conversationId, String question, RetrievalResult retrieval) {
+    private Flux<ChatEvent> streamAnswer(String conversationId, String question, String city,
+                                         RetrievalResult retrieval) {
         return chatClient.prompt()
-                .user(ragService.buildUserPrompt(question, retrieval))
+                .user(ragService.buildUserPrompt(question, city, retrieval))
                 .advisors(spec -> spec.param(ChatMemory.CONVERSATION_ID, conversationId))
                 .stream()
                 .content()

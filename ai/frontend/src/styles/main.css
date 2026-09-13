@@ -49,6 +49,29 @@ body {
   color: #7b8794;
 }
 
+.chat__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.chat__city {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #7b8794;
+}
+
+.chat__city-select {
+  padding: 8px 10px;
+  border: 1px solid #cfd8e3;
+  border-radius: 999px;
+  background: #fff;
+  color: #2f4f7f;
+  cursor: pointer;
+}
+
 .chat__new {
   padding: 8px 16px;
   border: 1px solid #cfd8e3;

@@ -12,6 +12,7 @@ public record DocumentVo(
         String id,
         String fileName,
         String category,
+        String city,
         String contentType,
         long size,
         int chunkCount,

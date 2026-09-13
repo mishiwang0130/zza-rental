@@ -19,7 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
-@ActiveProfiles("local")
+@ActiveProfiles("test")
 class ChatEndpointTest {
 
     @Autowired
@@ -70,5 +70,29 @@ class ChatEndpointTest {
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(202));
+    }
+
+    @Test
+    void askWithCityShouldReturnAnswer() throws Exception {
+        mockMvc.perform(post("/api/chat")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"visitorId":"visitor-4","message":"押金要交几个月？","city":"武汉"}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.data.answer").isNotEmpty());
+    }
+
+    @Test
+    void askWithoutCityShouldStayCompatible() throws Exception {
+        mockMvc.perform(post("/api/chat")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"visitorId":"visitor-5","message":"押金要交几个月？"}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(jsonPath("$.data.answer").isNotEmpty());
     }
 }

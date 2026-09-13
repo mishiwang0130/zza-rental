@@ -10,6 +10,8 @@ import com.wxy.aicustomer.knowledge.repository.KnowledgeDocumentRepository;
 import com.wxy.aicustomer.knowledge.service.KnowledgeService;
 import com.wxy.aicustomer.knowledge.storage.FileStorageService;
 import com.wxy.aicustomer.rag.ChunkService;
+import com.wxy.aicustomer.rag.CityFilterExpression;
+import com.wxy.aicustomer.rag.KnowledgeMetadataKeys;
 import com.wxy.aicustomer.rag.parser.DocumentParserFactory;
 import com.wxy.zzarental.common.exception.ZZAException;
 import com.wxy.zzarental.common.result.ResultCodeEnum;
@@ -18,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.ai.vectorstore.filter.Filter;
 import org.springframework.ai.vectorstore.filter.FilterExpressionBuilder;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
@@ -50,7 +53,7 @@ public class KnowledgeServiceImpl implements KnowledgeService {
     private final AppProperties properties;
 
     @Override
-    public DocumentVo upload(MultipartFile file, String category) {
+    public DocumentVo upload(MultipartFile file, String category, String city) {
         if (file == null || file.isEmpty()) {
             throw new ZZAException(ResultCodeEnum.PARAM_ERROR.getCode(), "上传文件不能为空");
         }
@@ -73,6 +76,7 @@ public class KnowledgeServiceImpl implements KnowledgeService {
                 .fileName(fileName)
                 .contentType(file.getContentType())
                 .category(StringUtils.hasText(category) ? category.trim() : DEFAULT_CATEGORY)
+                .city(resolveCity(city))
                 .size(file.getSize())
                 .storageKey(storageKey)
                 .status(DocumentStatus.PENDING)
@@ -115,22 +119,32 @@ public class KnowledgeServiceImpl implements KnowledgeService {
         double threshold = request.similarityThreshold() == null
                 ? rag.getSimilarityThreshold()
                 : request.similarityThreshold();
-        SearchRequest searchRequest = SearchRequest.builder()
+        SearchRequest.Builder builder = SearchRequest.builder()
                 .query(request.query())
                 .topK(topK)
-                .similarityThreshold(threshold)
-                .build();
-        List<Document> documents = requireVectorStore().similaritySearch(searchRequest);
+                .similarityThreshold(threshold);
+        Filter.Expression cityFilter = CityFilterExpression.build(
+                request.city(), rag.getCityMetadataKey(), rag.getCommonCity());
+        if (cityFilter != null) {
+            builder.filterExpression(cityFilter);
+        }
+        List<Document> documents = requireVectorStore().similaritySearch(builder.build());
         return documents.stream().map(this::toSearchResult).toList();
     }
 
     private DocumentVo index(KnowledgeDocument document) {
         try {
             var resource = fileStorageService.load(document.getStorageKey());
+            // 历史记录可能没有城市标签，重建时统一落到"通用"，避免写入空值 payload
+            String city = StringUtils.hasText(document.getCity())
+                    ? document.getCity()
+                    : properties.getRag().getCommonCity();
+            document.setCity(city);
             Map<String, Object> metadata = new HashMap<>();
-            metadata.put("documentId", document.getId());
-            metadata.put("fileName", document.getFileName());
-            metadata.put("category", document.getCategory());
+            metadata.put(KnowledgeMetadataKeys.DOCUMENT_ID, document.getId());
+            metadata.put(KnowledgeMetadataKeys.FILE_NAME, document.getFileName());
+            metadata.put(KnowledgeMetadataKeys.CATEGORY, document.getCategory());
+            metadata.put(KnowledgeMetadataKeys.CITY, city);
 
             List<Document> parsed = documentParserFactory.parse(
                     document.getFileName(), document.getContentType(), resource, metadata);
@@ -160,7 +174,9 @@ public class KnowledgeServiceImpl implements KnowledgeService {
             return;
         }
         try {
-            var expression = new FilterExpressionBuilder().eq("documentId", documentId).build();
+            var expression = new FilterExpressionBuilder()
+                    .eq(KnowledgeMetadataKeys.DOCUMENT_ID, documentId)
+                    .build();
             vectorStore.delete(expression);
         } catch (Exception ex) {
             log.warn("删除文档 {} 的向量失败：{}", documentId, ex.getMessage());
@@ -182,20 +198,28 @@ public class KnowledgeServiceImpl implements KnowledgeService {
         return vectorStore;
     }
 
+    /**
+     * 上传未指定城市时落到平台级通用标签，保证任何城市检索都能召回该文档。
+     */
+    private String resolveCity(String city) {
+        return StringUtils.hasText(city) ? city.trim() : properties.getRag().getCommonCity();
+    }
+
     private DocumentVo toVo(KnowledgeDocument document) {
         return new DocumentVo(document.getId(), document.getFileName(), document.getCategory(),
-                document.getContentType(), document.getSize(), document.getChunkCount(),
+                document.getCity(), document.getContentType(), document.getSize(), document.getChunkCount(),
                 document.getStatus() == null ? null : document.getStatus().name(),
                 document.getErrorMessage(), document.getCreatedAt(), document.getUpdatedAt());
     }
 
     private KnowledgeSearchResult toSearchResult(Document document) {
         Map<String, Object> metadata = document.getMetadata();
-        Object chunkIndex = metadata.get("chunkIndex");
+        Object chunkIndex = metadata.get(KnowledgeMetadataKeys.CHUNK_INDEX);
         return new KnowledgeSearchResult(
-                asText(metadata.get("documentId")),
-                asText(metadata.get("fileName")),
-                asText(metadata.get("category")),
+                asText(metadata.get(KnowledgeMetadataKeys.DOCUMENT_ID)),
+                asText(metadata.get(KnowledgeMetadataKeys.FILE_NAME)),
+                asText(metadata.get(KnowledgeMetadataKeys.CATEGORY)),
+                asText(metadata.get(KnowledgeMetadataKeys.CITY)),
                 chunkIndex instanceof Number number ? number.intValue() : null,
                 document.getScore(),
                 document.getText());

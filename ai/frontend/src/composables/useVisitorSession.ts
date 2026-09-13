@@ -2,6 +2,7 @@ import { ref } from 'vue'
 
 const VISITOR_ID_KEY = 'ai-customer.visitorId'
 const CONVERSATION_ID_KEY = 'ai-customer.conversationId'
+const CITY_KEY = 'ai-customer.city'
 
 function createUuid(): string {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
@@ -16,6 +17,7 @@ function createUuid(): string {
 export function useVisitorSession() {
   const visitorId = ref(resolveVisitorId())
   const conversationId = ref(localStorage.getItem(CONVERSATION_ID_KEY) ?? '')
+  const city = ref(localStorage.getItem(CITY_KEY) ?? '')
 
   function resolveVisitorId(): string {
     const stored = localStorage.getItem(VISITOR_ID_KEY)
@@ -37,5 +39,15 @@ export function useVisitorSession() {
     conversationId.value = ''
   }
 
-  return { visitorId, conversationId, setConversationId, startNewConversation }
+  /** 城市为空表示"不限城市"，此时提问不带城市标签，检索不做城市过滤 */
+  function setCity(value: string): void {
+    city.value = value
+    if (value) {
+      localStorage.setItem(CITY_KEY, value)
+    } else {
+      localStorage.removeItem(CITY_KEY)
+    }
+  }
+
+  return { visitorId, conversationId, city, setConversationId, setCity, startNewConversation }
 }

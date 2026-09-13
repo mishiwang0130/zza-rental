@@ -12,7 +12,7 @@ import java.util.List;
  */
 public interface KnowledgeService {
 
-    DocumentVo upload(MultipartFile file, String category);
+    DocumentVo upload(MultipartFile file, String category, String city);
 
     List<DocumentVo> list();
 

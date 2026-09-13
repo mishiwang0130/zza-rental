@@ -1,89 +1,105 @@
 # ============================================================================
 # 本地环境配置（由 application.yml 的 spring.profiles.active=local 激活）
 #
-# 这里放"换环境就要改"的配置：端口、中间件地址、账号密码、模型 Key、开关、日志级别。
-# 默认是"零中间件"组合：Mock 模型 + 进程内记忆 + 关闭向量检索，只要有 JDK 就能启动，
-# 用于把前端和 SSE 链路跑通。要连真实中间件/模型时，改标了【真实依赖】的那几项。
+# 这里放"换环境就要改"的配置：端口、中间件地址、账号密码、模型 Key、各种开关、日志级别。
+# 本文件当前连的是虚拟机上的真实中间件（192.168.205.128 上的 Redis / Qdrant / MinIO）
+# 和阿里云百炼的 qwen 模型。
+#
+# 如果想切回"零中间件"的纯本地调试（不连任何外部服务）：
+#   1) app.chat.provider 改成 mock，并加上 spring.ai.model.chat: none
+#   2) app.memory.type / app.knowledge.repository 改成 memory
+#   3) app.rag.enabled 改成 false，spring.ai.vectorstore.qdrant.initialize-schema 改成 false
+#   4) app.storage.type 改成 local
 #
 # ${XXX:默认值} 表示优先读环境变量 XXX，读不到才用冒号后的默认值。
 # ============================================================================
 
 server:
-  # 服务端口；前端 vite 代理默认也指向 8083（见 ai/frontend/vite.config.ts）
+  # 服务端口；接口文档在 http://localhost:8083/doc.html，前端 vite 代理也指向 8083
   port: 8083
   # 优雅停机：收到停止信号后先处理完在途请求再退出，避免请求被硬切断
   shutdown: graceful
 
 spring:
   ai:
-
+    # 这里没有写 spring.ai.model.chat / spring.ai.model.embedding：
+    # 不配置时默认就是用 OpenAI 协议的实现（下面 spring.ai.openai 那段），
+    # 只有在要用本地 Mock 模型时才需要额外加 "chat: none"。
     openai:
-      # API Key 请你自己配置在系统环境变量 DASHSCOPE_API_KEY 中
+      # 模型 Key：从系统环境变量 DASHSCOPE_API_KEY 读取，不要把 Key 直接写进文件
+      # PowerShell 里设置：$env:DASHSCOPE_API_KEY = 'sk-xxx'
       api-key: ${DASHSCOPE_API_KEY:your-api-key-here}
-      # 阿里云百炼 DashScope 的 OpenAI 兼容地址（Spring AI 会自动拼接 /v1/chat/completions、/v1/embeddings）
+      # 阿里云百炼（DashScope）的 OpenAI 兼容地址；
+      # Spring AI 会自动在它后面拼 /v1/chat/completions、/v1/embeddings
       base-url: https://ws-jtlrm6raueuwkv9p.cn-beijing.maas.aliyuncs.com/compatible-mode
       chat:
         options:
+          # 对话模型名
           model: qwen3.7-flash
+          # 随机性 0~1：越小回答越稳定、越大越发散；客服问答建议 0.2~0.5
           temperature: 0.5
       embedding:
+        # 向量模型名（用于知识库写库和检索）
+        # 注意：换向量模型会改变向量维度，需要删掉 Qdrant 里的集合重新入库
         options:
           model: qwen3.7-text-embedding-flash
+        # 没写 base-url / api-key 时，自动复用上面 spring.ai.openai 的地址和 Key
     vectorstore:
       qdrant:
         # 向量库地址与端口；6334 是 gRPC 端口（Spring AI 用这个），6333 是 REST 端口
         host: ${QDRANT_HOST:192.168.205.128}
         port: ${QDRANT_PORT:6334}
-        # Qdrant 开了鉴权才需要填；本地 docker-compose 默认无鉴权，留空
+        # Qdrant 开了鉴权才需要填；当前虚拟机上的 Qdrant 没开鉴权，留空
         api-key: ${QDRANT_API_KEY:}
         # 集合（类似 MySQL 的表）名，所有知识切片都存在这个集合里
         collection-name: zza_knowledge
-        # 启动时是否自动创建集合：本地没起 Qdrant 必须是 false，否则启动就会去连它而失败
-        # 【真实依赖】Qdrant 起来后改成 true
+        # 启动时自动创建集合（第一次启动会建；已存在则跳过）
         initialize-schema: true
   data:
     redis:
+      # Redis 地址；会话记忆、知识文档记录都存在这里（见下面 app.memory / app.knowledge）
       host: 192.168.205.128
       port: 6379
+      # 使用第几个库（0~15），不同项目可以用不同库号隔开
       database: 0
+      # 密码；没有密码就留空
       password: 123456
       # 连接超时时间
       timeout: 3s
 
-# common 模块（公寓系统）的 MinIO 配置；只有 app.storage.type=minio 时才会用到
+# common 模块（公寓系统）的 MinIO 配置；app.storage.type=minio 时用来存知识文档的原始文件
 minio:
+  # MinIO 地址；9000 是 API 端口，9001 是网页控制台端口
   endpoint: http://192.168.205.128:9000
+  # 访问账号/密码
   access-key: minio
   secret-key: minio123
+  # 存放知识文档原始文件的桶名，不存在时服务会自动创建
   bucket-name: zza
 
 app:
   chat:
-    # 用哪个对话实现：mock=本地假模型（不联网、不花钱，只回显问题），openai=真实模型
-    # 【真实依赖】接真实大模型时改成 openai（同时把上面 spring.ai.model.chat 改成 openai）
+    # 用哪个对话实现：openai=真实大模型（当前），mock=本地假模型（不联网、不花钱，只回显问题）
     provider: openai
   memory:
-    # 多轮会话存哪：memory=进程内（重启即丢，本地免中间件），redis=存 Redis（多实例共享）
-    # 【真实依赖】部署到服务器时改成 redis
+    # 多轮会话存哪：redis=存 Redis（当前，多实例共享），memory=进程内（重启即丢）
     type: redis
   knowledge:
-    # 知识文档记录（文件名、切片数、状态）存哪：memory=进程内（重启即丢），redis=存 Redis
-    # 【真实依赖】部署到服务器时改成 redis
+    # 知识文档记录（文件名、切片数、状态）存哪：redis=存 Redis（当前），memory=进程内（重启即丢）
     repository: redis
   storage:
-    # 知识库原始文件存哪：local=本地磁盘，minio=对象存储
+    # 知识库原始文件存哪：minio=对象存储（当前），local=存本机磁盘
     type: minio
-    # local 模式的存放目录（相对 ai/backend 运行目录），上传的文档会落到这里
+    # 只有 type=local 时才会用到这个目录
     local-path: ./data/knowledge
   rag:
-    # 是否启用知识库检索：false=不查向量库、直接问模型（本地没 Qdrant 时关掉，避免每次报错）
-    # 【真实依赖】Qdrant + Embedding 就绪后改成 true
+    # 是否启用知识库检索：true=每次提问先去 Qdrant 检索资料（当前）
     enabled: true
-    # true=检索失败直接报错；false=检索失败自动降级为纯模型回答（更宽松，推荐 false）
+    # true=检索失败直接报错；false=检索失败自动降级为纯模型回答（当前，更宽松）
     fail-fast: false
   apartment:
-    # 是否允许调用公寓系统 /internal/ai/** 接口；false 时 Tool 返回"暂未开放"提示而不是报错
-    # 【真实依赖】公寓系统接口就绪后改成 true
+    # 是否允许调用公寓系统 /internal/ai/** 接口；false 时 Tool 会返回"暂未开放"提示
+    # 公寓系统那边的内部接口做好后再改成 true
     enabled: false
     # 公寓系统地址（web-app 服务），AI 服务通过 HTTP 调它的内部接口拿房源数据
     base-url: ${APARTMENT_BASE_URL:http://localhost:8081}
@@ -99,19 +115,19 @@ app:
 
 springdoc:
   api-docs:
-    # 是否生成 OpenAPI JSON；本地开着方便调试，生产环境可以关掉
+    # 是否生成 OpenAPI JSON（Knife4j 界面就是读它渲染的），本地开着方便调试
     enabled: true
   swagger-ui:
-    # 是否开放 Swagger 页面；生产环境建议改成 false，避免暴露接口细节
+    # 是否同时开放 springdoc 自带的 /swagger-ui.html；Knife4j 走的是 /doc.html
     enabled: true
 
 management:
   endpoint:
     health:
-      # always=健康检查返回各依赖的明细（磁盘、Redis 等），排查问题时方便看
+      # always=健康检查返回各依赖明细（磁盘、Redis 等），排查问题时方便看
       show-details: always
   health:
-    # 关闭 Redis 健康检查：本地不一定起 Redis，开着会让 /actuator/health 直接变成 DOWN
+    # 关掉 Redis 健康检查；当前 Redis 是真实依赖，如果想让它参与健康检查就改成 true
     redis:
       enabled: false
 

@@ -37,8 +37,9 @@ public class KnowledgeController {
     @Operation(summary = "上传文档", description = "支持 Markdown / TXT / PDF / DOCX 等，自动解析切片并写入向量库")
     @PostMapping(value = "/documents", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Result<DocumentVo> upload(@RequestPart("file") MultipartFile file,
-                                     @RequestParam(value = "category", required = false) String category) {
-        return Result.ok(knowledgeService.upload(file, category));
+                                     @RequestParam(value = "category", required = false) String category,
+                                     @RequestParam(value = "city", required = false) String city) {
+        return Result.ok(knowledgeService.upload(file, category, city));
     }
 
     @Operation(summary = "文档列表", description = "查看已上传文档记录，便于 Swagger 调试")

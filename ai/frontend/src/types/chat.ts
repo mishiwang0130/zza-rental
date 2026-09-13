@@ -30,6 +30,8 @@ export interface ChatRequestPayload {
   visitorId: string
   conversationId?: string | null
   message: string
+  /** 访客选择的城市标签；为空表示不按城市过滤 */
+  city?: string | null
 }
 
 export interface ChatAnswer {

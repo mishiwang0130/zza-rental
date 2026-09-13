@@ -26,49 +26,49 @@ ai/
 
 - `application.yml`：与环境无关的公共配置——应用名、业务参数（切片大小、记忆窗口、召回条数等）、
   Swagger 路径、actuator 暴露项、日志基础级别。**不放**端口、地址、账号、Key 这类随环境变化的配置。
-- `application-{profile}.yml`：某个环境独有的配置。当前只有 `application-local.yml`，
-  端口、Redis/Qdrant/MinIO 地址、模型 base-url 与 Key、公寓系统地址与 Service Token、
-  存储类型、日志级别，以及"用 Mock 还是真实模型"都在这里。
-- 新增环境：复制 `application-local.yml` 改成 `application-test.yml` / `application-prod.yml`，
-  启动时用 `--spring.profiles.active=test` 指定即可，`application.yml` 通常不用动。
+- `application-local.yml`：本地环境配置，当前连的是虚拟机上的真实中间件
+  （`192.168.205.128` 上的 Redis / Qdrant / MinIO）和阿里云百炼的 qwen 模型，
+  Key 从环境变量 `DASHSCOPE_API_KEY` 读取。
+- `src/test/resources/application-test.yml`：测试专用配置，把外部依赖全换成内存/Mock，
+  所以 `mvn test` 不需要任何中间件和网络。
+- 新增环境：复制 `application-local.yml` 改成 `application-dev.yml` / `application-prod.yml`，
+  启动时用 `--spring.profiles.active=dev` 指定即可，`application.yml` 通常不用动。
 - 个人不想提交的覆盖值可放 `application-local.local.yml`（被仓库 `.gitignore` 的
   `application-*.local.yml` 规则忽略），不建议直接改要提交的环境文件。
 
-### 本地启动（profile=local，开箱可跑）
-
-`application-local.yml` 默认是"零中间件"组合：进程内会话与文档记录、关闭 RAG 检索、
-用 `MockChatModel` 顶替真实模型，用于验证前端交互与 SSE 链路。
+### 启动（profile=local）
 
 ```powershell
 # 在仓库根目录执行
 .\mvnw.cmd -pl ai/backend -am spring-boot:run
 ```
 
-接口文档：<http://localhost:8083/swagger-ui.html>，健康检查：<http://localhost:8083/actuator/health>
-
-### 连真实中间件与模型
+启动前先确认模型 Key 已注入（PowerShell 示例，IDE 里跑就在 Run Configuration 的环境变量里加）：
 
 ```powershell
-docker compose -f ai/docker-compose.yml up -d
-$env:AI_API_KEY = '<你的模型 Key>'
-$env:AI_EMBEDDING_API_KEY = '<你的 Embedding Key>'
-.\mvnw.cmd -pl ai/backend -am spring-boot:run
+$env:DASHSCOPE_API_KEY = '<你的百炼 Key>'
 ```
 
-然后把 `application-local.yml` 中标了 `[真实依赖]` 的项改掉：`spring.ai.model.chat` 与
-`app.chat.provider` 改回 `openai`、`app.memory.type` 与 `app.knowledge.repository` 改回 `redis`、
-`app.rag.enabled` 与 `spring.ai.vectorstore.qdrant.initialize-schema` 改为 `true`、
-`app.apartment.enabled` 视公寓系统接口是否就绪而定。
+- 接口文档（Knife4j）：<http://localhost:8083/doc.html>，左侧按「访客聊天 / 知识库管理」分组
+- 健康检查：<http://localhost:8083/actuator/health>
+- 想切回"零中间件"的纯本地调试（Mock 模型 + 进程内存储 + 关闭检索），
+  按 `application-local.yml` 顶部注释改 4 个开关即可
+
+### 测试（profile=test）
+
+```powershell
+.\mvnw.cmd -pl ai/backend -am test
+```
 
 ### 关键配置
 
 | 配置 | 说明 |
 | --- | --- |
-| `app.chat.provider` | `openai`（OpenAI 兼容协议）/ `mock`（本地假模型，local 默认） |
-| `app.memory.type` | `redis`（多实例共享）/ `memory`（进程内，local 默认） |
-| `app.knowledge.repository` | `redis` / `memory`（local 默认） |
-| `app.storage.type` | `local`（默认）/ `minio`，切换 MinIO 时连接参数复用 `minio.*` |
-| `app.rag.*` | `enabled`、`top-k`、`similarity-threshold`、`fail-fast` |
+| `app.chat.provider` | `openai`（OpenAI 兼容协议，local 用）/ `mock`（本地假模型） |
+| `app.memory.type` | `redis`（多实例共享，local 用）/ `memory`（进程内） |
+| `app.knowledge.repository` | `redis`（local 用）/ `memory` |
+| `app.storage.type` | `minio`（local 用，连接参数复用 `minio.*`）/ `local`（本机磁盘） |
+| `app.rag.*` | `enabled`、`top-k`、`similarity-threshold`、`fail-fast`、`city-metadata-key`、`common-city`、`fallback-to-unfiltered-when-empty` |
 | `app.apartment.*` | 公寓系统地址、Service Token、超时；`enabled=false` 时 Tool 返回友好提示 |
 | `spring.ai.openai.*` | 对话与 Embedding 的 base-url / api-key / model，可分别指向不同厂商 |
 
@@ -79,14 +79,18 @@ $env:AI_EMBEDDING_API_KEY = '<你的 Embedding Key>'
 
 | 接口 | 方法 | 说明 |
 | --- | --- | --- |
-| `/api/chat/stream` | POST SSE | 事件顺序 `meta → delta* → sources → done`，异常给 `error` |
-| `/api/chat` | POST | 非流式问答，便于 Swagger 调试 |
+| `/api/chat/stream` | POST SSE | 事件顺序 `meta → delta* → sources → done`，异常给 `error`；可选 `city` 按城市过滤知识库 |
+| `/api/chat` | POST | 非流式问答，便于 Swagger 调试；可选 `city` 同上 |
 | `/api/chat/conversations/{id}/messages` | GET | 读取会话 Memory 中的历史消息 |
 | `/api/chat/conversations/{id}` | DELETE | 清空会话（前端“新对话”） |
-| `/api/knowledge/documents` | POST/GET | 上传文档（自动解析、切片、向量化）/ 文档列表 |
+| `/api/knowledge/documents` | POST/GET | 上传文档（自动解析、切片、向量化）/ 文档列表；可选 `city` 城市标签，缺省为“通用” |
 | `/api/knowledge/documents/{id}/rebuild` | POST | 重新解析切片并覆盖向量 |
 | `/api/knowledge/documents/{id}` | DELETE | 删除文档及其全部向量 |
-| `/api/knowledge/search` | POST | 语义检索调试，返回 TopK 切片 |
+| `/api/knowledge/search` | POST | 语义检索调试，返回 TopK 切片；可选 `city`，用于对比过滤前后差异 |
+
+知识库支持按城市标签（metadata 字段 `city`，取值如 `武汉` / `广州` / `深圳` / `通用`）过滤：请求带 `city`
+时召回“选中城市 + 通用”，不带则完全不过滤。样例文档见 `docs/` 下的城市规则文档集，配套验证步骤见
+[RAG 城市标签检索验证清单](../docs/RAG城市标签检索验证清单.md)。
 
 响应体统一复用 common 的 `Result`：HTTP 200 + `code`（200 成功，202 参数错误，203 服务异常…），
 前端按 `code` 判断业务结果。

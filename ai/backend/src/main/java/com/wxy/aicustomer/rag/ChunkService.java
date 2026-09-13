@@ -18,8 +18,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ChunkService {
 
-    private static final String META_CHUNK_INDEX = "chunkIndex";
-
     private final AppProperties properties;
 
     public List<Document> split(List<Document> documents) {
@@ -29,7 +27,7 @@ public class ChunkService {
         for (int index = 0; index < chunks.size(); index++) {
             Document chunk = chunks.get(index);
             Map<String, Object> metadata = new HashMap<>(chunk.getMetadata());
-            metadata.put(META_CHUNK_INDEX, index);
+            metadata.put(KnowledgeMetadataKeys.CHUNK_INDEX, index);
             result.add(Document.builder()
                     .text(chunk.getText())
                     .metadata(metadata)

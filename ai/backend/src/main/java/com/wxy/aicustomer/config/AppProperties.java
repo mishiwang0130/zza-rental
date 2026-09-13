@@ -56,6 +56,15 @@ public class AppProperties {
 
         /** 拼接进提示词的参考资料最大字符数 */
         private int maxContextChars = 4000;
+
+        /** 城市标签在向量库 metadata 中的字段名 */
+        private String cityMetadataKey = "city";
+
+        /** 平台级通用文档的城市标签值，检索选中城市时一并召回 */
+        private String commonCity = "通用";
+
+        /** 按城市过滤后没有命中时，是否自动回退为不带过滤的检索 */
+        private boolean fallbackToUnfilteredWhenEmpty = true;
     }
 
     @Getter

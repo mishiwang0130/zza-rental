@@ -25,6 +25,9 @@ public class KnowledgeDocument {
 
     private String category;
 
+    /** 适用城市标签；平台级通用文档为"通用" */
+    private String city;
+
     private long size;
 
     /** 原始文件存储键，用于重建索引 */

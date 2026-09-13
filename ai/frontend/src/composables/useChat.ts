@@ -11,7 +11,8 @@ function createMessageId(): string {
  * 聊天状态机：发送消息 → 追加 SSE 增量 → 收尾 / 报错。
  */
 export function useChat() {
-  const { visitorId, conversationId, setConversationId, startNewConversation } = useVisitorSession()
+  const { visitorId, conversationId, city, setConversationId, setCity, startNewConversation } =
+    useVisitorSession()
   const messages = ref<ChatMessage[]>([])
   const sending = ref(false)
   const errorMessage = ref('')
@@ -51,6 +52,7 @@ export function useChat() {
           visitorId: visitorId.value,
           conversationId: conversationId.value || null,
           message: content,
+          city: city.value || null,
         },
         {
           onMeta: (meta) => setConversationId(meta.conversationId),
@@ -103,6 +105,17 @@ export function useChat() {
     }
   }
 
+  /**
+   * 切换城市：清空当前会话再继续提问，避免上一个城市的上下文串到新城市。
+   */
+  async function changeCity(next: string): Promise<void> {
+    if (next === city.value) {
+      return
+    }
+    setCity(next)
+    await newConversation()
+  }
+
   return {
     messages,
     sending,
@@ -111,7 +124,9 @@ export function useChat() {
     elapsedMillis,
     visitorId,
     conversationId,
+    city,
     send,
     newConversation,
+    changeCity,
   }
 }

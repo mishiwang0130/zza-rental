@@ -6,8 +6,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.ai.vectorstore.filter.Filter;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,18 +26,16 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class RagService {
 
-    private static final String META_DOCUMENT_ID = "documentId";
-    private static final String META_FILE_NAME = "fileName";
-    private static final String META_CATEGORY = "category";
     private static final int SNIPPET_MAX_LENGTH = 120;
 
     private final ObjectProvider<VectorStore> vectorStoreProvider;
     private final AppProperties properties;
 
     /**
-     * 检索知识库。除开启 fail-fast 外，任何异常都会降级为“无参考资料”。
+     * 检索知识库。传入城市时按“选中城市 + 通用”过滤，过滤后无命中且开启兜底时回退为不带过滤的检索；
+     * 除开启 fail-fast 外，任何异常都会降级为“无参考资料”。
      */
-    public RetrievalResult retrieve(String question) {
+    public RetrievalResult retrieve(String question, String city) {
         AppProperties.Rag rag = properties.getRag();
         if (!rag.isEnabled() || question == null || question.isBlank()) {
             return RetrievalResult.empty(false);
@@ -46,12 +46,14 @@ public class RagService {
             return RetrievalResult.empty(true);
         }
         try {
-            SearchRequest searchRequest = SearchRequest.builder()
-                    .query(question)
-                    .topK(rag.getTopK())
-                    .similarityThreshold(rag.getSimilarityThreshold())
-                    .build();
-            List<Document> documents = vectorStore.similaritySearch(searchRequest);
+            Filter.Expression cityFilter = CityFilterExpression.build(
+                    city, rag.getCityMetadataKey(), rag.getCommonCity());
+            List<Document> documents = search(vectorStore, question, rag, cityFilter);
+            if ((documents == null || documents.isEmpty())
+                    && cityFilter != null && rag.isFallbackToUnfilteredWhenEmpty()) {
+                log.debug("城市 {} 过滤后没有命中，回退为不带过滤的检索", city);
+                documents = search(vectorStore, question, rag, null);
+            }
             if (documents == null || documents.isEmpty()) {
                 return RetrievalResult.empty(false);
             }
@@ -68,17 +70,30 @@ public class RagService {
     /**
      * 把检索结果拼进用户消息。没有命中资料时原样返回问题。
      */
-    public String buildUserPrompt(String question, RetrievalResult retrieval) {
+    public String buildUserPrompt(String question, String city, RetrievalResult retrieval) {
+        String cityContext = StringUtils.hasText(city) ? "当前城市：" + city.trim() + "\n" : "";
         if (retrieval == null || !retrieval.hasContext()) {
-            return question;
+            return cityContext.isEmpty() ? question : cityContext + "用户问题：\n" + question;
         }
         return """
-                用户问题：
+                %s用户问题：
                 %s
 
                 参考知识库资料（可能不完整，请结合资料回答；引用时说明来源文件名）：
                 %s
-                """.formatted(question, retrieval.contextText());
+                """.formatted(cityContext, question, retrieval.contextText());
+    }
+
+    private List<Document> search(VectorStore vectorStore, String question,
+                                  AppProperties.Rag rag, Filter.Expression filter) {
+        SearchRequest.Builder builder = SearchRequest.builder()
+                .query(question)
+                .topK(rag.getTopK())
+                .similarityThreshold(rag.getSimilarityThreshold());
+        if (filter != null) {
+            builder.filterExpression(filter);
+        }
+        return vectorStore.similaritySearch(builder.build());
     }
 
     private RetrievalResult toRetrievalResult(List<Document> documents, int maxContextChars) {
@@ -87,7 +102,7 @@ public class RagService {
         int index = 1;
         for (Document document : documents) {
             Map<String, Object> metadata = document.getMetadata();
-            String fileName = asText(metadata.get(META_FILE_NAME), "未命名文档");
+            String fileName = asText(metadata.get(KnowledgeMetadataKeys.FILE_NAME), "未命名文档");
             String section = """
                     [%d] 来源文件：%s
                     %s
@@ -98,9 +113,9 @@ public class RagService {
             }
             context.append(section);
             sources.add(new SourceRef(
-                    asText(metadata.get(META_DOCUMENT_ID), null),
+                    asText(metadata.get(KnowledgeMetadataKeys.DOCUMENT_ID), null),
                     fileName,
-                    asText(metadata.get(META_CATEGORY), null),
+                    asText(metadata.get(KnowledgeMetadataKeys.CATEGORY), null),
                     document.getScore(),
                     snippet(document.getText())));
         }

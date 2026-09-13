@@ -21,6 +21,10 @@ public record ChatRequest(
         @Schema(description = "访客消息内容", example = "两室一厅大概多少钱？")
         @NotBlank(message = "不能为空")
         @Size(max = 2000, message = "长度不能超过 2000")
-        String message
+        String message,
+
+        @Schema(description = "访客选择的城市标签；为空表示不按城市过滤", example = "武汉")
+        @Size(max = 32, message = "长度不能超过 32")
+        String city
 ) {
 }

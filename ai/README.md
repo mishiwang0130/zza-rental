@@ -28,7 +28,8 @@ ai/
   Swagger 路径、actuator 暴露项、日志基础级别。**不放**端口、地址、账号、Key 这类随环境变化的配置。
 - `application-local.yml`：本地环境配置，当前连的是虚拟机上的真实中间件
   （`192.168.205.128` 上的 Redis / Qdrant / MinIO）和阿里云百炼的 qwen 模型，
-  Key 从环境变量 `DASHSCOPE_API_KEY` 读取。
+  Key 从环境变量 `DASHSCOPE_API_KEY` 读取；知识文档记录用的 MySQL 与本机
+  `web-admin` 一致（`localhost:3306/zza_rental`）。
 - `src/test/resources/application-test.yml`：测试专用配置，把外部依赖全换成内存/Mock，
   所以 `mvn test` 不需要任何中间件和网络。
 - 新增环境：复制 `application-local.yml` 改成 `application-dev.yml` / `application-prod.yml`，
@@ -60,13 +61,31 @@ $env:DASHSCOPE_API_KEY = '<你的百炼 Key>'
 .\mvnw.cmd -pl ai/backend -am test
 ```
 
+测试用 H2 内存库（`src/test/resources/schema.sql`，字段与 MySQL 表一致），
+不依赖真实 MySQL、Redis、Qdrant 和模型接口，CI 里可以直接跑。
+
+### 数据库
+
+知识文档记录存 MySQL 表 `ai_knowledge_document`（库 `zza_rental`，与 web-admin 同库）：
+
+```sql
+-- 字段：id(uuid) / file_name / content_type / category / city /
+--       file_size / storage_key / chunk_count / status / error_message /
+--       create_time / update_time / is_delete
+```
+
+- 主键是服务端生成的 UUID，同一个值既作数据库主键，也作原始文件路径前缀与向量库 metadata 的 `documentId`；
+- `city` 是城市标签（`通用` 表示平台级通用文档），检索时按「选中城市 + 通用」过滤；
+- 删除走逻辑删除（`is_delete = 1`），`create_time` / `update_time` 由数据库默认值维护；
+- Redis 只用于匿名会话记忆（`ai:chat:memory:{conversationId}`），不再存文档记录。
+
 ### 关键配置
 
 | 配置 | 说明 |
 | --- | --- |
 | `app.chat.provider` | `openai`（OpenAI 兼容协议，local 用）/ `mock`（本地假模型） |
 | `app.memory.type` | `redis`（多实例共享，local 用）/ `memory`（进程内） |
-| `app.knowledge.repository` | `redis`（local 用）/ `memory` |
+| `spring.datasource.*` | 知识文档记录所在 MySQL（与 `web-admin` 同一个库 `zza_rental`） |
 | `app.storage.type` | `minio`（local 用，连接参数复用 `minio.*`）/ `local`（本机磁盘） |
 | `app.rag.*` | `enabled`、`top-k`、`similarity-threshold`、`fail-fast`、`city-metadata-key`、`common-city`、`fallback-to-unfiltered-when-empty` |
 | `app.apartment.*` | 公寓系统地址、Service Token、超时；`enabled=false` 时 Tool 返回友好提示 |

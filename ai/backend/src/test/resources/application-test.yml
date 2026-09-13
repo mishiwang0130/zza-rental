@@ -1,12 +1,26 @@
 # ============================================================================
 # 测试环境配置（由测试类上的 @ActiveProfiles("test") 激活）
 #
-# 测试要能在没有网络、没有中间件的机器上跑（比如 CI 或沙箱），
-# 所以这里把所有外部依赖都换成内存/假实现，不连 Redis、Qdrant，也不调用真实模型。
+# 测试要能在没有网络、没有中间件的机器上跑（CI、沙箱），所以：
+#   - 数据库用 H2 内存库（MODE=MySQL 兼容 MySQL 语法），表结构见 src/test/resources/schema.sql
+#   - 会话记忆用进程内实现（memory）
+#   - 不连 Qdrant、不调真实模型，改用 MockChatModel
 # 测试只读 application.yml（公共配置）+ 本文件，不会读 application-local.yml。
 # ============================================================================
 
 spring:
+  datasource:
+    # H2 内存库：进程结束即销毁，不依赖本机 MySQL
+    url: jdbc:h2:mem:ai_customer_test;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    # H2 默认无密码
+    password:
+  sql:
+    init:
+      # 每次启动测试上下文都执行 schema.sql 建表
+      mode: always
+      schema-locations: classpath:schema.sql
   ai:
     model:
       # none=不装配 OpenAI 对话模型，改用 MockChatModel（只回显问题，不联网）
@@ -24,10 +38,8 @@ app:
   chat:
     provider: mock
   memory:
-    # 会话与文档记录都放进程内，测试之间互不影响，也不需要 Redis
+    # 会话记忆放进程内，测试之间互不影响，也不需要 Redis
     type: memory
-  knowledge:
-    repository: memory
   storage:
     type: local
     local-path: ./target/test-data/knowledge

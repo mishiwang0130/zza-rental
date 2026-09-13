@@ -95,3 +95,9 @@ logging:
     com.wxy.aicustomer: info
     # Spring AI 框架日志级别；排查模型调用（提示词、token 用量）时可临时调到 debug
     org.springframework.ai: info
+
+mybatis-plus:
+  configuration:
+    # 枚举按 name 存成字符串（表里 status 存 PENDING / INDEXED / FAILED），
+    # 与 ai_chat_message.sender_type 的存法保持一致
+    default-enum-type-handler: org.apache.ibatis.type.EnumTypeHandler

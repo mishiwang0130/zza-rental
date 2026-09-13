@@ -33,6 +33,8 @@ final class ParserSupport {
     }
 
     static void putIfSupported(Map<String, Object> metadata, String key, Object value) {
+        // Qdrant 的 payload 只接受标量/数组等有限类型：String / Number / Boolean 原样存，
+        // 其余（日期对象、嵌套对象等）统一转成字符串，避免写库时报类型不支持
         if (key == null || value == null) {
             return;
         }
@@ -45,6 +47,9 @@ final class ParserSupport {
 
     /**
      * 文本清洗：去掉 BOM、统一换行、压缩连续空行。
+     *
+     * <p>清洗放在解析之后、切片之前：脏字符（尤其 Windows 的 \r\n 和 BOM）会干扰分词，
+     * 连续空行则会让切片里混入大量无意义字符、稀释向量语义。
      */
     static String clean(String text) {
         if (text == null) {

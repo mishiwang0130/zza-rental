@@ -57,7 +57,7 @@ spring:
         initialize-schema: true
   data:
     redis:
-      # Redis 地址；会话记忆、知识文档记录都存在这里（见下面 app.memory / app.knowledge）
+      # Redis 地址；匿名访客的多轮会话记忆存在这里（见下面 app.memory.type）
       host: 192.168.205.128
       port: 6379
       # 使用第几个库（0~15），不同项目可以用不同库号隔开
@@ -66,6 +66,26 @@ spring:
       password: 123456
       # 连接超时时间
       timeout: 3s
+  datasource:
+    # 知识库文档记录存在 MySQL，配置与 web-admin 保持一致
+    # （同一个 MySQL 库 zza_rental，表 ai_knowledge_document 由 AI 服务维护）
+    type: com.zaxxer.hikari.HikariDataSource
+    url: jdbc:mysql://localhost:3306/zza_rental?useUnicode=true&characterEncoding=utf-8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=GMT%2b8
+    username: root
+    password: root
+    hikari:
+      connection-test-query: SELECT 1 # 自动检测连接
+      connection-timeout: 60000 # 数据库连接超时时间，默认 30 秒
+      idle-timeout: 500000 # 空闲连接存活最大时间，默认 10 分钟
+      max-lifetime: 540000 # 连接最长生命周期，默认 30 分钟
+      maximum-pool-size: 12 # 连接池最大连接数，默认 10
+      minimum-idle: 10 # 最小空闲连接数
+      pool-name: AiHikariPool # 连接池名称
+
+# SQL 打印；不想看 SQL 日志就删掉这一段
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 # common 模块（公寓系统）的 MinIO 配置；app.storage.type=minio 时用来存知识文档的原始文件
 minio:
@@ -84,9 +104,8 @@ app:
   memory:
     # 多轮会话存哪：redis=存 Redis（当前，多实例共享），memory=进程内（重启即丢）
     type: redis
-  knowledge:
-    # 知识文档记录（文件名、切片数、状态）存哪：redis=存 Redis（当前），memory=进程内（重启即丢）
-    repository: redis
+  # 知识文档记录固定存 MySQL（表 ai_knowledge_document），
+  # 上传大小与切片参数在 application.yml 的 app.knowledge 下统一配置
   storage:
     # 知识库原始文件存哪：minio=对象存储（当前），local=存本机磁盘
     type: minio

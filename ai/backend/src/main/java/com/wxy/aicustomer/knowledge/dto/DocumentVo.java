@@ -2,7 +2,7 @@ package com.wxy.aicustomer.knowledge.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 
 /**
  * 知识文档记录视图。
@@ -18,7 +18,7 @@ public record DocumentVo(
         int chunkCount,
         String status,
         String errorMessage,
-        Instant createdAt,
-        Instant updatedAt
+        LocalDateTime createTime,
+        LocalDateTime updateTime
 ) {
 }

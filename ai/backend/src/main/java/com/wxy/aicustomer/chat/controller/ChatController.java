@@ -37,6 +37,10 @@ public class ChatController {
             description = "事件顺序：meta → delta（多条）→ sources → done；异常时返回 error 事件")
     @PostMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<ServerSentEvent<Object>> stream(@Valid @RequestBody ChatRequest request) {
+        // Service 返回的是业务事件（ChatEvent），这里只做一层适配：
+        // 把事件的 name 映射成 SSE 的 event 字段、data 映射成 data 字段，前端按事件名分发处理。
+        // produces=text/event-stream 让 Spring MVC 以异步方式把 Flux 逐条写回响应，
+        // 所以这个接口"返回"之后请求线程就释放了，不会一直挂着一个 Servlet 线程
         return chatService.stream(request)
                 .map(event -> ServerSentEvent.builder(event.data()).event(event.name()).build());
     }

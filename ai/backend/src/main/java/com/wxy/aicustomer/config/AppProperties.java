@@ -82,9 +82,6 @@ public class AppProperties {
     @Setter
     public static class Knowledge {
 
-        /** redis：文档记录存 Redis（默认）；memory：进程内 */
-        private String repository = "redis";
-
         /** 单个上传文件大小上限（MB） */
         private int maxFileSizeMb = 20;
 

@@ -1,103 +1,76 @@
-server:
-  port: 8083
-  shutdown: graceful
+# ============================================================================
+# 公共配置（所有环境共用）
+#
+# 这里只放"换环境也不用改"的配置。
+# 凡是换环境要改的值（端口、Redis/Qdrant/MinIO 地址、模型 Key、日志级别……）
+# 都放到 application-{profile}.yml，例如本地环境的 application-local.yml。
+#
+# 启动时读两份文件：先读本文件，再用 application-{profile}.yml 覆盖同名配置。
+# 括号里的 ${XXX:默认值} 表示：优先读环境变量 XXX，读不到才用冒号后的默认值。
+# ============================================================================
 
 spring:
   application:
+    # 服务名：出现在日志、actuator 信息里，以后接注册中心也用它做服务标识
     name: ai-customer
   profiles:
-    default: dev
+    # 默认激活哪个环境：local = 读 application-local.yml
+    # 部署时用命令行覆盖，例如：java -jar ai-customer.jar --spring.profiles.active=test
+    active: local
   servlet:
     multipart:
+      # 单个上传文件大小上限（知识库上传文档用），要和下面 app.knowledge.max-file-size-mb 一致
       max-file-size: 20MB
+      # 单次 multipart 请求的总大小上限（一次传多个文件时的合计大小）
       max-request-size: 20MB
-  data:
-    redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:}
-      database: ${REDIS_DATABASE:0}
-      timeout: 3s
-  ai:
-    model:
-      chat: openai
-      embedding: openai
-    openai:
-      api-key: ${AI_API_KEY:sk-placeholder}
-      base-url: ${AI_BASE_URL:https://api.deepseek.com}
-      chat:
-        options:
-          model: ${AI_CHAT_MODEL:deepseek-chat}
-          temperature: 0.3
-      embedding:
-        # 向量化可以和对话走不同厂商，这里默认指向通义千问的 OpenAI 兼容端点
-        base-url: ${AI_EMBEDDING_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode}
-        api-key: ${AI_EMBEDDING_API_KEY:${AI_API_KEY:sk-placeholder}}
-        options:
-          model: ${AI_EMBEDDING_MODEL:text-embedding-v3}
-    vectorstore:
-      qdrant:
-        host: ${QDRANT_HOST:localhost}
-        port: ${QDRANT_PORT:6334}
-        api-key: ${QDRANT_API_KEY:}
-        collection-name: ai_knowledge
-        initialize-schema: true
 
-# 业务配置：代码中的 AppProperties
 app:
   chat:
-    provider: openai
+    # 系统提示词文件的位置；classpath: 表示在 src/main/resources 目录下找
     system-prompt-location: classpath:prompts/system-prompt.st
+    # 每次请求带给模型的历史消息条数：越大越"记得住"，但更费 token、更慢
     memory-window-size: 20
+    # 单条用户消息最大字符数，超过直接报参数错误（与前端输入框 maxlength 对应）
     max-message-length: 2000
   rag:
-    enabled: true
+    # 向量检索召回条数：每次提问取最相似的 N 个知识片段拼给模型
     top-k: 5
+    # 相似度阈值 0~1：低于该分数的片段直接丢弃；调低=召回更宽但更杂
     similarity-threshold: 0.5
-    fail-fast: false
+    # 拼进提示词的参考资料最大字符数，防止上下文过长导致超模型上限
     max-context-chars: 4000
   memory:
-    # redis：多实例共享会话；memory：进程内，仅本地调试
-    type: redis
+    # 会话记忆在 Redis 里的过期时间：7d = 7 天，到期自动清理匿名会话
     ttl: 7d
   knowledge:
-    repository: redis
+    # 上传文档大小上限（MB），要与上面 multipart.max-file-size 保持一致
     max-file-size-mb: 20
+    # 切片大小（按 token 近似）：每片约多少 token；太大回答不精准，太小上下文破碎
     chunk-size: 800
+    # 切片的最小字符数：不足这个长度的碎片会被合并，避免产生无意义短片段
     min-chunk-size-chars: 350
+    # 小于该字符数的片段不参与向量化（直接丢掉，省 Embedding 成本）
     min-chunk-length-to-embed: 5
+    # 单篇文档最多切成多少片，防止超大文件把向量库写爆
     max-num-chunks: 10000
+    # 切片时是否保留原文分隔符（换行、标点），true 时片段可读性更好
     keep-separator: true
   storage:
-    type: local
-    local-path: ./data/knowledge
     minio:
-      # 连接参数与 bucket 复用 common 的 MinioProperties，见文件末尾 minio.*
+      # 对象存储里的目录前缀：文档会存成 documents/{文档ID}/{文件名}
       prefix: documents/
   apartment:
-    # 公寓系统 /internal/ai/** 接口就绪前可置为 false，Tool 会返回友好提示而不是报错
-    enabled: ${APARTMENT_ENABLED:true}
-    base-url: ${APARTMENT_BASE_URL:http://localhost:8080}
-    service-token: ${APARTMENT_SERVICE_TOKEN:change-me-service-token}
+    # 公寓系统内部接口的统一前缀；ApartmentClient 只允许调用该前缀下的白名单接口
     internal-path-prefix: /internal/ai
-    connect-timeout: 2s
-    read-timeout: 5s
-  web:
-    allowed-origins:
-      - ${FRONTEND_ORIGIN:http://localhost:5173}
-
-# common 模块的 MinIO 配置（app.storage.type=minio 时生效）
-minio:
-  endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
-  access-key: ${MINIO_ACCESS_KEY:minioadmin}
-  secret-key: ${MINIO_SECRET_KEY:minioadmin}
-  bucket-name: ${MINIO_BUCKET:ai-knowledge}
 
 springdoc:
   api-docs:
+    # OpenAPI JSON 地址：http://localhost:8083/v3/api-docs
     path: /v3/api-docs
   swagger-ui:
+    # Swagger 调试页面地址：http://localhost:8083/swagger-ui.html
     path: /swagger-ui.html
+    # 接口文档里的标签、接口按字母排序，方便查找
     tags-sorter: alpha
     operations-sorter: alpha
 
@@ -105,12 +78,12 @@ management:
   endpoints:
     web:
       exposure:
+        # 对外开放的监控端点：health=健康检查，info=应用信息；访问路径 /actuator/health
         include: health,info
-  endpoint:
-    health:
-      show-details: always
 
 logging:
   level:
+    # 本项目代码的日志级别（error/warn/info/debug/trace）；local 环境在环境文件里调成了 debug
     com.wxy.aicustomer: info
+    # Spring AI 框架日志级别；排查模型调用（提示词、token 用量）时可临时调到 debug
     org.springframework.ai: info

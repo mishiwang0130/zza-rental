@@ -1,0 +1,121 @@
+# ============================================================================
+# 本地环境配置（由 application.yml 的 spring.profiles.active=local 激活）
+#
+# 这里放"换环境就要改"的配置：端口、中间件地址、账号密码、模型 Key、开关、日志级别。
+# 默认是"零中间件"组合：Mock 模型 + 进程内记忆 + 关闭向量检索，只要有 JDK 就能启动，
+# 用于把前端和 SSE 链路跑通。要连真实中间件/模型时，改标了【真实依赖】的那几项。
+#
+# ${XXX:默认值} 表示优先读环境变量 XXX，读不到才用冒号后的默认值。
+# ============================================================================
+
+server:
+  # 服务端口；前端 vite 代理默认也指向 8083（见 ai/frontend/vite.config.ts）
+  port: 8083
+  # 优雅停机：收到停止信号后先处理完在途请求再退出，避免请求被硬切断
+  shutdown: graceful
+
+spring:
+  ai:
+
+    openai:
+      # API Key 请你自己配置在系统环境变量 DASHSCOPE_API_KEY 中
+      api-key: ${DASHSCOPE_API_KEY:your-api-key-here}
+      # 阿里云百炼 DashScope 的 OpenAI 兼容地址（Spring AI 会自动拼接 /v1/chat/completions、/v1/embeddings）
+      base-url: https://ws-jtlrm6raueuwkv9p.cn-beijing.maas.aliyuncs.com/compatible-mode
+      chat:
+        options:
+          model: qwen3.7-flash
+          temperature: 0.5
+      embedding:
+        options:
+          model: qwen3.7-text-embedding-flash
+    vectorstore:
+      qdrant:
+        # 向量库地址与端口；6334 是 gRPC 端口（Spring AI 用这个），6333 是 REST 端口
+        host: ${QDRANT_HOST:192.168.205.128}
+        port: ${QDRANT_PORT:6334}
+        # Qdrant 开了鉴权才需要填；本地 docker-compose 默认无鉴权，留空
+        api-key: ${QDRANT_API_KEY:}
+        # 集合（类似 MySQL 的表）名，所有知识切片都存在这个集合里
+        collection-name: zza_knowledge
+        # 启动时是否自动创建集合：本地没起 Qdrant 必须是 false，否则启动就会去连它而失败
+        # 【真实依赖】Qdrant 起来后改成 true
+        initialize-schema: true
+  data:
+    redis:
+      host: 192.168.205.128
+      port: 6379
+      database: 0
+      password: 123456
+      # 连接超时时间
+      timeout: 3s
+
+# common 模块（公寓系统）的 MinIO 配置；只有 app.storage.type=minio 时才会用到
+minio:
+  endpoint: http://192.168.205.128:9000
+  access-key: minio
+  secret-key: minio123
+  bucket-name: zza
+
+app:
+  chat:
+    # 用哪个对话实现：mock=本地假模型（不联网、不花钱，只回显问题），openai=真实模型
+    # 【真实依赖】接真实大模型时改成 openai（同时把上面 spring.ai.model.chat 改成 openai）
+    provider: openai
+  memory:
+    # 多轮会话存哪：memory=进程内（重启即丢，本地免中间件），redis=存 Redis（多实例共享）
+    # 【真实依赖】部署到服务器时改成 redis
+    type: redis
+  knowledge:
+    # 知识文档记录（文件名、切片数、状态）存哪：memory=进程内（重启即丢），redis=存 Redis
+    # 【真实依赖】部署到服务器时改成 redis
+    repository: redis
+  storage:
+    # 知识库原始文件存哪：local=本地磁盘，minio=对象存储
+    type: minio
+    # local 模式的存放目录（相对 ai/backend 运行目录），上传的文档会落到这里
+    local-path: ./data/knowledge
+  rag:
+    # 是否启用知识库检索：false=不查向量库、直接问模型（本地没 Qdrant 时关掉，避免每次报错）
+    # 【真实依赖】Qdrant + Embedding 就绪后改成 true
+    enabled: true
+    # true=检索失败直接报错；false=检索失败自动降级为纯模型回答（更宽松，推荐 false）
+    fail-fast: false
+  apartment:
+    # 是否允许调用公寓系统 /internal/ai/** 接口；false 时 Tool 返回"暂未开放"提示而不是报错
+    # 【真实依赖】公寓系统接口就绪后改成 true
+    enabled: false
+    # 公寓系统地址（web-app 服务），AI 服务通过 HTTP 调它的内部接口拿房源数据
+    base-url: ${APARTMENT_BASE_URL:http://localhost:8081}
+    # 服务间调用凭据，公寓系统用它校验调用方身份；两边配置必须一致
+    service-token: ${APARTMENT_SERVICE_TOKEN:local-change-me-service-token}
+    # 连接/读取超时，避免公寓系统响应慢时把 AI 服务的线程占满
+    connect-timeout: 2s
+    read-timeout: 5s
+  web:
+    allowed-origins:
+      # 允许跨域访问后端的前端地址（CORS 白名单）；多个地址就往下多写几行 "- 地址"
+      - ${FRONTEND_ORIGIN:http://localhost:5173}
+
+springdoc:
+  api-docs:
+    # 是否生成 OpenAPI JSON；本地开着方便调试，生产环境可以关掉
+    enabled: true
+  swagger-ui:
+    # 是否开放 Swagger 页面；生产环境建议改成 false，避免暴露接口细节
+    enabled: true
+
+management:
+  endpoint:
+    health:
+      # always=健康检查返回各依赖的明细（磁盘、Redis 等），排查问题时方便看
+      show-details: always
+  health:
+    # 关闭 Redis 健康检查：本地不一定起 Redis，开着会让 /actuator/health 直接变成 DOWN
+    redis:
+      enabled: false
+
+logging:
+  level:
+    # 本项目日志级别：debug 能看到检索、会话、Tool 调用的细节，便于开发排查
+    com.wxy.aicustomer: debug

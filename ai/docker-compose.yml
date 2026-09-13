@@ -1,37 +1,57 @@
-# 公寓智能客服依赖的中间件，本地一键启动：
-#   docker compose -f ai/docker-compose.yml up -d
+# ============================================================================
+# 公寓智能客服依赖的中间件（本地开发用）
+#
+# 启动：docker compose -f ai/docker-compose.yml up -d
+# 停止：docker compose -f ai/docker-compose.yml down
+# 停止并清空数据：docker compose -f ai/docker-compose.yml down -v
+#
+# 跑"零中间件"组合时不需要启动这些服务；
+# 只有把 application-local.yml 里标了【真实依赖】的开关打开时，才需要它们。
+# ============================================================================
 services:
+
+  # 向量库：存知识文档切片及其向量，供 RAG 检索
   qdrant:
     image: qdrant/qdrant:v1.12.4
     container_name: ai-qdrant
     ports:
-      - "6333:6333"   # REST
-      - "6334:6334"   # gRPC，Spring AI 使用这个端口
+      # 6333=REST 端口（浏览器查看状态用），6334=gRPC 端口（Spring AI 连这个）
+      - "6333:6333"
+      - "6334:6334"
     volumes:
+      # 数据卷：容器删掉后向量数据仍在；要彻底清空用 down -v
       - qdrant-data:/qdrant/storage
 
+  # 缓存：存匿名访客的多轮会话记忆、知识文档记录、Tool 幂等标记
   redis:
     image: redis:7.4-alpine
     container_name: ai-redis
     ports:
+      # 对应 application-local.yml 里的 spring.data.redis.port
       - "6379:6379"
+    # appendonly yes：开启 AOF 持久化，重启 Redis 后数据不丢
     command: ["redis-server", "--appendonly", "yes"]
     volumes:
       - redis-data:/data
 
+  # 对象存储（可选）：保存知识文档的原始文件，对应 app.storage.type=minio
   minio:
     image: minio/minio:RELEASE.2024-10-13T13-34-11Z
     container_name: ai-minio
     ports:
+      # 9000=API 端口（程序用），9001=网页控制台（浏览器里管理文件用）
       - "9000:9000"
       - "9001:9001"
     environment:
+      # 账号密码：改这里的话，application-local.yml 的 minio.access-key / secret-key 要同步改
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
+    # 数据目录 /data，网页控制台端口 9001
     command: ["server", "/data", "--console-address", ":9001"]
     volumes:
       - minio-data:/data
 
+# 具名数据卷：由 Docker 管理，位置不用关心
 volumes:
   qdrant-data:
   redis-data:

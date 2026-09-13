@@ -12,10 +12,10 @@ import org.springframework.test.context.ActiveProfiles;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * 上下文冒烟测试：dev profile 下不依赖 Redis / Qdrant / 真实模型也能启动。
+ * 上下文冒烟测试：local profile 下不依赖 Redis / Qdrant / 真实模型也能启动。
  */
 @SpringBootTest
-@ActiveProfiles("dev")
+@ActiveProfiles("local")
 class AiCustomerApplicationTests {
 
     @Autowired

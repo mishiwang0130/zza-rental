@@ -22,41 +22,58 @@ ai/
 
 ## 后端
 
-### 本地最简启动（无需中间件，默认 dev profile）
+### 配置分层
 
-`dev` 组合使用进程内会话与文档记录、关闭 RAG 检索、用 `MockChatModel` 顶替真实模型，
-用于验证前端交互与 SSE 链路。
+- `application.yml`：与环境无关的公共配置——应用名、业务参数（切片大小、记忆窗口、召回条数等）、
+  Swagger 路径、actuator 暴露项、日志基础级别。**不放**端口、地址、账号、Key 这类随环境变化的配置。
+- `application-{profile}.yml`：某个环境独有的配置。当前只有 `application-local.yml`，
+  端口、Redis/Qdrant/MinIO 地址、模型 base-url 与 Key、公寓系统地址与 Service Token、
+  存储类型、日志级别，以及"用 Mock 还是真实模型"都在这里。
+- 新增环境：复制 `application-local.yml` 改成 `application-test.yml` / `application-prod.yml`，
+  启动时用 `--spring.profiles.active=test` 指定即可，`application.yml` 通常不用动。
+- 个人不想提交的覆盖值可放 `application-local.local.yml`（被仓库 `.gitignore` 的
+  `application-*.local.yml` 规则忽略），不建议直接改要提交的环境文件。
+
+### 本地启动（profile=local，开箱可跑）
+
+`application-local.yml` 默认是"零中间件"组合：进程内会话与文档记录、关闭 RAG 检索、
+用 `MockChatModel` 顶替真实模型，用于验证前端交互与 SSE 链路。
 
 ```powershell
 # 在仓库根目录执行
 .\mvnw.cmd -pl ai/backend -am spring-boot:run
 ```
 
-接口文档：<http://localhost:8081/swagger-ui.html>，健康检查：<http://localhost:8081/actuator/health>
+接口文档：<http://localhost:8083/swagger-ui.html>，健康检查：<http://localhost:8083/actuator/health>
 
-### 完整链路启动
+### 连真实中间件与模型
 
 ```powershell
 docker compose -f ai/docker-compose.yml up -d
 $env:AI_API_KEY = '<你的模型 Key>'
 $env:AI_EMBEDDING_API_KEY = '<你的 Embedding Key>'
-.\mvnw.cmd -pl ai/backend -am spring-boot:run -Dspring-boot.run.profiles=prod
+.\mvnw.cmd -pl ai/backend -am spring-boot:run
 ```
 
-`prod` 就是 `application.yml` 的默认组合：Redis 存会话与文档记录、Qdrant 建集合做向量检索、
-知识文档落本地磁盘（`app.storage.type=local`，可切 `minio`）。
+然后把 `application-local.yml` 中标了 `[真实依赖]` 的项改掉：`spring.ai.model.chat` 与
+`app.chat.provider` 改回 `openai`、`app.memory.type` 与 `app.knowledge.repository` 改回 `redis`、
+`app.rag.enabled` 与 `spring.ai.vectorstore.qdrant.initialize-schema` 改为 `true`、
+`app.apartment.enabled` 视公寓系统接口是否就绪而定。
 
 ### 关键配置
 
 | 配置 | 说明 |
 | --- | --- |
-| `app.chat.provider` | `openai`（默认，OpenAI 兼容协议）/ `mock`（本地假模型） |
-| `app.memory.type` | `redis`（默认）/ `memory` |
-| `app.knowledge.repository` | `redis`（默认）/ `memory` |
+| `app.chat.provider` | `openai`（OpenAI 兼容协议）/ `mock`（本地假模型，local 默认） |
+| `app.memory.type` | `redis`（多实例共享）/ `memory`（进程内，local 默认） |
+| `app.knowledge.repository` | `redis` / `memory`（local 默认） |
 | `app.storage.type` | `local`（默认）/ `minio`，切换 MinIO 时连接参数复用 `minio.*` |
 | `app.rag.*` | `enabled`、`top-k`、`similarity-threshold`、`fail-fast` |
 | `app.apartment.*` | 公寓系统地址、Service Token、超时；`enabled=false` 时 Tool 返回友好提示 |
 | `spring.ai.openai.*` | 对话与 Embedding 的 base-url / api-key / model，可分别指向不同厂商 |
+
+上表中随环境变化的值（provider、memory.type、rag.enabled、地址与 Key 等）都只在
+`application-{profile}.yml` 里出现。
 
 ### 接口
 
@@ -93,7 +110,7 @@ com.wxy.aicustomer
 ```powershell
 cd ai/frontend
 npm install
-npm run dev      # http://localhost:5173，/api 代理到 8081
+npm run dev      # http://localhost:5173，/api 代理到后端 8083
 npm run build    # 类型检查 + 产物到 dist/
 ```
 

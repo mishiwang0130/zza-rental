@@ -62,4 +62,28 @@ public class RedisKeyUtil {
     public static String getApartmentKey(Long apartmentId) {
         return RedisKeyConstant.APARTMENT_KEY + apartmentId;
     }
+
+    /**
+     * 获取房间锁钥匙
+     *
+     * @param roomId 房间号
+     * @return {@code String }
+     * @author wxy
+     * @date 2026/09/21
+     */
+    public static String getRoomLockKey(Long roomId) {
+        return RedisKeyConstant.ROOM_LOCK_KEY + roomId;
+    }
+
+    /**
+     * 获取公寓锁钥匙
+     *
+     * @param apartmentId 公寓id
+     * @return {@code String }
+     * @author wxy
+     * @date 2026/09/21
+     */
+    public static String getApartmentLockKey(Long apartmentId) {
+        return RedisKeyConstant.APARTMENT_LOCK_KEY + apartmentId;
+    }
 }

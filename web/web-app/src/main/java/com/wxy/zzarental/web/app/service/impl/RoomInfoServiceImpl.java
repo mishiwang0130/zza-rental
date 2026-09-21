@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.wxy.zzarental.common.exception.ZZAException;
 import com.wxy.zzarental.web.app.infrastructure.messaging.BrowsingHistoryMessagePublisher;
 import com.wxy.zzarental.common.login.LoginUserHolder;
 import com.wxy.zzarental.common.util.RedisKeyUtil;
@@ -26,6 +27,8 @@ import com.wxy.zzarental.web.app.service.dto.RoomItemDTO;
 import com.wxy.zzarental.web.app.service.query.RoomQuery;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -76,6 +79,8 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
     private RedisUtil redisUtil;
     @Resource
     private BrowsingHistoryMessagePublisher browsingHistoryMessagePublisher;
+    @Resource
+    private RedissonClient redissonClient;
 
     @Override
     public IPage<RoomItemDTO> pageItem(Page<RoomItemDTO> page, RoomQuery queryVo) {
@@ -159,11 +164,16 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
             Gson gson = new Gson();
             return gson.fromJson(jsonStr, RoomDetailDTO.class);
         }
-        ReentrantLock lock = new ReentrantLock();
+//        ReentrantLock lock = new ReentrantLock();
         RoomDetailDTO roomDetailVo = new RoomDetailDTO();
+        String roomLockKey = RedisKeyUtil.getRoomLockKey(id);
+        RLock lock = redissonClient.getLock(roomLockKey);
         // 公寓
         try {
-            lock.lock();
+            boolean b = lock.tryLock(3, 30, TimeUnit.SECONDS);
+            if (!b){
+                throw new ZZAException(1000,"23w");
+            }
             jsonStr = redisUtil.get(RedisKeyUtil.getRoomKey(id));
             if (StrUtil.isNotBlank(jsonStr)) {
                 Gson gson = new Gson();
@@ -207,8 +217,10 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
             Gson gson = new Gson();
             String json = gson.toJson(roomDetailVo);
             redisUtil.set(RedisKeyUtil.getRoomKey(id), json, 60*60, TimeUnit.SECONDS);
-        }
-        finally {
+        } catch (InterruptedException e) {
+            log.error("zzjie是臭狗屎");
+            throw new RuntimeException(e);
+        } finally {
             lock.unlock();
         }
 

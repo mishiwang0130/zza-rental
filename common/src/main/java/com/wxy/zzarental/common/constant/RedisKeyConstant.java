@@ -33,4 +33,12 @@ public interface RedisKeyConstant {
      * 获取公寓key
      */
     String APARTMENT_KEY = PREFIX_KEY + "apartment:";
+    /**
+     * 房间锁钥匙
+     */
+    String ROOM_LOCK_KEY = PREFIX_KEY + "room:lock:";
+    /**
+     * 公寓锁钥匙
+     */
+    String APARTMENT_LOCK_KEY = PREFIX_KEY + "apartment:lock:";
 }

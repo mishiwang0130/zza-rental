@@ -37,6 +37,7 @@
         <knife4j.version>4.1.0</knife4j.version>
         <aliyun.sms.version>2.0.0</aliyun.sms.version>
         <hutool.version>5.8.25</hutool.version>
+        <redisson.version>4.7.0</redisson.version>
         <rocketmq.version>2.3.6</rocketmq.version>
     </properties>
 
@@ -79,6 +80,14 @@
                 <groupId>cn.hutool</groupId>
                 <artifactId>hutool-all</artifactId>
                 <version>${hutool.version}</version>
+            </dependency>
+
+            <!--Redisson，Redis 客户端、分布式锁等-->
+            <!--官方文档：https://github.com/redisson/redisson/wiki -->
+            <dependency>
+                <groupId>org.redisson</groupId>
+                <artifactId>redisson</artifactId>
+                <version>${redisson.version}</version>
             </dependency>
 
             <!--JWT登录认证相关-->

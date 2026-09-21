@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wxy.zzarental.common.exception.ZZAException;
+import com.wxy.zzarental.common.util.RedisKeyUtil;
+import com.wxy.zzarental.common.util.RedisUtil;
 import com.wxy.zzarental.web.admin.entity.*;
 import com.wxy.zzarental.web.admin.enums.ItemType;
 import com.wxy.zzarental.web.admin.enums.LeaseStatus;
@@ -20,7 +22,12 @@ import com.wxy.zzarental.web.admin.service.query.ApartmentQuery;
 import jakarta.annotation.Resource;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import org.redisson.api.RLock;
+import org.redisson.api.RReadWriteLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,6 +64,10 @@ public class ApartmentInfoServiceImpl extends ServiceImpl<ApartmentInfoMapper, A
     private FeeValueMapper feeValueMapper;
     @Resource
     private RoomInfoMapper roomInfoMapper;
+    @Resource
+    private RedisUtil redisUtil;
+    @Resource
+    private RedissonClient redissonClient;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -202,30 +213,47 @@ public class ApartmentInfoServiceImpl extends ServiceImpl<ApartmentInfoMapper, A
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void removeApartmentById(Long id) {
-        removeById(id);
-        LambdaQueryWrapper<RoomInfo> roomInfoLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        roomInfoLambdaQueryWrapper.eq(RoomInfo::getApartmentId, id);
-        if(roomInfoMapper.selectCount(roomInfoLambdaQueryWrapper)>0){
-            throw new ZZAException(310,"公寓下有房间，是否确认删除");
+        String apartmentLockKey = RedisKeyUtil.getApartmentLockKey(id);
+        RReadWriteLock readWriteLock = redissonClient.getReadWriteLock(apartmentLockKey);
+        RLock writeLock = readWriteLock.writeLock();
+
+        try {
+            boolean b = writeLock.tryLock(3, 30, TimeUnit.SECONDS);
+            if (!b){
+                throw new ZZAException(10003,"请求太频繁");
+            }
+
+            // 删除缓存
+            redisUtil.delete(RedisKeyUtil.getApartmentKey(id));
+            removeById(id);
+            LambdaQueryWrapper<RoomInfo> roomInfoLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            roomInfoLambdaQueryWrapper.eq(RoomInfo::getApartmentId, id);
+            if(roomInfoMapper.selectCount(roomInfoLambdaQueryWrapper)>0){
+                throw new ZZAException(310,"公寓下有房间，是否确认删除");
+            }
+
+            LambdaQueryWrapper<GraphInfo> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(GraphInfo::getItemId, id);
+            queryWrapper.eq(GraphInfo::getItemType, ItemType.APARTMENT);
+            graphInfoService.remove(queryWrapper);
+
+            // 查询配套设施关联表，删除关联的设施记录
+            LambdaQueryWrapper<ApartmentFacility> facilityQueryWrapper = new LambdaQueryWrapper<>();
+            facilityQueryWrapper.eq(ApartmentFacility::getApartmentId, id);
+            apartmentFacilityService.remove(facilityQueryWrapper);
+
+            //标签关联表，删除关联的标签记录
+            LambdaQueryWrapper<ApartmentLabel> labelQueryWrapper = new LambdaQueryWrapper<>();
+            labelQueryWrapper.eq(ApartmentLabel::getApartmentId, id);
+            apartmentLabelService.remove(labelQueryWrapper);
+            //杂费值关联表，删除关联的杂费值记录
+            LambdaQueryWrapper<ApartmentFeeValue> feeQueryWrapper = new LambdaQueryWrapper<>();
+            feeQueryWrapper.eq(ApartmentFeeValue::getApartmentId, id);
+            apartmentFeeValueService.remove(feeQueryWrapper);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } finally {
+            writeLock.unlock();
         }
-
-        LambdaQueryWrapper<GraphInfo> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(GraphInfo::getItemId, id);
-        queryWrapper.eq(GraphInfo::getItemType, ItemType.APARTMENT);
-        graphInfoService.remove(queryWrapper);
-
-        // 查询配套设施关联表，删除关联的设施记录
-        LambdaQueryWrapper<ApartmentFacility> facilityQueryWrapper = new LambdaQueryWrapper<>();
-        facilityQueryWrapper.eq(ApartmentFacility::getApartmentId, id);
-        apartmentFacilityService.remove(facilityQueryWrapper);
-
-        //标签关联表，删除关联的标签记录
-        LambdaQueryWrapper<ApartmentLabel> labelQueryWrapper = new LambdaQueryWrapper<>();
-        labelQueryWrapper.eq(ApartmentLabel::getApartmentId, id);
-        apartmentLabelService.remove(labelQueryWrapper);
-        //杂费值关联表，删除关联的杂费值记录
-        LambdaQueryWrapper<ApartmentFeeValue> feeQueryWrapper = new LambdaQueryWrapper<>();
-        feeQueryWrapper.eq(ApartmentFeeValue::getApartmentId, id);
-        apartmentFeeValueService.remove(feeQueryWrapper);
     }
 }
